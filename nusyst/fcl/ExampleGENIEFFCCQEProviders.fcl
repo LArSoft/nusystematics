@@ -1,0 +1,54 @@
+GENIEFFCCQEProvider_dipole: {
+  tool_type: "GENIEReWeight"
+  uniqueName: "dipole"
+
+  numberOfThrows: 50
+
+  MAQEIsShapeOnly: true
+
+  NormCCQETweakDefinition: "{1,1}"
+  MaCCQETweakDefinition: "{1,1}"
+
+  VecFFCCQEIsBBA: true
+}
+
+GENIEFFCCQEProvider_dipole_spline: {
+  tool_type: "GENIEReWeight"
+  uniqueName: "dipole_spline"
+
+  # MAQEIsShapeOnly: true
+
+  # NormCCQETweakDefinition: "(-2_2:0.25)"
+  MaCCQETweakDefinition: "(-2_2:0.25)"
+
+  # VecFFCCQEIsBBA: true
+}
+
+GENIEFFCCQEProvider_zexp: {
+  tool_type: "GENIEReWeight"
+  uniqueName: "zexp"
+
+  ZNormCCQETweakDefinition: "[-3,-2,-1,0,1,2,3]"
+  ZExpA1CCQETweakDefinition: "[-3,-2,-1,0,1,2,3]"
+  ZExpA2CCQETweakDefinition: "[-3,-2,-1,0,1,2,3]"
+  ZExpA3CCQETweakDefinition: "[-3,-2,-1,0,1,2,3]"
+  ZExpA4CCQETweakDefinition: "[-3,-2,-1,0,1,2,3]"
+
+}
+
+GENIEFFCCQEProvider_zexprandom: {
+  tool_type: "GENIEReWeight"
+  uniqueName: "zexprandom"
+
+  numberOfThrows: 50
+
+  ZNormCCQETweakDefinition: "{-1,1}"
+  ZExpA1CCQETweakDefinition: "{-1,1}"
+  ZExpA2CCQETweakDefinition: "{-1,1}"
+  ZExpA3CCQETweakDefinition: "{-1,1}"
+  ZExpA4CCQETweakDefinition: "{-1,1}"
+
+}
+
+# syst_providers: [GENIEFFCCQEProvider_dipole, GENIEFFCCQEProvider_zexp, GENIEFFCCQEProvider_zexprandom]
+syst_providers: [GENIEFFCCQEProvider_dipole_spline]
