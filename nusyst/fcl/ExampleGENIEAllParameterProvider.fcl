@@ -1,0 +1,123 @@
+#The response to the vast majority of GENIE dials can not really be linearized, this example throws all of the relevant dials 50 times according to gaussian priors.
+GENIEProvider_AllDialsMultisim: {
+  tool_type: "GENIEReWeight"
+  uniqueName: "AllDialsMultisim"
+
+  # Make 50 throws of all parameters with tweaks defined like {low_sig, high_sig}
+  numberOfThrows: 50
+
+  ################
+  ###### QE dials
+  ################
+
+  # MaQE ShapeOnly + NormCCQE is hideously slow, better to use non-shape-only
+  # or Z-expansion.
+  MAQEIsShapeOnly: false
+  #NormCCQETweakDefinition: "{1,1}"
+
+  # Use default '1 sigma' definitions as in GENIE
+  MaCCQETweakDefinition: "{1,1}"
+
+  MaNCELTweakDefinition: "{1,1}"
+  EtaNCELTweakDefinition: "{1,1}"
+
+  # Using z-expansion requires a GENIE environment where the generation model
+  # 'would' be z-expansion, if reweighting from generated with dipole FFQE,
+  # must also include AxFFCCQEDipoleToZExp: true
+  # AxFFCCQEDipoleToZExp: true
+  # ZNormCCQETweakDefinition: "{1,1}"
+  # ZExpA1CCQETweakDefinition: "{1,1}"
+  # ZExpA2CCQETweakDefinition: "{1,1}"
+  # ZExpA3CCQETweakDefinition: "{1,1}"
+  # ZExpA4CCQETweakDefinition: "{1,1}"
+
+  # Set the QE vector FF to be a dipole form.
+  VecFFCCQEIsBBA: false
+
+  ################
+  ###### SPP dials
+  ################
+
+  # CCRESIsShapeOnly: false
+  # NormCCRESTweakDefinition: "{1,1}"
+  MaCCRESTweakDefinition: "{1,1}"
+  MvCCRESTweakDefinition: "{1,1}"
+
+  # NCRESIsShapeOnly: false
+  # NormNCRESTweakDefinition: "{1,1}"
+  MaNCRESTweakDefinition: "{1,1}"
+  MvNCRESTweakDefinition: "{1,1}"
+
+  NonRESBGvpCC1piTweakDefinition: "{1,1}"
+  NonRESBGvpCC2piTweakDefinition: "{1,1}"
+  NonRESBGvpNC1piTweakDefinition: "{1,1}"
+  NonRESBGvpNC2piTweakDefinition: "{1,1}"
+  NonRESBGvnCC1piTweakDefinition: "{1,1}"
+  NonRESBGvnCC2piTweakDefinition: "{1,1}"
+  NonRESBGvnNC1piTweakDefinition: "{1,1}"
+  NonRESBGvnNC2piTweakDefinition: "{1,1}"
+  NonRESBGvbarpCC1piTweakDefinition: "{1,1}"
+  NonRESBGvbarpCC2piTweakDefinition: "{1,1}"
+  NonRESBGvbarpNC1piTweakDefinition: "{1,1}"
+  NonRESBGvbarpNC2piTweakDefinition: "{1,1}"
+  NonRESBGvbarnCC1piTweakDefinition: "{1,1}"
+  NonRESBGvbarnCC2piTweakDefinition: "{1,1}"
+  NonRESBGvbarnNC1piTweakDefinition: "{1,1}"
+  NonRESBGvbarnNC2piTweakDefinition: "{1,1}"
+
+  RDecBR1gammaTweakDefinition: "{1,1}"
+  RDecBR1etaTweakDefinition: "{1,1}"
+
+  #Get weights for Res decay pion distribution for R-S (0) and Isotropic (1),
+  # doesn't need to be thrown randomly between them
+  Theta_Delta2NpiTweakDefinition: "[0,1]"
+
+  ################
+  ###### COH dials
+  ################
+  MaCOHpiTweakDefinition: "{1,1}"
+  R0COHpiTweakDefinition: "{1,1}"
+
+  ################
+  ###### DIS dials
+  ################
+  DISIsShapeOnly: false
+  AhtBYTweakDefinition: "{1,1}"
+  BhtBYTweakDefinition: "{1,1}"
+  CV1uBYTweakDefinition: "{1,1}"
+  CV2uBYTweakDefinition: "{1,1}"
+
+  AGKY_xF1piTweakDefinition: "{1,1}"
+  AGKY_pT1piTweakDefinition: "{1,1}"
+
+  FormZoneTweakDefinition: "{1,1}"
+
+  ################
+  ###### FSI dials
+  ################
+  MFP_piTweakDefinition: "{1,1}"
+  FrCEx_piTweakDefinition: "{1,1}"
+  FrElas_piTweakDefinition: "{1,1}"
+  FrInel_piTweakDefinition: "{1,1}"
+  FrAbs_piTweakDefinition: "{1,1}"
+  FrPiProd_piTweakDefinition: "{1,1}"
+
+  MFP_NTweakDefinition: "{1,1}"
+  FrCEx_NTweakDefinition: "{1,1}"
+  FrElas_NTweakDefinition: "{1,1}"
+  FrInel_NTweakDefinition: "{1,1}"
+  FrAbs_NTweakDefinition: "{1,1}"
+  FrPiProd_NTweakDefinition: "{1,1}"
+
+  ################
+  ###### Fermi-Gas dials
+  ################
+  CCQEPauliSupViaKFTweakDefinition: "{1,1}"
+
+  #Don't need random throws of this parameter, just need the two settings: FG
+  # and SF-like
+  CCQEMomDistroFGtoSFTweakDefinition: "[0,1]"
+
+}
+
+syst_providers: [GENIEProvider_AllDialsMultisim]

@@ -1,4 +1,4 @@
-#include "ExampleGeneratedMetaData_GENIEFFCCQE.fcl"
+#include "ExampleGeneratedMetaData_GENIEAll.fcl"
 
 ExampleLArSystProducer: {
   module_type: "LArSystEventResponse"

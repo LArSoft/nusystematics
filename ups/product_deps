@@ -37,7 +37,7 @@ gcc              v6_4_0
 larsyst          v00_01_00
 nutools          v2_20_02
 genie            v2_12_10
-cetbuildtools    v7_03_02 - only_for_build
+cetbuildtools    v7_02_01 - only_for_build
 end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the depdencies.

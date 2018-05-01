@@ -13,73 +13,82 @@
 
 #define PARAM_IS_USED_BY_CFG(PARAM_NAME)                                       \
   (cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)() != 0xdeadb33f) ||       \
-      cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)().size();
+      cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)().size()
 
 #define ADD_PARAM_TO_SYST(PARAM_NAME, SYSTDATA)                                \
-  larsyst::SystParamHeader param = BuildHeaderFromNomAndTweakDefintion(        \
-      cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)(),                     \
-      cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)()());               \
-  param.prettyName = #PARAM_NAME;                                              \
-  param.unitsAreNatural = false;                                               \
-  param.systParamId = firstParamId++;                                          \
-  SYSTDATA.headers.push_back(std::move(param))
-
-#define CHECK_USED_ADD_PARAM_TO_SYST(PARAM_NAME, SYSTDATA)                     \
-  bool PARAM_NAME_HELPER(PARAM_NAME, IsUsed) =                                 \
-      PARAM_IS_USED_BY_CFG(PARAM_NAME);                                        \
-  if (PARAM_NAME_HELPER(PARAM_NAME, IsUsed)) {                                 \
+  {                                                                            \
     larsyst::SystParamHeader param = BuildHeaderFromNomAndTweakDefintion(      \
         cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)(),                   \
-        cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)()());             \
+        cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)());               \
     param.prettyName = #PARAM_NAME;                                            \
     param.unitsAreNatural = false;                                             \
     param.systParamId = firstParamId++;                                        \
-    SYSTDATA.headers.push_back(std::move(param))                               \
+    SYSTDATA.headers.push_back(std::move(param));                              \
+  }
+
+#define CHECK_USED_ADD_PARAM_TO_SYST(PARAM_NAME, SYSTDATA)                     \
+  {                                                                            \
+    bool PARAM_NAME_HELPER(PARAM_NAME, IsUsed) =                               \
+        PARAM_IS_USED_BY_CFG(PARAM_NAME);                                      \
+    if (PARAM_NAME_HELPER(PARAM_NAME, IsUsed)) {                               \
+      larsyst::SystParamHeader param = BuildHeaderFromNomAndTweakDefintion(    \
+          cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)(),                 \
+          cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)());             \
+      param.prettyName = #PARAM_NAME;                                          \
+      param.unitsAreNatural = false;                                           \
+      param.systParamId = firstParamId++;                                      \
+      SYSTDATA.headers.push_back(std::move(param));                            \
+    }                                                                          \
   }
 
 #define ADD_PARAM_TO_SYST_RESPONSELESS(PARAM_NAME, SYSTDATA,                   \
                                        RESPONSE_PARAM_ID)                      \
-  larsyst::SystParamHeader param = BuildHeaderFromNomAndTweakDefintion(        \
-      cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)(),                     \
-      cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)()());               \
-  param.prettyName = #PARAM_NAME;                                              \
-  param.unitsAreNatural = false;                                               \
-  param.systParamId = firstParamId++;                                          \
-  param.isResponselessParam = true;                                            \
-  param.responseParamId = RESPONSE_PARAM_ID;                                   \
-  if (param.isSplineable) {                                                    \
-    std::cout                                                                  \
-        << "[ERROR]: Attempted to build spline from parameter " #PARAM_NAME    \
-           ", which enters into an intrinsically multi-parameter response "    \
-           "calculation. As multi-dimensional splines are not yet supported, " \
-           "this parameter must be used as a multi-sim or with a set of "      \
-           "hand-picked offsets that are the same for each parameter that "    \
-           "goes into the response calculation."                               \
-        << std::endl;                                                          \
-    throw;                                                                     \
-  }                                                                            \
-  SYSTDATA.headers.push_back(std::move(param))
+  {                                                                            \
+    larsyst::SystParamHeader param = BuildHeaderFromNomAndTweakDefintion(      \
+        cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)(),                   \
+        cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)());               \
+    param.prettyName = #PARAM_NAME;                                            \
+    param.unitsAreNatural = false;                                             \
+    param.systParamId = firstParamId++;                                        \
+    param.isResponselessParam = true;                                          \
+    param.responseParamId = RESPONSE_PARAM_ID;                                 \
+    if (param.isSplineable) {                                                  \
+      std::cout                                                                \
+          << "[ERROR]: Attempted to build spline from parameter " #PARAM_NAME  \
+             ", which enters into an intrinsically multi-parameter response "  \
+             "calculation. As multi-dimensional splines are not yet "          \
+             "supported, "                                                     \
+             "this parameter must be used as a multi-sim or with a set of "    \
+             "hand-picked offsets that are the same for each parameter that "  \
+             "goes into the response calculation."                             \
+          << std::endl;                                                        \
+      throw;                                                                   \
+    }                                                                          \
+    SYSTDATA.headers.push_back(std::move(param));                              \
+  }
 
 #define GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(PARAMETER_NAME_LIST,        \
                                                    SYSTDATA, NVARPARAM)        \
-  NVARPARAM = 0;                                                               \
-  for (auto &name : PARAMETER_NAME_LIST) {                                     \
-    if (!HasParam(SYSTDATA, name)) {                                           \
-      continue;                                                                \
-    }                                                                          \
-    if (!NVARPARAM) {                                                          \
-      NVARPARAM = GetParam(SYSTDATA, name).paramVariations.size();             \
-      continue;                                                                \
-    }                                                                          \
-    if (NVARPARAM != GetParam(SYSTDATA, name).paramVariations.size()) {        \
-      std::cout                                                                \
-          << "[ERROR]: NCEL configuration error. Each form factor "            \
-             "parameter specified must have the same number of variations, "   \
-          << name << " specifies "                                             \
-          << GetParam(SYSTDATA, name).paramVariations.size()                   \
-          << ", but a previous parameter specified " << NVARPARAM << "."       \
-          << std::endl;                                                        \
-      throw;                                                                   \
+  {                                                                            \
+    NVARPARAM = 0;                                                             \
+    for (auto &name : PARAMETER_NAME_LIST) {                                   \
+      if (!HasParam(SYSTDATA, name)) {                                         \
+        continue;                                                              \
+      }                                                                        \
+      if (!NVARPARAM) {                                                        \
+        NVARPARAM = GetParam(SYSTDATA, name).paramVariations.size();           \
+        continue;                                                              \
+      }                                                                        \
+      if (NVARPARAM != GetParam(SYSTDATA, name).paramVariations.size()) {      \
+        std::cout                                                              \
+            << "[ERROR]: NCEL configuration error. Each form factor "          \
+               "parameter specified must have the same number of variations, " \
+            << name << " specifies "                                           \
+            << GetParam(SYSTDATA, name).paramVariations.size()                 \
+            << ", but a previous parameter specified " << NVARPARAM << "."     \
+            << std::endl;                                                      \
+        throw;                                                                 \
+      }                                                                        \
     }                                                                          \
   }
 
@@ -90,7 +99,7 @@ namespace nusyst {
 void MakeThrowsIfNeeded(SystParamHeader &sph,
                         std::unique_ptr<CLHEP::RandGaussQ> &RNJesus,
                         uint64_t NThrows) {
-  if (sph.isRandomlyThrown) {
+  if (sph.isRandomlyThrown && !sph.paramVariations.size()) {
     double cv =
         (sph.centralParamValue == 0xdeadb33f) ? 0 : sph.centralParamValue;
     for (uint64_t t = 0; t < NThrows; ++t) {
@@ -160,7 +169,7 @@ ConfigureQEParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
   bool DipoleMaCCQEIsUsed = PARAM_IS_USED_BY_CFG(MaCCQE);
 
   bool IsDipoleReWeight =
-      DipoleIsShapeOnly || DipoleNormCCQEIsUsed || DipoleMaIsUsed;
+      DipoleIsShapeOnly || DipoleNormCCQEIsUsed || DipoleMaCCQEIsUsed;
 
   bool ZNormIsUsed = PARAM_IS_USED_BY_CFG(ZNormCCQE);
   bool ZExpA1IsUsed = PARAM_IS_USED_BY_CFG(ZExpA1CCQE);
@@ -281,7 +290,7 @@ ConfigureNCELParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
     if (MaNCELIsUsed) {
       ADD_PARAM_TO_SYST_RESPONSELESS(MaNCEL, NCELmd, NCELResp.systParamId);
     }
-    if (MaNCELEtaNCELIsUsedIsUsed) {
+    if (EtaNCELIsUsed) {
       ADD_PARAM_TO_SYST_RESPONSELESS(EtaNCEL, NCELmd, NCELResp.systParamId);
     }
     NCELmd.headers.push_back(std::move(NCELResp));
@@ -312,32 +321,33 @@ ConfigureNCELParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
   return NCELmd;
 }
 
-SystMetaData ConfigureRESParameterHeaders(
-    fhicl::Table<GENIEReWeightParamConfig> const &cfg) {
+SystMetaData
+ConfigureRESParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
+                             paramId_t firstParamId) {
   SystMetaData RESmd;
 
   //************* CCRES
   bool NormCCRESIsUsed = PARAM_IS_USED_BY_CFG(NormCCRES);
   bool CCRESIsShapeOnly = cfg().CCRESIsShapeOnly() || NormCCRESIsUsed;
-  bool CCRESMaIsUsed = PARAM_IS_USED_BY_CFG(CCRESMa);
-  bool CCRESMvIsUsed = PARAM_IS_USED_BY_CFG(CCRESMv);
+  bool MaCCRESIsUsed = PARAM_IS_USED_BY_CFG(MaCCRES);
+  bool MvCCRESIsUsed = PARAM_IS_USED_BY_CFG(MvCCRES);
 
   if (NormCCRESIsUsed) {
     ADD_PARAM_TO_SYST(NormCCRES, RESmd);
   }
 
-  if (CCRESMaIsUsed || CCRESMvIsUsed) {
+  if (MaCCRESIsUsed || MvCCRESIsUsed) {
     SystParamHeader CCRESResp;
     CCRESResp.prettyName = "CCRESVariationResponse";
     CCRESResp.systParamId = firstParamId++;
 
-    if (CCRESMaIsUsed) {
+    if (MaCCRESIsUsed) {
       ADD_PARAM_TO_SYST(MaCCRES, RESmd);
       if (CCRESIsShapeOnly) {
         GetParam(RESmd, "MaCCRES").opts.push_back("shape");
       }
     }
-    if (CCRESMvIsUsed) {
+    if (MvCCRESIsUsed) {
       ADD_PARAM_TO_SYST(MvCCRES, RESmd);
       if (CCRESIsShapeOnly) {
         GetParam(RESmd, "MvCCRES").opts.push_back("shape");
@@ -349,25 +359,25 @@ SystMetaData ConfigureRESParameterHeaders(
   //************* NCRES
   bool NormNCRESIsUsed = PARAM_IS_USED_BY_CFG(NormNCRES);
   bool NCRESIsShapeOnly = cfg().NCRESIsShapeOnly() || NormNCRESIsUsed;
-  bool NCRESMaIsUsed = PARAM_IS_USED_BY_CFG(NCRESMa);
-  bool NCRESMvIsUsed = PARAM_IS_USED_BY_CFG(NCRESMv);
+  bool MaNCRESIsUsed = PARAM_IS_USED_BY_CFG(MaNCRES);
+  bool MvNCRESIsUsed = PARAM_IS_USED_BY_CFG(MvNCRES);
 
   if (NormNCRESIsUsed) {
     ADD_PARAM_TO_SYST(NormNCRES, RESmd);
   }
 
-  if (NCRESMaIsUsed || NCRESMvIsUsed) {
+  if (MaNCRESIsUsed || MvNCRESIsUsed) {
     SystParamHeader NCRESResp;
     NCRESResp.prettyName = "NCRESVariationResponse";
     NCRESResp.systParamId = firstParamId++;
 
-    if (NCRESMaIsUsed) {
+    if (MaNCRESIsUsed) {
       ADD_PARAM_TO_SYST(MaNCRES, RESmd);
       if (NCRESIsShapeOnly) {
         GetParam(RESmd, "MaNCRES").opts.push_back("shape");
       }
     }
-    if (NCRESMvIsUsed) {
+    if (MvNCRESIsUsed) {
       ADD_PARAM_TO_SYST(MvNCRES, RESmd);
       if (NCRESIsShapeOnly) {
         GetParam(RESmd, "MvNCRES").opts.push_back("shape");
@@ -377,25 +387,25 @@ SystMetaData ConfigureRESParameterHeaders(
   }
 
   // These are all independent and based upon the channel that was generated
-  CHECK_USED_ADD_PARAM_TO_SYST(RvpCC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvpCC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvpNC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvpNC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvnCC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvnCC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvnNC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvnNC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvbarpCC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvbarpCC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvbarpNC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvbarpNC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvbarnCC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvbarnCC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvbarnNC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RvbarnNC2pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvpCC1pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvpCC2pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvpNC1pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvpNC2pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvnCC1pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvnCC2pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvnNC1pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvnNC2pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarpCC1pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarpCC2pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarpNC1pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarpNC2pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarnCC1pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarnCC2pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarnNC1pi, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarnNC2pi, RESmd);
 
-  CHECK_USED_ADD_PARAM_TO_SYST(BR1gamma, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(BR1eta, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(RDecBR1gamma, RESmd);
+  CHECK_USED_ADD_PARAM_TO_SYST(RDecBR1eta, RESmd);
   CHECK_USED_ADD_PARAM_TO_SYST(Theta_Delta2Npi, RESmd);
 
   std::unique_ptr<CLHEP::MTwistEngine> RNgine =
@@ -410,49 +420,50 @@ SystMetaData ConfigureRESParameterHeaders(
   uint64_t NCCRESVariations = 0;
 
   auto const &CCRESParamNames = {"MaCCRES", "MvCCRES"};
-  GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(CCRESParamNames, CCRESmd,
+  GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(CCRESParamNames, RESmd,
                                              NCCRESVariations);
-  std::vector<double> dummyParamVars;
+  std::vector<double> CCRESdummyParamVars;
   for (size_t i = 0; i < NCCRESVariations; ++i) {
-    dummyParamVars.push_back(i);
+    CCRESdummyParamVars.push_back(i);
   }
 
   GetParam(RESmd, "CCRESVariationResponse").paramVariations =
-      std::move(dummyParamVars);
+      std::move(CCRESdummyParamVars);
 
   uint64_t NNCRESVariations = 0;
 
   auto const &NCRESParamNames = {"MaNCRES", "MvNCRES"};
-  GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(NCRESParamNames, NCRESmd,
+  GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(NCRESParamNames, RESmd,
                                              NNCRESVariations);
-  std::vector<double> dummyParamVars;
+  std::vector<double> NCRESdummyParamVars;
   for (size_t i = 0; i < NNCRESVariations; ++i) {
-    dummyParamVars.push_back(i);
+    NCRESdummyParamVars.push_back(i);
   }
 
   GetParam(RESmd, "NCRESVariationResponse").paramVariations =
-      std::move(dummyParamVars);
+      std::move(NCRESdummyParamVars);
 
   return RESmd;
 }
 
-SystMetaData ConfigureCOHParameterHeaders(
-    fhicl::Table<GENIEReWeightParamConfig> const &cfg) {
+SystMetaData
+ConfigureCOHParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
+                             paramId_t firstParamId) {
   SystMetaData COHmd;
 
-  bool MaCOHIsUsed = PARAM_IS_USED_BY_CFG(MaCOH);
-  bool R0COHIsUsed = PARAM_IS_USED_BY_CFG(R0COH);
+  bool MaCOHpiIsUsed = PARAM_IS_USED_BY_CFG(MaCOHpi);
+  bool R0COHpiIsUsed = PARAM_IS_USED_BY_CFG(R0COHpi);
 
-  if (MaCOHIsUsed || R0COHIsUsed) {
+  if (MaCOHpiIsUsed || R0COHpiIsUsed) {
     SystParamHeader COHResp;
     COHResp.prettyName = "COHVariationResponse";
     COHResp.systParamId = firstParamId++;
 
-    if (MaCOHIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(MaCOH, COHmd, COHResp.systParamId);
+    if (MaCOHpiIsUsed) {
+      ADD_PARAM_TO_SYST_RESPONSELESS(MaCOHpi, COHmd, COHResp.systParamId);
     }
-    if (R0COHIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(R0COH, COHmd, COHResp.systParamId);
+    if (R0COHpiIsUsed) {
+      ADD_PARAM_TO_SYST_RESPONSELESS(R0COHpi, COHmd, COHResp.systParamId);
     }
     COHmd.headers.push_back(std::move(COHResp));
 
@@ -467,7 +478,7 @@ SystMetaData ConfigureCOHParameterHeaders(
 
     uint64_t NVariations = 0;
 
-    auto const &COHParamNames = {"MaCOH", "R0COH"};
+    auto const &COHParamNames = {"MaCOHpi", "R0COHpi"};
     GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(COHParamNames, COHmd,
                                                NVariations);
     std::vector<double> dummyParamVars;
@@ -482,8 +493,9 @@ SystMetaData ConfigureCOHParameterHeaders(
   return COHmd;
 }
 
-SystMetaData ConfigureDISParameterHeaders(
-    fhicl::Table<GENIEReWeightParamConfig> const &cfg) {
+SystMetaData
+ConfigureDISParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
+                             paramId_t firstParamId) {
   SystMetaData DISmd;
 
   bool DISIsShapeOnly = cfg().DISIsShapeOnly();
@@ -492,6 +504,11 @@ SystMetaData ConfigureDISParameterHeaders(
   bool BhtBYIsUsed = PARAM_IS_USED_BY_CFG(BhtBY);
   bool CV1uBYIsUsed = PARAM_IS_USED_BY_CFG(CV1uBY);
   bool CV2uBYIsUsed = PARAM_IS_USED_BY_CFG(CV2uBY);
+
+  std::unique_ptr<CLHEP::MTwistEngine> RNgine =
+      std::make_unique<CLHEP::MTwistEngine>(0);
+  std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
+      std::make_unique<CLHEP::RandGaussQ>(*RNgine);
 
   if (AhtBYIsUsed || BhtBYIsUsed || CV1uBYIsUsed || CV2uBYIsUsed) {
     SystParamHeader DISResp;
@@ -524,11 +541,6 @@ SystMetaData ConfigureDISParameterHeaders(
     }
     DISmd.headers.push_back(std::move(DISResp));
 
-    std::unique_ptr<CLHEP::MTwistEngine> RNgine =
-        std::make_unique<CLHEP::MTwistEngine>(0);
-    std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
-        std::make_unique<CLHEP::RandGaussQ>(*RNgine);
-
     for (auto &hdr : DISmd.headers) {
       MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
     }
@@ -547,11 +559,50 @@ SystMetaData ConfigureDISParameterHeaders(
         std::move(dummyParamVars);
   }
 
+  bool AGKY_xF1piIsUsed = PARAM_IS_USED_BY_CFG(AGKY_xF1pi);
+  bool AGKY_pT1piIsUsed = PARAM_IS_USED_BY_CFG(AGKY_pT1pi);
+  if (AGKY_xF1piIsUsed || AGKY_pT1piIsUsed) {
+    SystParamHeader AGKYResp;
+    AGKYResp.prettyName = "AGKYVariationResponse";
+    AGKYResp.systParamId = firstParamId++;
+    if (AGKY_xF1piIsUsed) {
+      ADD_PARAM_TO_SYST_RESPONSELESS(AGKY_xF1pi, DISmd, AGKYResp.systParamId);
+    }
+    if (AGKY_pT1piIsUsed) {
+      ADD_PARAM_TO_SYST_RESPONSELESS(AGKY_pT1pi, DISmd, AGKYResp.systParamId);
+    }
+    DISmd.headers.push_back(std::move(AGKYResp));
+
+    for (auto &hdr : DISmd.headers) {
+      MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
+    }
+
+    uint64_t NVariations = 0;
+
+    auto const &AGKYParamNames = {"AGKY_xF1pi", "AGKY_pT1pi"};
+    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(AGKYParamNames, DISmd,
+                                               NVariations);
+    std::vector<double> dummyParamVars;
+    for (size_t i = 0; i < NVariations; ++i) {
+      dummyParamVars.push_back(i);
+    }
+
+    GetParam(DISmd, "AGKYVariationResponse").paramVariations =
+        std::move(dummyParamVars);
+  }
+
+  CHECK_USED_ADD_PARAM_TO_SYST(FormZone, DISmd);
+
+  for (auto &hdr : DISmd.headers) {
+    MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
+  }
+
   return DISmd;
 }
 
-SystMetaData ConfigureFSIParameterHeaders(
-    fhicl::Table<GENIEReWeightParamConfig> const &cfg) {
+SystMetaData
+ConfigureFSIParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
+                             paramId_t firstParamId) {
   SystMetaData FSImd;
 
   bool MFP_piIsUsed = PARAM_IS_USED_BY_CFG(MFP_pi);
@@ -561,7 +612,8 @@ SystMetaData ConfigureFSIParameterHeaders(
   bool FrAbs_piIsUsed = PARAM_IS_USED_BY_CFG(FrAbs_pi);
   bool FrPiProd_piIsUsed = PARAM_IS_USED_BY_CFG(FrPiProd_pi);
 
-  if (MFP_pi || FrCEx_pi || FrElas_pi || FrInel_pi || FrAbs_pi || FrPiProd_pi) {
+  if (MFP_piIsUsed || FrCEx_piIsUsed || FrElas_piIsUsed || FrInel_piIsUsed ||
+      FrAbs_piIsUsed || FrPiProd_piIsUsed) {
     SystParamHeader FSI_pi_Resp;
     FSI_pi_Resp.prettyName = "FSI_pi_VariationResponse";
     FSI_pi_Resp.systParamId = firstParamId++;
@@ -618,7 +670,8 @@ SystMetaData ConfigureFSIParameterHeaders(
   bool FrAbs_NIsUsed = PARAM_IS_USED_BY_CFG(FrAbs_N);
   bool FrPiProd_NIsUsed = PARAM_IS_USED_BY_CFG(FrPiProd_N);
 
-  if (MFP_N || FrCEx_N || FrElas_N || FrInel_N || FrAbs_N || FrPiProd_N) {
+  if (MFP_NIsUsed || FrCEx_NIsUsed || FrElas_NIsUsed || FrInel_NIsUsed ||
+      FrAbs_NIsUsed || FrPiProd_NIsUsed) {
     SystParamHeader FSI_N_Resp;
     FSI_N_Resp.prettyName = "FSI_N_VariationResponse";
     FSI_N_Resp.systParamId = firstParamId++;
@@ -671,7 +724,7 @@ SystMetaData ConfigureFSIParameterHeaders(
 }
 
 SystMetaData ConfigureOtherParameterHeaders(
-    fhicl::Table<GENIEReWeightParamConfig> const &cfg) {
+    fhicl::Table<GENIEReWeightParamConfig> const &cfg, paramId_t firstParamId) {
   SystMetaData Othermd;
 
   ADD_PARAM_TO_SYST(CCQEPauliSupViaKF, Othermd);
@@ -679,10 +732,15 @@ SystMetaData ConfigureOtherParameterHeaders(
 
   size_t CCQEMomDistroFGtoSFIndex =
       GetParamIndex(Othermd, "CCQEMomDistroFGtoSF");
-  if (IndexIsHandled(CCQEMomDistroFGtoSFIndex)) {
-    Othermd[CCQEMomDistroFGtoSFIndex].paramValidityRange[0] = 0;
-    Othermd[CCQEMomDistroFGtoSFIndex].paramValidityRange[1] = 1;
+  if (IndexIsHandled(Othermd, CCQEMomDistroFGtoSFIndex)) {
+    Othermd.headers[CCQEMomDistroFGtoSFIndex].paramValidityRange[0] = 0;
+    Othermd.headers[CCQEMomDistroFGtoSFIndex].paramValidityRange[1] = 1;
   }
+
+  std::unique_ptr<CLHEP::MTwistEngine> RNgine =
+      std::make_unique<CLHEP::MTwistEngine>(0);
+  std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
+      std::make_unique<CLHEP::RandGaussQ>(*RNgine);
 
   for (auto &hdr : Othermd.headers) {
     MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());

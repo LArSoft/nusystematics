@@ -30,7 +30,7 @@
   "unitsAreNatural."
 
 #define DIAL_NAME_HELPER(DIAL_NAME, b) DIAL_NAME##b
-#define TWEAKABLE_PARAMETER_DEFINITION(DIAL_NAME)                                               \
+#define TWEAKABLE_PARAMETER_DEFINITION(DIAL_NAME)                              \
   fhicl::Atom<double> DIAL_NAME_HELPER(DIAL_NAME, NominalValue){               \
       fhicl::Name(#DIAL_NAME "Nominal"),                                       \
       fhicl::Comment(NOMINAL_HELP_TEXT(DIAL_NAME)), 0xdeadb33f};               \
@@ -102,6 +102,10 @@ struct GENIEReWeightParamConfig {
           "Default == false"),
       false};
 
+  TWEAKABLE_PARAMETER_DEFINITION(NormCCRES);
+  TWEAKABLE_PARAMETER_DEFINITION(MaCCRES);
+  TWEAKABLE_PARAMETER_DEFINITION(MvCCRES);
+
   fhicl::Atom<bool> NCRESIsShapeOnly{
       fhicl::Name("NCRESIsShapeOnly"),
       fhicl::Comment(
@@ -110,38 +114,34 @@ struct GENIEReWeightParamConfig {
           "Default == false"),
       false};
 
-  TWEAKABLE_PARAMETER_DEFINITION(NormCCRES);
-  TWEAKABLE_PARAMETER_DEFINITION(MaCCRES);
-  TWEAKABLE_PARAMETER_DEFINITION(MvCCRES);
-
   TWEAKABLE_PARAMETER_DEFINITION(NormNCRES);
   TWEAKABLE_PARAMETER_DEFINITION(MaNCRES);
   TWEAKABLE_PARAMETER_DEFINITION(MvNCRES);
 
   //********* START Background pi-production ***********
 
-  TWEAKABLE_PARAMETER_DEFINITION(RvpCC1pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvpCC2pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvpNC1pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvpNC2pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvnCC1pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvnCC2pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvnNC1pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvnNC2pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvbarpCC1pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvbarpCC2pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvbarpNC1pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvbarpNC2pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvbarnCC1pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvbarnCC2pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvbarnNC1pi);
-  TWEAKABLE_PARAMETER_DEFINITION(RvbarnNC2pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvpCC1pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvpCC2pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvpNC1pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvpNC2pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvnCC1pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvnCC2pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvnNC1pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvnNC2pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvbarpCC1pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvbarpCC2pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvbarpNC1pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvbarpNC2pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvbarnCC1pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvbarnCC2pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvbarnNC1pi);
+  TWEAKABLE_PARAMETER_DEFINITION(NonRESBGvbarnNC2pi);
 
   //********* END Background pi-production ***********
 
   // Resonance decay kinematics options
-  TWEAKABLE_PARAMETER_DEFINITION(BR1gamma);
-  TWEAKABLE_PARAMETER_DEFINITION(BR1eta);
+  TWEAKABLE_PARAMETER_DEFINITION(RDecBR1gamma);
+  TWEAKABLE_PARAMETER_DEFINITION(RDecBR1eta);
   TWEAKABLE_PARAMETER_DEFINITION(Theta_Delta2Npi);
 
   //********* END RES options ***********
@@ -207,19 +207,24 @@ ConfigureNCELParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &,
                               larsyst::paramId_t);
 
 larsyst::SystMetaData
-ConfigureRESParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &);
+ConfigureRESParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &,
+                             larsyst::paramId_t);
 
 larsyst::SystMetaData
-ConfigureCOHParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &);
+ConfigureCOHParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &,
+                             larsyst::paramId_t);
 
 larsyst::SystMetaData
-ConfigureDISParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &);
+ConfigureDISParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &,
+                             larsyst::paramId_t);
 
 larsyst::SystMetaData
-ConfigureFSIParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &);
+ConfigureFSIParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &,
+                             larsyst::paramId_t);
 
 larsyst::SystMetaData
-ConfigureOtherParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &);
+ConfigureOtherParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &,
+                               larsyst::paramId_t);
 } // namespace nusyst
 
 #undef NOMINAL_HELP_TEXT
