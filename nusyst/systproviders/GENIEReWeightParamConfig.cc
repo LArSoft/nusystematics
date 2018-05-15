@@ -417,31 +417,36 @@ ConfigureRESParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
     MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
   }
 
-  uint64_t NCCRESVariations = 0;
+  if (HasParam(RESmd, "CCRESVariationResponse")) {
+    uint64_t NCCRESVariations = 0;
 
-  auto const &CCRESParamNames = {"MaCCRES", "MvCCRES"};
-  GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(CCRESParamNames, RESmd,
-                                             NCCRESVariations);
-  std::vector<double> CCRESdummyParamVars;
-  for (size_t i = 0; i < NCCRESVariations; ++i) {
-    CCRESdummyParamVars.push_back(i);
+    auto const &CCRESParamNames = {"MaCCRES", "MvCCRES"};
+    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(CCRESParamNames, RESmd,
+                                               NCCRESVariations);
+    std::vector<double> CCRESdummyParamVars;
+    for (size_t i = 0; i < NCCRESVariations; ++i) {
+      CCRESdummyParamVars.push_back(i);
+    }
+
+    GetParam(RESmd, "CCRESVariationResponse").paramVariations =
+        std::move(CCRESdummyParamVars);
   }
 
-  GetParam(RESmd, "CCRESVariationResponse").paramVariations =
-      std::move(CCRESdummyParamVars);
+  if (HasParam(RESmd, "NCRESVariationResponse")) {
 
-  uint64_t NNCRESVariations = 0;
+    uint64_t NNCRESVariations = 0;
 
-  auto const &NCRESParamNames = {"MaNCRES", "MvNCRES"};
-  GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(NCRESParamNames, RESmd,
-                                             NNCRESVariations);
-  std::vector<double> NCRESdummyParamVars;
-  for (size_t i = 0; i < NNCRESVariations; ++i) {
-    NCRESdummyParamVars.push_back(i);
+    auto const &NCRESParamNames = {"MaNCRES", "MvNCRES"};
+    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(NCRESParamNames, RESmd,
+                                               NNCRESVariations);
+    std::vector<double> NCRESdummyParamVars;
+    for (size_t i = 0; i < NNCRESVariations; ++i) {
+      NCRESdummyParamVars.push_back(i);
+    }
+
+    GetParam(RESmd, "NCRESVariationResponse").paramVariations =
+        std::move(NCRESdummyParamVars);
   }
-
-  GetParam(RESmd, "NCRESVariationResponse").paramVariations =
-      std::move(NCRESdummyParamVars);
 
   return RESmd;
 }
@@ -727,8 +732,8 @@ SystMetaData ConfigureOtherParameterHeaders(
     fhicl::Table<GENIEReWeightParamConfig> const &cfg, paramId_t firstParamId) {
   SystMetaData Othermd;
 
-  ADD_PARAM_TO_SYST(CCQEPauliSupViaKF, Othermd);
-  ADD_PARAM_TO_SYST(CCQEMomDistroFGtoSF, Othermd);
+  CHECK_USED_ADD_PARAM_TO_SYST(CCQEPauliSupViaKF, Othermd);
+  CHECK_USED_ADD_PARAM_TO_SYST(CCQEMomDistroFGtoSF, Othermd);
 
   size_t CCQEMomDistroFGtoSFIndex =
       GetParamIndex(Othermd, "CCQEMomDistroFGtoSF");
