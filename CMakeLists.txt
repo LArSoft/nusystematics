@@ -18,6 +18,13 @@ cmake_minimum_required (VERSION 2.8)
 
 project(nusyst)
 
+if(NOT DEFINED USEART) #by default build in ART mode
+  SET(USEART TRUE)
+endif()
+
+if(USEART) # This is the standard, CET-empowered build for building the art module and associated tools
+
+
 # cetbuildtools contains our cmake modules
 SET ( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
 IF (NOT CETBUILDTOOLS_VERSION)
@@ -158,3 +165,19 @@ add_subdirectory(ups)
 
 # packaging utility
 include(UseCPack)
+
+else() #
+
+  #Changes default install path to be a subdirectory of the build dir.
+  #Can set build dir at configure time with -DCMAKE_INSTALL_PREFIX=/install/path
+  if(CMAKE_INSTALL_PREFIX STREQUAL "" OR CMAKE_INSTALL_PREFIX STREQUAL
+    "/usr/local")
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}")
+  elseif(NOT DEFINED CMAKE_INSTALL_PREFIX)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${CMAKE_SYSTEM_NAME}")
+  endif()
+  message(STATUS "Installing to: ${CMAKE_INSTALL_PREFIX}")
+
+  add_subdirectory(nusyst/artless)
+
+endif()

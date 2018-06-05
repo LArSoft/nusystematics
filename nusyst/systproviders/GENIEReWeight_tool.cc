@@ -1,52 +1,35 @@
-#include "GENIEReWeightEngineConfig.hh"
-#include "GENIEReWeightParamConfig.hh"
+#include "nusyst/systproviders/GENIEReWeight_tool.hh"
 
+#include "nusyst/systproviders/GENIEReWeightEngineConfig.hh"
+#ifndef NO_ART
+#include "nusyst/systproviders/GENIEReWeightParamConfig.hh"
+#endif
+
+#ifndef NO_ART
 #include "nusimdata/SimulationBase/GTruth.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
+#endif
 
-#include "larsyst/interface/ISystProvider_tool.hh"
 #include "larsyst/utility/extend_SystMetaData.hh"
 #include "larsyst/utility/printers.hh"
 #include "larsyst/utility/string_parsers.hh"
 
+#ifndef NO_ART
 #include "nutools/EventGeneratorBase/GENIE/GENIE2ART.h"
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/ToolMacros.h"
+#endif
 
-#include "EVGCore/EventRecord.h"
+// GENIE
 #include "Messenger/Messenger.h"
-
-#include "CLHEP/Random/MTwistEngine.h"
-#include "CLHEP/Random/RandGaussQ.h"
 
 #include <chrono>
 #include <sstream>
 
-using namespace larsyst;
 using namespace fhicl;
-
-class GENIEReWeight : public larsyst::ISystProvider_tool {
-public:
-  explicit GENIEReWeight(ParameterSet const &);
-
-  SystMetaData ConfigureFromFHICL(ParameterSet const &, paramId_t);
-
-  bool Configure();
-  std::unique_ptr<EventResponse> GetEventResponse(art::Event &);
-  std::string AsString();
-
-private:
-  std::unique_ptr<genie::rew::GReWeight> GReWeightEngine;
-
-  std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
-      ResponseToGENIEParameters;
-  void extend_ResponseToGENIEParameters(
-      std::map<size_t, std::map<genie::rew::GSyst_t, size_t>> &&);
-  std::set<genie::rew::GSyst_t> GENIEEngineDials;
-  std::string fGENIEModuleLabel = "generator";
-};
+using namespace larsyst;
 
 GENIEReWeight::GENIEReWeight(ParameterSet const &params)
     : ISystProvider_tool(params), GReWeightEngine{nullptr} {}
@@ -56,6 +39,7 @@ std::string GENIEReWeight::AsString() {
   return "";
 }
 
+#ifndef NO_ART
 SystMetaData GENIEReWeight::ConfigureFromFHICL(ParameterSet const &params,
                                                paramId_t firstParamId) {
 
@@ -91,6 +75,7 @@ SystMetaData GENIEReWeight::ConfigureFromFHICL(ParameterSet const &params,
 
   return QEmd;
 }
+#endif
 
 void GENIEReWeight::extend_ResponseToGENIEParameters(
     std::map<size_t, std::map<genie::rew::GSyst_t, size_t>> &&other) {
@@ -151,6 +136,7 @@ bool GENIEReWeight::Configure() {
   return true;
 }
 
+#ifndef NO_ART
 std::unique_ptr<EventResponse> GENIEReWeight::GetEventResponse(art::Event &e) {
   std::unique_ptr<EventResponse> er = std::make_unique<EventResponse>();
 
@@ -176,6 +162,22 @@ std::unique_ptr<EventResponse> GENIEReWeight::GetEventResponse(art::Event &e) {
   }
 
   er->responses.resize(NEventUnits);
+  for (size_t eu_it = 0; eu_it < NEventUnits; ++eu_it) {
+    er->responses.push_back(GetEventResponse(*gheps[eu_it]));
+  }
+  return er;
+}
+
+DEFINE_ART_CLASS_TOOL(GENIEReWeight)
+
+#endif
+
+#define GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
+
+larsyst::event_unit_response_t
+GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {
+
+  larsyst::event_unit_response_t event_responses;
 
   // Calculate response for each dial-set
   for (auto const &resp : ResponseToGENIEParameters) {
@@ -193,24 +195,28 @@ std::unique_ptr<EventResponse> GENIEReWeight::GetEventResponse(art::Event &e) {
             gparpair.first,
             fMetaData.headers[gparpair.second].centralParamValue);
       }
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
       std::cout << "[INFO]: GDials: " << std::endl;
       for (auto const &gpar : GENIEEngineDials) {
         std::cout << "\t" << genie::rew::GSyst::AsString(gpar) << " = "
                   << GReWeightEngine->Systematics().Info(gpar)->CurValue
                   << std::endl;
       }
+#endif
 
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
       auto preconfigure = std::chrono::high_resolution_clock::now();
+#endif
       GReWeightEngine->Reconfigure();
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
+
       auto postconfigure = std::chrono::high_resolution_clock::now();
       auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
           postconfigure - preconfigure);
       std::cout << "Reconfigure took " << milliseconds.count() << " ms"
                 << std::endl;
-      for (size_t eu_it = 0; eu_it < NEventUnits; ++eu_it) {
-        er->responses[eu_it][respParamId].push_back(
-            GReWeightEngine->CalcWeight(*gheps[eu_it]));
-      }
+#endif
+      event_responses[respParamId].push_back(GReWeightEngine->CalcWeight(gev));
 
     } else {
       size_t NVariations = fMetaData.headers[resp.first].paramVariations.size();
@@ -221,8 +227,9 @@ std::unique_ptr<EventResponse> GENIEReWeight::GetEventResponse(art::Event &e) {
               gparpair.first,
               fMetaData.headers[gparpair.second].paramVariations[var_it]);
         }
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
         if (var_it == 0) {
-          std::cout << "[INFO]: Event " << e.event() << ", ParamSet "
+          std::cout << "[INFO]: ParamSet "
                     << std::quoted(fMetaData.headers[resp.first].prettyName)
                     << std::endl;
           std::cout << "[INFO]: GDials: " << std::endl;
@@ -232,34 +239,39 @@ std::unique_ptr<EventResponse> GENIEReWeight::GetEventResponse(art::Event &e) {
                       << std::endl;
           }
         }
+#endif
 
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
         auto preconfigure = std::chrono::high_resolution_clock::now();
+#endif
         GReWeightEngine->Reconfigure();
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
         auto postconfigure = std::chrono::high_resolution_clock::now();
         auto milliseconds =
             std::chrono::duration_cast<std::chrono::milliseconds>(
                 postconfigure - preconfigure);
-        std::cout << "Event " << e.event() << ", ParamSet "
+        std::cout << "    ParamSet "
                   << std::quoted(fMetaData.headers[resp.first].prettyName)
                   << "Reconfigure " << var_it << ", took "
                   << milliseconds.count() << " ms" << std::endl;
+#endif
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
+        auto preweight = std::chrono::high_resolution_clock::now();
+#endif
+        event_responses[respParamId].push_back(
+            GReWeightEngine->CalcWeight(gev));
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
 
-        for (size_t eu_it = 0; eu_it < NEventUnits; ++eu_it) {
-          auto preweight = std::chrono::high_resolution_clock::now();
-          er->responses[eu_it][respParamId].push_back(
-              GReWeightEngine->CalcWeight(*gheps[eu_it]));
-          auto postweight = std::chrono::high_resolution_clock::now();
-          auto milliseconds =
-              std::chrono::duration_cast<std::chrono::milliseconds>(postweight -
-                                                                    preweight);
-          std::cout << "\tReweight[" << eu_it << "](" << e.event() << ") took "
-                    << milliseconds.count() << " ms, got "
-                    << er->responses[eu_it][respParamId].back() << std::endl;
-        }
+        auto postweight = std::chrono::high_resolution_clock::now();
+        milliseconds =
+            std::chrono::duration_cast<std::chrono::milliseconds>(postweight -
+                                                                  preweight);
+        std::cout << "    Reweight took "
+                  << milliseconds.count() << " ms, got "
+                  << event_responses[respParamId].back() << std::endl;
+#endif
       }
     }
   }
-  return er;
+  return event_responses;
 }
-
-DEFINE_ART_CLASS_TOOL(GENIEReWeight)
