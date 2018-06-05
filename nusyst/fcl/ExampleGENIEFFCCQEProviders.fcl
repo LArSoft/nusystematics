@@ -1,3 +1,12 @@
+GENIEFFCCQEProvider_dipole_spline: {
+  tool_type: "GENIEReWeight"
+  uniqueName: "dipole_spline"
+
+  MaCCQETweakDefinition: "(-2_2:0.25)"
+
+}
+syst_providers: [GENIEFFCCQEProvider_dipole_spline]
+
 GENIEFFCCQEProvider_dipole: {
   tool_type: "GENIEReWeight"
   uniqueName: "dipole"
@@ -10,18 +19,6 @@ GENIEFFCCQEProvider_dipole: {
   MaCCQETweakDefinition: "{1,1}"
 
   VecFFCCQEIsBBA: true
-}
-
-GENIEFFCCQEProvider_dipole_spline: {
-  tool_type: "GENIEReWeight"
-  uniqueName: "dipole_spline"
-
-  # MAQEIsShapeOnly: true
-
-  # NormCCQETweakDefinition: "(-2_2:0.25)"
-  MaCCQETweakDefinition: "(-2_2:0.25)"
-
-  # VecFFCCQEIsBBA: true
 }
 
 GENIEFFCCQEProvider_zexp: {
@@ -49,6 +46,3 @@ GENIEFFCCQEProvider_zexprandom: {
   ZExpA4CCQETweakDefinition: "{-1,1}"
 
 }
-
-# syst_providers: [GENIEFFCCQEProvider_dipole, GENIEFFCCQEProvider_zexp, GENIEFFCCQEProvider_zexprandom]
-syst_providers: [GENIEFFCCQEProvider_dipole_spline]
