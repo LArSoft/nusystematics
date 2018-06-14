@@ -92,6 +92,12 @@ include_directories(${GENIE_INCLUDES_DIR})
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
 include_directories(${CMAKE_SOURCE_DIR})
 
+
+get_property(INCDIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${INCDIRS})
+  message(STATUS "INCLUDE: ${dir}")
+endforeach()
+
 ####### systproviders library
 SET(SP_IMPLFILES
   ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeight_tool.cc
