@@ -87,7 +87,7 @@ else()
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CXX_FLAGS}")
 endif()
 
-include_directories(${GENIE_INCLUDES_DIRS})
+include_directories(${GENIE_INCLUDE_DIRS})
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
 include_directories(${CMAKE_SOURCE_DIR})
 
