@@ -3,8 +3,8 @@ include(ExternalProject)
 
 ExternalProject_Add(larsyst
   PREFIX "${PROJECT_BINARY_DIR}/larsyst"
-  # GIT_REPOSITORY https://github.com/luketpickering/larsyst.git
-  GIT_REPOSITORY file:///home/picker24/software/larsyst/larsyst
+  GIT_REPOSITORY https://github.com/luketpickering/larsyst.git
+  # GIT_REPOSITORY file:///home/picker24/software/larsyst/larsyst
   GIT_TAG develop
   CMAKE_ARGS -DUSEART=0
   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
