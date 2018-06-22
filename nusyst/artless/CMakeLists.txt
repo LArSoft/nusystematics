@@ -4,7 +4,6 @@ include(ExternalProject)
 ExternalProject_Add(larsyst
   PREFIX "${PROJECT_BINARY_DIR}/larsyst"
   GIT_REPOSITORY https://github.com/luketpickering/larsyst.git
-  # GIT_REPOSITORY file:///home/picker24/software/larsyst/larsyst
   GIT_TAG develop
   CMAKE_ARGS -DUSEART=0
   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
@@ -120,6 +119,9 @@ target_link_libraries(ReWeightGHep ${GENIE_LIBS})
 target_link_libraries(ReWeightGHep ${ROOT_LIBS})
 
 INSTALL(TARGETS ReWeightGHep DESTINATION bin)
+
+file(GLOB FCL ${CMAKE_SOURCE_DIR}/nusyst/fcl/*.fcl)
+install(FILES ${FCL} DESTINATION ${CMAKE_INSTALL_PREFIX}/fcl)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.sh.in
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/setup.sh" @ONLY)

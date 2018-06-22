@@ -1,9 +1,10 @@
 #ifndef NUSYST_CONFIGURESYSTPROVIDERS_SEEN
 #define NUSYST_CONFIGURESYSTPROVIDERS_SEEN
 
+#include "nusyst/interface/IGENIESystProvider_tool.hh"
+#include "nusyst/interface/types.hh"
 #include "nusyst/systproviders/GENIEReWeight_tool.hh"
 
-#include "larsyst/interface/ISystProvider_tool.hh"
 #include "larsyst/interface/types.hh"
 
 #include "fhiclcpp/ParameterSet.h"
@@ -11,9 +12,9 @@
 #include <memory>
 #include <string>
 
-namespace larsyst {
+namespace nusyst {
 
-std::unique_ptr<larsyst::ISystProvider_tool>
+inline std::unique_ptr<IGENIESystProvider_tool>
 make_instance(fhicl::ParameterSet const &paramset) {
   std::string tool_type = paramset.get<std::string>("tool_type");
 
@@ -22,16 +23,16 @@ make_instance(fhicl::ParameterSet const &paramset) {
   } else {
   std:
     std::cout << "[ERROR]: Unknown tool type: " << std::quoted(tool_type)
-         << std::endl;
+              << std::endl;
     throw;
   }
 }
 
-provider_map_t
+inline genie_provider_map_t
 load_syst_provider_configuration(fhicl::ParameterSet const &paramset,
-                                 std::string const &key="syst_providers") {
+                                 std::string const &key = "syst_providers") {
 
-  provider_map_t loaded_providers;
+  genie_provider_map_t loaded_providers;
 
   size_t nparams = 0;
   std::cout << "[INFO]: Loading configured syst providers:" << std::endl;
@@ -45,8 +46,7 @@ load_syst_provider_configuration(fhicl::ParameterSet const &paramset,
 
     // make an instance of the plugin
     std::cout << "[INFO]:\t Requesting provider instance..." << std::endl;
-    std::unique_ptr<larsyst::ISystProvider_tool> is =
-        make_instance(provider_cfg);
+    std::unique_ptr<IGENIESystProvider_tool> is = make_instance(provider_cfg);
     std::cout << " success!" << std::endl;
 
     // configure the plugin
@@ -87,6 +87,6 @@ load_syst_provider_configuration(fhicl::ParameterSet const &paramset,
   return loaded_providers;
 }
 
-} // namespace larsyst
+} // namespace nusyst
 
 #endif

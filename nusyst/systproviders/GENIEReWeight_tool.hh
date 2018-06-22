@@ -1,7 +1,7 @@
 #ifndef NUSYST_SYSTPROVIDERS_GENIEREWEIGHT_TOOL_SEEN
 #define NUSYST_SYSTPROVIDERS_GENIEREWEIGHT_TOOL_SEEN
 
-#include "larsyst/interface/ISystProvider_tool.hh"
+#include "nusyst/interface/IGENIESystProvider_tool.hh"
 
 // GENIE
 #include "EVGCore/EventRecord.h"
@@ -10,7 +10,7 @@
 #include <memory>
 #include <set>
 
-class GENIEReWeight : public larsyst::ISystProvider_tool {
+class GENIEReWeight : public nusyst::IGENIESystProvider_tool {
 public:
   explicit GENIEReWeight(fhicl::ParameterSet const &);
 

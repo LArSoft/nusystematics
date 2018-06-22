@@ -32,7 +32,7 @@ using namespace fhicl;
 using namespace larsyst;
 
 GENIEReWeight::GENIEReWeight(ParameterSet const &params)
-    : ISystProvider_tool(params), GReWeightEngine{nullptr} {}
+    : IGENIESystProvider_tool(params), GReWeightEngine{nullptr} {}
 
 std::string GENIEReWeight::AsString() {
   CheckHaveMetaData();
@@ -172,7 +172,7 @@ DEFINE_ART_CLASS_TOOL(GENIEReWeight)
 
 #endif
 
-#define GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
+//#define GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
 
 larsyst::event_unit_response_t
 GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {
