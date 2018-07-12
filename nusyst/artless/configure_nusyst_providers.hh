@@ -27,7 +27,6 @@ make_instance(fhicl::ParameterSet const &paramset) {
   } else if (tool_type == "MINERvAq0q3Weighting") {
     return std::make_unique<MINERvAq0q3Weighting>(paramset);
   } else {
-  std:
     std::cout << "[ERROR]: Unknown tool type: " << std::quoted(tool_type)
               << std::endl;
     throw;
