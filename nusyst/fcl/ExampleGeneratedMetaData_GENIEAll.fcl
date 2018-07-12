@@ -3436,22 +3436,13 @@ generated_systematic_provider_configuration: {
       }
       parameterHeaders: [
          "MaCCQE",
-         "VecFFCCQEshape",
-         "NCELVariationResponse",
-         "MaNCEL",
-         "EtaNCEL",
-         "CCRESVariationResponse",
-         "MaCCRES",
-         "MvCCRES",
-         "NCRESVariationResponse",
-         "MaNCRES",
-         "MvNCRES",
          "RvpCC1pi",
          "RvpCC2pi",
          "RvpNC1pi",
          "RvpNC2pi",
          "RvnCC1pi",
          "RvnCC2pi",
+         "Theta_Delta2Npi",
          "RvnNC1pi",
          "RvnNC2pi",
          "RvbarpCC1pi",
@@ -3463,36 +3454,7 @@ generated_systematic_provider_configuration: {
          "RvbarnNC1pi",
          "RvbarnNC2pi",
          "BR1gamma",
-         "BR1eta",
-         "Theta_Delta2Npi",
-         "COHVariationResponse",
-         "MaCOHpi",
-         "R0COHpi",
-         "DISVariationResponse",
-         "AhtBY",
-         "BhtBY",
-         "CV1uBY",
-         "CV2uBY",
-         "AGKYVariationResponse",
-         "AGKY_xF1pi",
-         "AGKY_pT1pi",
-         "FormZone",
-         "FSI_pi_VariationResponse",
-         "MFP_pi",
-         "FrCEx_pi",
-         "FrElas_pi",
-         "FrInel_pi",
-         "FrAbs_pi",
-         "FrPiProd_pi",
-         "FSI_N_VariationResponse",
-         "MFP_N",
-         "FrCEx_N",
-         "FrElas_N",
-         "FrInel_N",
-         "FrAbs_N",
-         "FrPiProd_N",
-         "CCQEPauliSupViaKF",
-         "CCQEMomDistroFGtoSF"
+         "BR1eta"
       ]
       tool_type: "GENIEReWeight"
       uniqueName: "dipole"
@@ -3501,4 +3463,3 @@ generated_systematic_provider_configuration: {
       "GENIEReWeight_dipole"
    ]
 }
-

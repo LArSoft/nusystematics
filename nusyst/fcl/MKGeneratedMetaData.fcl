@@ -1,0 +1,36 @@
+generated_systematic_provider_configuration: {
+  MKSPP_Enuq0q3: {
+    response:{
+        centralParamValue: 1
+        isCorrection: true
+        prettyName: "MKSPP_Enuq0q3_response"
+        systParamId: 0
+        opts: ["InputManifest=MKInputManifest.fcl"]
+    }
+     nu_npip: {
+        centralParamValue: 1
+        isCorrection: true
+        prettyName: "NumuNPiPlus"
+        systParamId: 1
+        isResponselessParam: true
+        responseParamId: 0
+     }
+     nu_ppip: {
+        centralParamValue: 1
+        isCorrection: true
+        prettyName: "NumuPPiPlus"
+        systParamId: 2
+        isResponselessParam: true
+        responseParamId: 0
+     }
+     parameterHeaders: [
+        "response",
+        "nu_npip",
+        "nu_ppip"
+     ]
+     tool_type: "MKSinglePiEnuq0q3"
+  }
+  syst_providers: [
+    "MKSPP_Enuq0q3"
+  ]
+}

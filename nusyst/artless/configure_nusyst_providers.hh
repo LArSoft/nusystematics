@@ -4,6 +4,8 @@
 #include "nusyst/interface/IGENIESystProvider_tool.hh"
 #include "nusyst/interface/types.hh"
 #include "nusyst/systproviders/GENIEReWeight_tool.hh"
+#include "nusyst/systproviders/MINERvAq0q3Weighting_tool.hh"
+#include "nusyst/systproviders/MKSinglePiEnuq0q3_tool.hh"
 
 #include "larsyst/interface/types.hh"
 
@@ -20,6 +22,10 @@ make_instance(fhicl::ParameterSet const &paramset) {
 
   if (tool_type == "GENIEReWeight") {
     return std::make_unique<GENIEReWeight>(paramset);
+  } else if (tool_type == "MKSinglePiEnuq0q3") {
+    return std::make_unique<MKSinglePiEnuq0q3>(paramset);
+  } else if (tool_type == "MINERvAq0q3Weighting") {
+    return std::make_unique<MINERvAq0q3Weighting>(paramset);
   } else {
   std:
     std::cout << "[ERROR]: Unknown tool type: " << std::quoted(tool_type)

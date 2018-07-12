@@ -17,8 +17,6 @@
 #ifndef NO_ART
 #include "nutools/EventGeneratorBase/GENIE/GENIE2ART.h"
 
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/ToolMacros.h"
 #endif
 
@@ -172,7 +170,7 @@ DEFINE_ART_CLASS_TOOL(GENIEReWeight)
 
 #endif
 
-//#define GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
+// #define GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
 
 larsyst::event_unit_response_t
 GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {

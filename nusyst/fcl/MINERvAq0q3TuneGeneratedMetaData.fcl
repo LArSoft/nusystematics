@@ -1,0 +1,25 @@
+generated_systematic_provider_configuration: {
+  MINERvATuneq0q3: {
+    MINERvATune_RPA:{
+        centralParamValue: 0
+        isCorrection: true
+        prettyName: "MINERvATune_RPA"
+        systParamId: 0
+        opts: ["InputFileRPA=MINERvARPATuneInputManifest.fcl"]
+    }
+     MINERvATune_2p2hGaussEnhancement: {
+        centralParamValue: 0
+        prettyName: "MINERvATune_2p2hGaussEnhancement"
+        systParamId: 1
+        paramVariations: [0,1,2,3]
+     }
+     parameterHeaders: [
+        "MINERvATune_RPA",
+        "MINERvATune_2p2hGaussEnhancement"
+     ]
+     tool_type: "MINERvAq0q3Weighting"
+  }
+  syst_providers: [
+    "MINERvATuneq0q3"
+  ]
+}

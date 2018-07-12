@@ -1,6 +1,6 @@
 #include "GENIEReWeightEngineConfig.hh"
 
-//GENIE
+// GENIE
 #include "ReWeight/GReWeightAGKY.h"
 #include "ReWeight/GReWeightFZone.h"
 #include "ReWeight/GReWeightNonResonanceBkg.h"
@@ -239,12 +239,10 @@ ConfigureRESWeightEngine(
 
   bool AdoptedBkgCalc = false;
   for (std::string const &pname :
-       {"NonRESBGvpCC1pi", "NonRESBGvpCC2pi", "NonRESBGvpNC1pi",
-        "NonRESBGvpNC2pi", "NonRESBGvnCC1pi", "NonRESBGvnCC2pi",
-        "NonRESBGvnNC1pi", "NonRESBGvnNC2pi", "NonRESBGvbarpCC1pi",
-        "NonRESBGvbarpCC2pi", "NonRESBGvbarpNC1pi", "NonRESBGvbarpNC2pi",
-        "NonRESBGvbarnCC1pi", "NonRESBGvbarnCC2pi", "NonRESBGvbarnNC1pi",
-        "NonRESBGvbarnNC2pi"}) {
+       {"RvpCC1pi", "RvpCC2pi", "RvpNC1pi", "RvpNC2pi", "RvnCC1pi", "RvnCC2pi",
+        "RvnNC1pi", "RvnNC2pi", "RvbarpCC1pi", "RvbarpCC2pi", "RvbarpNC1pi",
+        "RvbarpNC2pi", "RvbarnCC1pi", "RvbarnCC2pi", "RvbarnNC1pi",
+        "RvbarnNC2pi"}) {
     if (!HasParam(RESmd, pname)) {
       continue;
     }
@@ -255,7 +253,9 @@ ConfigureRESWeightEngine(
     }
 
     size_t NRRESidx = GetParamIndex(RESmd, pname);
-    genie::rew::GSyst_t syst = genie::rew::GSyst::FromString(pname);
+    std::string GENIEFromStringName = "NonRESBG" + pname.substr(1);
+    genie::rew::GSyst_t syst =
+        genie::rew::GSyst::FromString(GENIEFromStringName);
     if (syst == genie::rew::kNullSystematic) {
       std::cout << "[ERROR]: Expected to be able to parse "
                 << std::quoted(pname)
@@ -265,7 +265,7 @@ ConfigureRESWeightEngine(
     param_map[NRRESidx].insert({syst, NRRESidx});
   }
   bool AdoptedResDecayCalc = false;
-  for (std::string const &pname : {"RDecBR1gamma", "RDecBR1eta", "Theta_Delta2Npi"}) {
+  for (std::string const &pname : {"BR1gamma", "BR1eta", "Theta_Delta2Npi"}) {
     if (!HasParam(RESmd, pname)) {
       continue;
     }
@@ -276,7 +276,10 @@ ConfigureRESWeightEngine(
     }
 
     size_t ResDecayidx = GetParamIndex(RESmd, pname);
-    genie::rew::GSyst_t syst = genie::rew::GSyst::FromString(pname);
+    std::string GENIEFromStringName =
+        (pname[0] == 'B') ? std::string("RDec") + pname : pname;
+    genie::rew::GSyst_t syst =
+        genie::rew::GSyst::FromString(GENIEFromStringName);
     if (syst == genie::rew::kNullSystematic) {
       std::cout << "[ERROR]: Expected to be able to parse "
                 << std::quoted(pname)

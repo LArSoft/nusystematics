@@ -5,6 +5,7 @@ ExternalProject_Add(larsyst
   PREFIX "${PROJECT_BINARY_DIR}/larsyst"
   GIT_REPOSITORY https://github.com/luketpickering/larsyst.git
   GIT_TAG develop
+  UPDATE_DISCONNECTED 1
   CMAKE_ARGS -DUSEART=0
   -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
   -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -90,13 +91,28 @@ include_directories(${GENIE_INCLUDE_DIRS})
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
 include_directories(${CMAKE_SOURCE_DIR})
 
+####### responsecalculators library
+SET(RC_HDRFILES
+  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/BeRPA.hh
+  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/TemplateResponseCalculatorBase.hh
+  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MKSinglePiEnuq0q3_ReWeight.hh
+  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MINERvA2p2hq0q3.hh
+  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MINERvAq0q3Weighting_data.hh
+  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MINERvARPAq0q3_ReWeight.hh)
+
+INSTALL(FILES ${RC_HDRFILES} DESTINATION include/nusyst/responsecalculators)
+
 ####### systproviders library
 SET(SP_IMPLFILES
   ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeight_tool.cc
-  ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeightEngineConfig.cc)
+  ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeightEngineConfig.cc
+  ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MKSinglePiEnuq0q3_tool.cc
+ ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MINERvAq0q3Weighting_tool.cc)
 
 SET(SP_HDRFILES
-  ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeight_tool.hh)
+  ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeight_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MKSinglePiEnuq0q3_tool.hh
+ ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MINERvAq0q3Weighting_tool.hh)
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
   add_library(nusyst_systproviders STATIC ${SP_IMPLFILES})
@@ -104,9 +120,12 @@ else(CMAKE_BUILD_TYPE MATCHES RELEASE)
   add_library(nusyst_systproviders SHARED ${SP_IMPLFILES})
 endif()
 
+add_dependencies(nusyst_systproviders larsyst)
+
 INSTALL(TARGETS nusyst_systproviders DESTINATION lib)
 INSTALL(FILES ${SP_HDRFILES} DESTINATION include/nusyst/systproviders)
 
+####### GENIE RwExample
 add_executable(ReWeightGHep ReWeightGHep.cc)
 add_dependencies(ReWeightGHep larsyst)
 target_link_libraries(ReWeightGHep nusyst_systproviders)
@@ -120,6 +139,7 @@ target_link_libraries(ReWeightGHep ${ROOT_LIBS})
 
 INSTALL(TARGETS ReWeightGHep DESTINATION bin)
 
+####### fhicl files
 file(GLOB FCL ${CMAKE_SOURCE_DIR}/nusyst/fcl/*.fcl)
 install(FILES ${FCL} DESTINATION ${CMAKE_INSTALL_PREFIX}/fcl)
 
