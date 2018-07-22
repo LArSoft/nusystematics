@@ -3,7 +3,11 @@
 
 #include "larsyst/interface/SystMetaData.hh"
 
-//GENIE
+#include "nusyst/systproviders/GENIEResponseParameterAssociation.hh"
+
+#include "fhiclcpp/ParameterSet.h"
+
+// GENIE
 #include "ReWeight/GReWeight.h"
 
 #include <map>
@@ -11,33 +15,38 @@
 
 namespace nusyst {
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
+std::vector<GENIEResponseParameter>
 ConfigureQEWeightEngine(larsyst::SystMetaData const &,
-                        std::unique_ptr<genie::rew::GReWeight> &);
+                        fhicl::ParameterSet const &tool_options);
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
+#ifndef GRWTEST
+
+std::vector<GENIEResponseParameter>
 ConfigureNCELWeightEngine(larsyst::SystMetaData const &,
-                         std::unique_ptr<genie::rew::GReWeight> &);
+                          fhicl::ParameterSet const &tool_options);
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
+std::vector<GENIEResponseParameter>
 ConfigureRESWeightEngine(larsyst::SystMetaData const &,
-                         std::unique_ptr<genie::rew::GReWeight> &);
+                         fhicl::ParameterSet const &tool_options);
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
+std::vector<GENIEResponseParameter>
 ConfigureCOHWeightEngine(larsyst::SystMetaData const &,
-                         std::unique_ptr<genie::rew::GReWeight> &);
+                         fhicl::ParameterSet const &tool_options);
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
+std::vector<GENIEResponseParameter>
 ConfigureDISWeightEngine(larsyst::SystMetaData const &,
-                         std::unique_ptr<genie::rew::GReWeight> &);
+                         fhicl::ParameterSet const &tool_options);
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
+std::vector<GENIEResponseParameter>
 ConfigureFSIWeightEngine(larsyst::SystMetaData const &,
-                         std::unique_ptr<genie::rew::GReWeight> &);
+                         fhicl::ParameterSet const &tool_options);
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
+std::vector<GENIEResponseParameter>
 ConfigureOtherWeightEngine(larsyst::SystMetaData const &,
-                           std::unique_ptr<genie::rew::GReWeight> &);
+                           fhicl::ParameterSet const &tool_options);
+
+#endif
+
 } // namespace nusyst
 
 #endif

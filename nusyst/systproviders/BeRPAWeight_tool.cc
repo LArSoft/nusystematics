@@ -42,7 +42,7 @@ SystMetaData BeRPAWeightProvider::ConfigureFromFHICL(ParameterSet const &ps,
   resp.systParamId = firstId;
 
   if (ps.has_key("ATweakDefinition")) {
-    double ACV = 0xdeadb33f;
+    double ACV = kDefaultDouble;
     if (ps.has_key("ACentralValue")) {
       ACV = ps.get<double>("ACentralValue");
     }
@@ -50,10 +50,10 @@ SystMetaData BeRPAWeightProvider::ConfigureFromFHICL(ParameterSet const &ps,
         ACV, ps.get<std::string>("ATweakDefinition"));
     A.prettyName = "BeRPA_A";
     A.systParamId = firstId++;
-    smd.headers.push_back(std::move(A));
+    smd.push_back(std::move(A));
   }
   if (ps.has_key("BTweakDefinition")) {
-    double BCV = 0xdeadb33f;
+    double BCV = kDefaultDouble;
     if (ps.has_key("BCentralValue")) {
       BCV = ps.get<double>("BCentralValue");
     }
@@ -61,10 +61,10 @@ SystMetaData BeRPAWeightProvider::ConfigureFromFHICL(ParameterSet const &ps,
         BCV, ps.get<std::string>("BTweakDefinition"));
     B.prettyName = "BeRPA_B";
     B.systParamId = firstId++;
-    smd.headers.push_back(std::move(B));
+    smd.push_back(std::move(B));
   }
   if (ps.has_key("DTweakDefinition")) {
-    double DCV = 0xdeadb33f;
+    double DCV = kDefaultDouble;
     if (ps.has_key("DCentralValue")) {
       DCV = ps.get<double>("DCentralValue");
     }
@@ -72,10 +72,10 @@ SystMetaData BeRPAWeightProvider::ConfigureFromFHICL(ParameterSet const &ps,
         DCV, ps.get<std::string>("DTweakDefinition"));
     D.prettyName = "BeRPA_D";
     D.systParamId = firstId++;
-    smd.headers.push_back(std::move(D));
+    smd.push_back(std::move(D));
   }
   if (ps.has_key("ETweakDefinition")) {
-    double ECV = 0xdeadb33f;
+    double ECV = kDefaultDouble;
     if (ps.has_key("ECentralValue")) {
       ECV = ps.get<double>("ECentralValue");
     }
@@ -83,19 +83,19 @@ SystMetaData BeRPAWeightProvider::ConfigureFromFHICL(ParameterSet const &ps,
         ECV, ps.get<std::string>("ETweakDefinition"));
     E.prettyName = "BeRPA_E";
     E.systParamId = firstId++;
-    smd.headers.push_back(std::move(E));
+    smd.push_back(std::move(E));
   }
 
   // If multiple parameters were used then add the response parameter and
   // increment the id of all of the other parameters.
-  if (smd.headers.size() > 1) {
-    for (auto &h : smd.headers) {
+  if (smd.size() > 1) {
+    for (auto &h : smd) {
       h.systParamId++;
       h.isResponselessParam = true;
       h.responseParamId = resp.systParamId;
     }
 
-    smd.headers.insert(0, std::move(resp));
+    smd.insert(0, std::move(resp));
   }
 
   return smd;
@@ -142,7 +142,7 @@ BeRPAWeightProvider::GetEventResponse(art::Event &e) {
   size_t NEventUnits = gTruthHandle->size();
   er->responses.resize(NEventUnits);
   size_t NParamVars =
-      fMetaData.headers[responseParam_idx].paramVariations.size();
+      fMetaData[responseParam_idx].paramVariations.size();
 
   std::map<Coeffs, double> pVals;
   for (size_t ev_it = 0; ev_it < NEventUnits; ++ev_it) {
@@ -150,25 +150,25 @@ BeRPAWeightProvider::GetEventResponse(art::Event &e) {
     for (size_t v_it = 0; v_it < NParamVars; ++v_it) {
       if (VariedParameters.find(kA) != VariedParameters.end()) {
         pVals[kA] =
-            fMetaData.headers[VariedParameters[kA]].paramVariations[v_it];
+            fMetaData[VariedParameters[kA]].paramVariations[v_it];
       } else {
         pVals[kA] = DefaultValues[kA].first;
       }
       if (VariedParameters.find(kB) != VariedParameters.end()) {
         pVals[kB] =
-            fMetaData.headers[VariedParameters[kB]].paramVariations[v_it];
+            fMetaData[VariedParameters[kB]].paramVariations[v_it];
       } else {
         pVals[kB] = DefaultValues[kB].first;
       }
       if (VariedParameters.find(kD) != VariedParameters.end()) {
         pVals[kD] =
-            fMetaData.headers[VariedParameters[kD]].paramVariations[v_it];
+            fMetaData[VariedParameters[kD]].paramVariations[v_it];
       } else {
         pVals[kD] = DefaultValues[kD].first;
       }
       if (VariedParameters.find(kE) != VariedParameters.end()) {
         pVals[kE] =
-            fMetaData.headers[VariedParameters[kE]].paramVariations[v_it];
+            fMetaData[VariedParameters[kE]].paramVariations[v_it];
       } else {
         pVals[kE] = DefaultValues[kE].first;
       }
@@ -177,7 +177,7 @@ BeRPAWeightProvider::GetEventResponse(art::Event &e) {
                                          pVals[kE]));
     }
     er->responses[ev_it].push_back(
-        {fMetaData.headers[responseParam_idx].systParamId,
+        {fMetaData[responseParam_idx].systParamId,
          std::move(RPAWeights)});
   }
   return er;

@@ -1,0 +1,37 @@
+GENIEReWeight_Tool_Config: {
+    tool_type: "GENIEReWeight"
+    instance_name: "DUNE_TDR_Splines"
+
+    ignore_parameter_dependence: true
+
+    #CCQE Parameters
+    MaCCQEIsShapeOnly: false
+
+    # NormCCQE_central_value: 0
+    # NormCCQE_variation_descriptor: "(-3,3,0.5)"
+
+    MaCCQE_central_value: 0
+    MaCCQE_variation_descriptor: "(-3,3,0.5)"
+
+    # ZNormCCQE_central_value: 0
+    # ZNormCCQE_variation_descriptor: "(-3,3,0.5)"
+
+    # ZExpA1CCQE_central_value: 0
+    # ZExpA1CCQE_variation_descriptor: "(-3,3,0.5)"
+
+    # ZExpA2CCQE_central_value: 0
+    # ZExpA2CCQE_variation_descriptor: "(-3,3,0.5)"
+    
+    # ZExpA3CCQE_central_value: 0
+    # ZExpA3CCQE_variation_descriptor: "(-3,3,0.5)"
+
+    # ZExpA4CCQE_central_value: 0
+    # ZExpA5CCQE_variation_descriptor: "(-3,3,0.5)"
+
+    # ReWeight to dipole vector form factor.
+    VecFFCCQEIsBBA: false
+    # ReWeight dipole to zexpansion
+    AxFFCCQEDipoleToZExp: false
+}
+
+syst_providers: [GENIEReWeight_Tool_Config]

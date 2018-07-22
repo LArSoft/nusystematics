@@ -3,6 +3,8 @@
 
 #include "nusyst/interface/IGENIESystProvider_tool.hh"
 
+#include "nusyst/systproviders/GENIEResponseParameterAssociation.hh"
+
 // GENIE
 #include "EVGCore/EventRecord.h"
 #include "ReWeight/GReWeight.h"
@@ -10,31 +12,33 @@
 #include <memory>
 #include <set>
 
+// HERG: HIRD OF RAMPAGING GENIES, HIRD: HERG OF INFINITELY REPEATING DEPTHS
+
 class GENIEReWeight : public nusyst::IGENIESystProvider_tool {
 public:
   explicit GENIEReWeight(fhicl::ParameterSet const &);
 
-  bool Configure();
-
 #ifndef NO_ART
   std::unique_ptr<larsyst::EventResponse> GetEventResponse(art::Event &);
-  larsyst::SystMetaData ConfigureFromFHICL(fhicl::ParameterSet const &,
-                                           paramId_t);
 #endif
+
+  larsyst::SystMetaData BuildSystMetaData(fhicl::ParameterSet const &,
+                                          larsyst::paramId_t);
+  fhicl::ParameterSet GetExtraToolOptions() { return tool_options; }
+
+  bool SetupResponseCalculator(fhicl::ParameterSet const &);
 
   larsyst::event_unit_response_t GetEventResponse(genie::EventRecord &);
 
   std::string AsString();
 
 private:
-  std::unique_ptr<genie::rew::GReWeight> GReWeightEngine;
-
-  std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
-      ResponseToGENIEParameters;
+  std::vector<nusyst::GENIEResponseParameter> ResponseToGENIEParameters;
 
   void extend_ResponseToGENIEParameters(
-      std::map<size_t, std::map<genie::rew::GSyst_t, size_t>> &&);
-  std::set<genie::rew::GSyst_t> GENIEEngineDials;
+      std::vector<nusyst::GENIEResponseParameter> &&);
+
+  fhicl::ParameterSet tool_options;
 
 #ifndef NO_ART
   std::string fGENIEModuleLabel = "generator";

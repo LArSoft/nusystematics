@@ -70,7 +70,7 @@ SystMetaData MKSinglePiEnuq0q3::ConfigureFromFHICL(ParameterSet const &ps,
   resp.opts.push_back(std::string("InputManifest=") +
                       ps.get<std::string>("InputManifest"));
 
-  smd.headers.push_back(resp);
+  smd.push_back(resp);
 
   for (std::string const &chName :
        ps.get<std::vector<std::string>>("channels")) {
@@ -83,7 +83,7 @@ SystMetaData MKSinglePiEnuq0q3::ConfigureFromFHICL(ParameterSet const &ps,
 
     channel.isResponselessParam = true;
     channel.responseParamId = resp.systParamId;
-    smd.headers.push_back(channel);
+    smd.push_back(channel);
   }
 
   return smd;
@@ -185,7 +185,7 @@ MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord &ev) {
 
   double weight = 1;
 
-  resp[ResponseParameterId][0] = templateReweighter->GetVariation(
+  resp[ResponseParameterId].responses[0] = templateReweighter->GetVariation(
       ChannelParameterMapping[chan], 1, std::array<double, 3>{{Enu, q0, q3}});
 
   return resp;

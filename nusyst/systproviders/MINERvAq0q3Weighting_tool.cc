@@ -62,62 +62,62 @@ SystMetaData MINERvAq0q3Weighting::ConfigureFromFHICL(ParameterSet const &ps,
   //   resp_mnvRPA.opts.push_back(std::string("InputFileRPA=") +
   //                          ps.get<std::string>("InputFileRPA"));
   //
-  //   smd.headers.push_back(resp_mnvRPA);
+  //   smd.push_back(resp_mnvRPA);
   // }
   { // 2p2h
     SystParamHeader resp_mnv2p2h;
     resp_mnv2p2h.prettyName = "MINERvATune_2p2hGaussEnhancement";
     resp_mnv2p2h.systParamId = firstId++;
 
-    smd.headers.push_back(resp_mnv2p2h);
+    smd.push_back(resp_mnv2p2h);
   }
   { // Gaussian2D
     SystParamHeader resp_Gaus;
     resp_2p2h.prettyName = "2p2hGaussEnhancement_response";
     resp_2p2h.systParamId = firstId++;
-    smd.headers.push_back(resp_2p2h);
+    smd.push_back(resp_2p2h);
 
     SystParamHeader Gaus_Norm;
     Gaus_Norm.prettyName = "2p2hGaussEnhancement_Gaus_Norm";
     Gaus_Norm.isResponselessParam = true;
     Gaus_Norm.systParamId = firstId++;
     Gaus_Norm.responseParamId = resp_2p2h.systParamId;
-    smd.headers.push_back(Gaus_Norm);
+    smd.push_back(Gaus_Norm);
 
     SystParamHeader Gaus_MeanQ0;
     Gaus_MeanQ0.prettyName = "2p2hGaussEnhancement_Gaus_MeanQ0";
     Gaus_MeanQ0.isResponselessParam = true;
     Gaus_MeanQ0.systParamId = firstId++;
     Gaus_MeanQ0.responseParamId = resp_2p2h.systParamId;
-    smd.headers.push_back(Gaus_MeanQ0);
+    smd.push_back(Gaus_MeanQ0);
 
     SystParamHeader Gaus_MeanQ3;
     Gaus_MeanQ3.prettyName = "2p2hGaussEnhancement_Gaus_MeanQ3";
     Gaus_MeanQ3.isResponselessParam = true;
     Gaus_MeanQ3.systParamId = firstId++;
     Gaus_MeanQ3.responseParamId = resp_2p2h.systParamId;
-    smd.headers.push_back(Gaus_MeanQ3);
+    smd.push_back(Gaus_MeanQ3);
 
     SystParamHeader Gaus_SigmaQ0;
     Gaus_SigmaQ0.prettyName = "2p2hGaussEnhancement_Gaus_SigmaQ0";
     Gaus_SigmaQ0.isResponselessParam = true;
     Gaus_SigmaQ0.systParamId = firstId++;
     Gaus_SigmaQ0.responseParamId = resp_2p2h.systParamId;
-    smd.headers.push_back(Gaus_SigmaQ0);
+    smd.push_back(Gaus_SigmaQ0);
 
     SystParamHeader Gaus_SigmaQ3;
     Gaus_SigmaQ3.prettyName = "2p2hGaussEnhancement_Gaus_SigmaQ3";
     Gaus_SigmaQ3.isResponselessParam = true;
     Gaus_SigmaQ3.systParamId = firstId++;
     Gaus_SigmaQ3.responseParamId = resp_2p2h.systParamId;
-    smd.headers.push_back(Gaus_SigmaQ3);
+    smd.push_back(Gaus_SigmaQ3);
 
     SystParamHeader Gaus_Correlation;
     Gaus_Correlation.prettyName = "2p2hGaussEnhancement_Gaus_Correlation";
     Gaus_Correlation.isResponselessParam = true;
     Gaus_Correlation.systParamId = firstId++;
     Gaus_Correlation.responseParamId = resp_2p2h.systParamId;
-    smd.headers.push_back(Gaus_Correlation);
+    smd.push_back(Gaus_Correlation);
   }
 
   return smd;
@@ -237,7 +237,7 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord &ev) {
     if (GetParam(fMetaData, param.second).isResponselessParam) {
       continue;
     }
-    resp[param.second] = std::vector<double>{1};
+    resp[param.second].responses = std::vector<double>{1};
   }
 
   if (!ev.Summary()->ProcInfo().IsWeakCC() ||
@@ -258,13 +258,13 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord &ev) {
     SystParamHeader hdr =
         GetParam(fMetaData, ConfiguredParameters[param_t::kMINERvARPA]);
 
-    resp[hdr.systParamId].clear();
+    resp[hdr.systParamId].responses.clear();
     if (hdr.isCorrection) {
-      resp[hdr.systParamId].push_back(
+      resp[hdr.systParamId].responses.push_back(
           GetMINERvARPATuneWeight(hdr.centralParamValue, q0q3[0], q0q3[1]));
     } else {
       for (double var : hdr.paramVariations) {
-        resp[hdr.systParamId].push_back(
+        resp[hdr.systParamId].responses.push_back(
             GetMINERvARPATuneWeight(var, q0q3[0], q0q3[1]));
       }
     }

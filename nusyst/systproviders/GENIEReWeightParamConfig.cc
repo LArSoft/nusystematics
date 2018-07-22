@@ -1,282 +1,217 @@
-#include "GENIEReWeightParamConfig.hh"
+#include "nusyst/systproviders/GENIEReWeightParamConfig.hh"
 
-#include "CLHEP/Random/MTwistEngine.h"
-#include "CLHEP/Random/RandGaussQ.h"
+#include "larsyst/interface/ISystProvider_tool.hh"
+
 #include "larsyst/utility/string_parsers.hh"
+#include "larsyst/utility/ResponselessParamUtility.hh"
 
 #include <iomanip>
 #include <iostream>
 #include <memory>
 
-// Ugly macros because I'm lazy
-#define PARAM_NAME_HELPER(PARAM_NAME, b) PARAM_NAME##b
-
-#define PARAM_IS_USED_BY_CFG(PARAM_NAME)                                       \
-  (cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)() != 0xdeadb33f) ||       \
-      cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)().size()
-
-#define ADD_PARAM_TO_SYST(PARAM_NAME, SYSTDATA)                                \
-  {                                                                            \
-    larsyst::SystParamHeader param = BuildHeaderFromNomAndTweakDefintion(      \
-        cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)(),                   \
-        cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)());               \
-    param.prettyName = #PARAM_NAME;                                            \
-    param.unitsAreNatural = false;                                             \
-    param.systParamId = firstParamId++;                                        \
-    SYSTDATA.headers.push_back(std::move(param));                              \
-  }
-
-#define CHECK_USED_ADD_PARAM_TO_SYST(PARAM_NAME, SYSTDATA)                     \
-  {                                                                            \
-    bool PARAM_NAME_HELPER(PARAM_NAME, IsUsed) =                               \
-        PARAM_IS_USED_BY_CFG(PARAM_NAME);                                      \
-    if (PARAM_NAME_HELPER(PARAM_NAME, IsUsed)) {                               \
-      larsyst::SystParamHeader param = BuildHeaderFromNomAndTweakDefintion(    \
-          cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)(),                 \
-          cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)());             \
-      param.prettyName = #PARAM_NAME;                                          \
-      param.unitsAreNatural = false;                                           \
-      param.systParamId = firstParamId++;                                      \
-      SYSTDATA.headers.push_back(std::move(param));                            \
-    }                                                                          \
-  }
-
-#define ADD_PARAM_TO_SYST_RESPONSELESS(PARAM_NAME, SYSTDATA,                   \
-                                       RESPONSE_PARAM_ID)                      \
-  {                                                                            \
-    larsyst::SystParamHeader param = BuildHeaderFromNomAndTweakDefintion(      \
-        cfg().PARAM_NAME_HELPER(PARAM_NAME, NominalValue)(),                   \
-        cfg().PARAM_NAME_HELPER(PARAM_NAME, TweakDefinition)());               \
-    param.prettyName = #PARAM_NAME;                                            \
-    param.unitsAreNatural = false;                                             \
-    param.systParamId = firstParamId++;                                        \
-    param.isResponselessParam = true;                                          \
-    param.responseParamId = RESPONSE_PARAM_ID;                                 \
-    if (param.isSplineable) {                                                  \
-      std::cout                                                                \
-          << "[ERROR]: Attempted to build spline from parameter " #PARAM_NAME  \
-             ", which enters into an intrinsically multi-parameter response "  \
-             "calculation. As multi-dimensional splines are not yet "          \
-             "supported, "                                                     \
-             "this parameter must be used as a multi-sim or with a set of "    \
-             "hand-picked offsets that are the same for each parameter that "  \
-             "goes into the response calculation."                             \
-          << std::endl;                                                        \
-      throw;                                                                   \
-    }                                                                          \
-    SYSTDATA.headers.push_back(std::move(param));                              \
-  }
-
-#define GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(PARAMETER_NAME_LIST,        \
-                                                   SYSTDATA, NVARPARAM)        \
-  {                                                                            \
-    NVARPARAM = 0;                                                             \
-    for (auto &name : PARAMETER_NAME_LIST) {                                   \
-      if (!HasParam(SYSTDATA, name)) {                                         \
-        continue;                                                              \
-      }                                                                        \
-      if (!NVARPARAM) {                                                        \
-        NVARPARAM = GetParam(SYSTDATA, name).paramVariations.size();           \
-        continue;                                                              \
-      }                                                                        \
-      if (NVARPARAM != GetParam(SYSTDATA, name).paramVariations.size()) {      \
-        std::cout                                                              \
-            << "[ERROR]: NCEL configuration error. Each form factor "          \
-               "parameter specified must have the same number of variations, " \
-            << name << " specifies "                                           \
-            << GetParam(SYSTDATA, name).paramVariations.size()                 \
-            << ", but a previous parameter specified " << NVARPARAM << "."     \
-            << std::endl;                                                      \
-        throw;                                                                 \
-      }                                                                        \
-    }                                                                          \
-  }
-
 using namespace larsyst;
 
 namespace nusyst {
 
-void MakeThrowsIfNeeded(SystParamHeader &sph,
-                        std::unique_ptr<CLHEP::RandGaussQ> &RNJesus,
-                        uint64_t NThrows) {
-  if (sph.isRandomlyThrown && !sph.paramVariations.size()) {
-    double cv =
-        (sph.centralParamValue == 0xdeadb33f) ? 0 : sph.centralParamValue;
-    for (uint64_t t = 0; t < NThrows; ++t) {
-      double thr = RNJesus->fire(0, 1);
-      double shift = fabs(thr) * ((thr < 0) ? sph.oneSigmaShifts[0]
-                                            : sph.oneSigmaShifts[1]);
-      sph.paramVariations.push_back(cv + shift);
-    }
-  }
-}
-
-SystParamHeader
-BuildHeaderFromNomAndTweakDefintion(double nominal = 0xdeadb33f,
-                                    std::string tweakDefinition = "") {
-  SystParamHeader sph;
-  sph.centralParamValue = (nominal == 0xdeadb33f) ? 0 : nominal;
-  trim(tweakDefinition);
-
-  if (tweakDefinition.size()) {
-    char fchar = tweakDefinition.front();
-    tweakDefinition = tweakDefinition.substr(1, tweakDefinition.length() - 2);
-    trim(tweakDefinition);
-    if (fchar == '(') { // Spline knots
-      sph.paramVariations = BuildDoubleList(tweakDefinition);
-      sph.isSplineable = true;
-    } else if (fchar == '[') { // Discrete tweaks
-      sph.paramVariations = ParseToVect<double>(tweakDefinition, ",");
-    } else if (fchar == '{') { // OneSigmaShifts
-      std::vector<double> sigShifts = ParseToVect<double>(tweakDefinition, ",");
-      if (sigShifts.size() == 1) {
-        sph.oneSigmaShifts[0] = -sigShifts.front();
-        sph.oneSigmaShifts[1] = sigShifts.front();
-      } else if (sigShifts.size() == 2) {
-        sph.oneSigmaShifts[0] = sigShifts.front();
-        sph.oneSigmaShifts[1] = sigShifts.back();
-      } else {
-        std::cout << "[ERROR]: When parsing sigma shifts found "
-                  << std::quoted(tweakDefinition)
-                  << ", but expected {sigma_both_natural_units}, or "
-                     "{sigma_low_natural_units, sigma_up_natural_units}."
-                  << std::endl;
-      }
-      sph.isRandomlyThrown = true;
-    } else {
-      std::cout << "[ERROR]: Found tweak definition "
-                << std::quoted(tweakDefinition)
-                << ", but expected to find either, \"{sigma_low_natural_units, "
-                   "sigma_up_natural_units}\" or \"[spline knot 1, spline knot "
-                   "2, spline knot 3,...]\""
-                << std::endl;
-      throw;
-    }
-  } else { // Just use the central value every time
-    sph.isCorrection = true;
-  }
-  return sph;
-}
-
-SystMetaData
-ConfigureQEParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
-                            paramId_t firstParamId) {
+SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
+                                         paramId_t firstParamId,
+                                         fhicl::ParameterSet &tool_options) {
   SystMetaData QEmd;
 
+  bool MaCCQEIsShapeOnly = cfg.get<bool>("MaCCQEIsShapeOnly", false);
+
+  tool_options.put("MaCCQEIsShapeOnly", MaCCQEIsShapeOnly);
+
+  bool ignore_parameter_dependence =
+      tool_options.get<bool>("ignore_parameter_dependence", false);
+
   // Axial FFs
-  bool DipoleNormCCQEIsUsed = PARAM_IS_USED_BY_CFG(NormCCQE);
-  bool DipoleIsShapeOnly = cfg().MAQEIsShapeOnly() || DipoleNormCCQEIsUsed;
-  bool DipoleMaCCQEIsUsed = PARAM_IS_USED_BY_CFG(MaCCQE);
+  bool DipoleNormCCQEIsUsed =
+      FHiCLSimpleToolConfigurationParameterExists(cfg, "NormCCQE");
+  bool DipoleIsShapeOnly = MaCCQEIsShapeOnly || DipoleNormCCQEIsUsed;
+  bool DipoleMaCCQEIsUsed =
+      FHiCLSimpleToolConfigurationParameterExists(cfg, "MaCCQE");
 
   bool IsDipoleReWeight =
       DipoleIsShapeOnly || DipoleNormCCQEIsUsed || DipoleMaCCQEIsUsed;
 
-  bool ZNormIsUsed = PARAM_IS_USED_BY_CFG(ZNormCCQE);
-  bool ZExpA1IsUsed = PARAM_IS_USED_BY_CFG(ZExpA1CCQE);
-  bool ZExpA2IsUsed = PARAM_IS_USED_BY_CFG(ZExpA2CCQE);
-  bool ZExpA3IsUsed = PARAM_IS_USED_BY_CFG(ZExpA3CCQE);
-  bool ZExpA4IsUsed = PARAM_IS_USED_BY_CFG(ZExpA4CCQE);
+  bool ZNormIsUsed =
+      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZNormCCQE");
+  bool ZExpA1IsUsed =
+      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZExpA1CCQE");
+  bool ZExpA2IsUsed =
+      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZExpA2CCQE");
+  bool ZExpA3IsUsed =
+      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZExpA3CCQE");
+  bool ZExpA4IsUsed =
+      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZExpA4CCQE");
 
   bool IsZExpReWeight = ZNormIsUsed || ZExpA1IsUsed || ZExpA2IsUsed ||
                         ZExpA3IsUsed || ZExpA4IsUsed;
 
   if (IsDipoleReWeight && IsZExpReWeight) {
-    std::cout << "[ERROR]: Both dipole and Z-expansion axial form factor dials "
-                 "are specified. This is an incompatible configuration."
-              << std::endl;
-    throw;
+    throw invalid_ToolConfigurationFHiCL()
+        << "[ERROR]: When configuring GENIReWeight_tool, both dipole and "
+           "Z-expansion axial form factor dials are specified.";
+  }
+
+  if (DipoleNormCCQEIsUsed && !MaCCQEIsShapeOnly) {
+    throw invalid_ToolConfigurationFHiCL()
+        << "[ERROR]: When configuring GENIEReWeight_tool, NormCCQE was "
+           "requested but MaCCQE was not specified to be shape-only.";
   }
 
   if (IsDipoleReWeight) {
     if (DipoleNormCCQEIsUsed) {
-      ADD_PARAM_TO_SYST(NormCCQE, QEmd);
+      larsyst::SystParamHeader param;
+      ParseFHiCLSimpleToolConfigurationParameter(cfg, "NormCCQE", param,
+                                                 firstParamId);
+      param.systParamId = firstParamId++;
+      QEmd.push_back(std::move(param));
     }
     if (DipoleMaCCQEIsUsed) {
-      ADD_PARAM_TO_SYST(MaCCQE, QEmd);
-      if (DipoleIsShapeOnly) {
-        GetParam(QEmd, "MaCCQE").opts.push_back("shape");
-      }
+      larsyst::SystParamHeader param;
+      ParseFHiCLSimpleToolConfigurationParameter(cfg, "MaCCQE", param,
+                                                 firstParamId);
+      param.systParamId = firstParamId++;
+      QEmd.push_back(std::move(param));
     }
   } else if (IsZExpReWeight) {
     // ZNorm enters in linearly to the weight calculation so doesn't need to
     // output its response via the a meta-parameter.
     if (ZNormIsUsed) {
-      ADD_PARAM_TO_SYST(ZNormCCQE, QEmd);
+      larsyst::SystParamHeader param;
+      ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZNormCCQE", param,
+                                                 firstParamId);
+      param.systParamId = firstParamId++;
+      QEmd.push_back(std::move(param));
     }
     if (ZExpA1IsUsed || ZExpA2IsUsed || ZExpA3IsUsed || ZExpA4IsUsed) {
       SystParamHeader ZExp;
-      ZExp.prettyName = "ZExpAVariationResponse";
-      ZExp.systParamId = firstParamId++;
+      if (!ignore_parameter_dependence) {
+        ZExp.prettyName = "ZExpAVariationResponse";
+        ZExp.systParamId = firstParamId++;
+      }
 
       if (ZExpA1IsUsed) {
-        ADD_PARAM_TO_SYST_RESPONSELESS(ZExpA1CCQE, QEmd, ZExp.systParamId);
+        larsyst::SystParamHeader param;
+        ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZExpA1", param,
+                                                   firstParamId);
+        param.systParamId = firstParamId++;
+        if (!ignore_parameter_dependence) {
+          param.isResponselessParam = true;
+          param.responseParamId = ZExp.systParamId;
+          if (param.isSplineable) {
+            throw invalid_ToolConfigurationFHiCL()
+                << "[ERROR]: Attempted to build spline from "
+                   "parameter ZExpA1 , which enters into an intrinsically "
+                   "multi-parameter response calculation. Either run in random "
+                   "throw mode or set \"ignore_parameter_dependence\" in the "
+                   "GENIEReWeight_tool configuration.";
+          }
+        }
+        QEmd.push_back(std::move(param));
       }
       if (ZExpA2IsUsed) {
-        ADD_PARAM_TO_SYST_RESPONSELESS(ZExpA2CCQE, QEmd, ZExp.systParamId);
+        larsyst::SystParamHeader param;
+        ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZExpA2", param,
+                                                   firstParamId);
+        param.systParamId = firstParamId++;
+        if (!ignore_parameter_dependence) {
+          param.isResponselessParam = true;
+          param.responseParamId = ZExp.systParamId;
+          if (param.isSplineable) {
+            throw invalid_ToolConfigurationFHiCL()
+                << "[ERROR]: Attempted to build spline from "
+                   "parameter ZExpA2 , which enters into an intrinsically "
+                   "multi-parameter response calculation. Either run in random "
+                   "throw mode or set \"ignore_parameter_dependence\" in the "
+                   "GENIEReWeight_tool configuration.";
+          }
+        }
+        QEmd.push_back(std::move(param));
       }
       if (ZExpA3IsUsed) {
-        ADD_PARAM_TO_SYST_RESPONSELESS(ZExpA3CCQE, QEmd, ZExp.systParamId);
+        larsyst::SystParamHeader param;
+        ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZExpA3", param,
+                                                   firstParamId);
+        param.systParamId = firstParamId++;
+        if (!ignore_parameter_dependence) {
+          param.isResponselessParam = true;
+          param.responseParamId = ZExp.systParamId;
+          if (param.isSplineable) {
+            throw invalid_ToolConfigurationFHiCL()
+                << "[ERROR]: Attempted to build spline from "
+                   "parameter ZExpA3 , which enters into an intrinsically "
+                   "multi-parameter response calculation. Either run in random "
+                   "throw mode or set \"ignore_parameter_dependence\" in the "
+                   "GENIEReWeight_tool configuration.";
+          }
+        }
+        QEmd.push_back(std::move(param));
       }
       if (ZExpA4IsUsed) {
-        ADD_PARAM_TO_SYST_RESPONSELESS(ZExpA4CCQE, QEmd, ZExp.systParamId);
+        larsyst::SystParamHeader param;
+        ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZExpA4", param,
+                                                   firstParamId);
+        param.systParamId = firstParamId++;
+        if (!ignore_parameter_dependence) {
+          param.isResponselessParam = true;
+          param.responseParamId = ZExp.systParamId;
+          if (param.isSplineable) {
+            throw invalid_ToolConfigurationFHiCL()
+                << "[ERROR]: Attempted to build spline from "
+                   "parameter ZExpA4 , which enters into an intrinsically "
+                   "multi-parameter response calculation. Either run in random "
+                   "throw mode or set \"ignore_parameter_dependence\" in the "
+                   "GENIEReWeight_tool configuration.";
+          }
+        }
+        QEmd.push_back(std::move(param));
       }
-      QEmd.headers.push_back(std::move(ZExp));
+      if (!ignore_parameter_dependence) {
+        QEmd.push_back(std::move(ZExp));
+      }
     }
   }
 
-  bool DipoleVecFFShapeIsUsed = !cfg().VecFFCCQEIsBBA();
-  if (DipoleVecFFShapeIsUsed) {
+  bool VecFFCCQEIsBBA = cfg.get<bool>("VecFFCCQEIsBBA", false);
+  tool_options.put("VecFFCCQEIsBBA", VecFFCCQEIsBBA);
+
+  if (!VecFFCCQEIsBBA) {
     SystParamHeader vecFFQE;
     vecFFQE.prettyName = "VecFFCCQEshape";
     vecFFQE.systParamId = firstParamId++;
     vecFFQE.isCorrection = true;
     vecFFQE.centralParamValue = 1;
-    QEmd.headers.push_back(std::move(vecFFQE));
+    QEmd.push_back(std::move(vecFFQE));
   }
 
-  bool AxFFCCQEDipoleToZExpIsUsed =
-      (cfg().AxFFCCQEDipoleToZExp() == 1) || // If explcitly enabled
-      (IsZExpReWeight && (cfg().AxFFCCQEDipoleToZExp() ==
-                          -1)); // or if defaulted and zexpansion is enabled.
-  if (AxFFCCQEDipoleToZExpIsUsed) {
+  bool AxFFCCQEDipoleToZExp =
+      cfg.get<bool>("AxFFCCQEDipoleToZExp", false) || IsZExpReWeight;
+
+  if (AxFFCCQEDipoleToZExp) {
     SystParamHeader axFFQE;
     axFFQE.prettyName = "AxFFCCQEshape";
     axFFQE.systParamId = firstParamId++;
     axFFQE.isCorrection = true;
     axFFQE.centralParamValue = 1;
-    QEmd.headers.push_back(std::move(axFFQE));
+    QEmd.push_back(std::move(axFFQE));
   }
 
-  std::unique_ptr<CLHEP::MTwistEngine> RNgine =
-      std::make_unique<CLHEP::MTwistEngine>(0);
-  std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
-      std::make_unique<CLHEP::RandGaussQ>(*RNgine);
-
-  for (auto &hdr : QEmd.headers) {
-    MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
-  }
-  if (IsZExpReWeight) {
-    uint64_t NVariations = 0;
-
-    auto const &zexpParamNames = {"ZExpA1CCQE", "ZExpA2CCQE", "ZExpA3CCQE",
-                                  "ZExpA4CCQE"};
-    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(zexpParamNames, QEmd,
-                                               NVariations);
-    std::vector<double> dummyParamVars;
-    for (size_t i = 0; i < NVariations; ++i) {
-      dummyParamVars.push_back(i);
-    }
-
-    GetParam(QEmd, "ZExpAVariationResponse").paramVariations =
-        std::move(dummyParamVars);
+  if (HasParam(QEmd, "ZExpAVariationResponse")) {
+    FinalizeAndValidateDependentParameters(
+        QEmd, "ZExpAVariationResponse",
+        {"ZExpA1CCQE", "ZExpA2CCQE", "ZExpA3CCQE", "ZExpA4CCQE"});
   }
 
   return QEmd;
 }
 
-SystMetaData
-ConfigureNCELParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
-                              paramId_t firstParamId) {
+#ifndef GRWTEST
+
+SystMetaData ConfigureNCELParameterHeaders(fhicl::ParameterSet const &cfg,
+                                           paramId_t firstParamId) {
   SystMetaData NCELmd;
 
   bool MaNCELIsUsed = PARAM_IS_USED_BY_CFG(MaNCEL);
@@ -293,14 +228,14 @@ ConfigureNCELParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
     if (EtaNCELIsUsed) {
       ADD_PARAM_TO_SYST_RESPONSELESS(EtaNCEL, NCELmd, NCELResp.systParamId);
     }
-    NCELmd.headers.push_back(std::move(NCELResp));
+    NCELmd.push_back(std::move(NCELResp));
 
     std::unique_ptr<CLHEP::MTwistEngine> RNgine =
         std::make_unique<CLHEP::MTwistEngine>(0);
     std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
         std::make_unique<CLHEP::RandGaussQ>(*RNgine);
 
-    for (auto &hdr : NCELmd.headers) {
+    for (auto &hdr : NCELmd) {
       MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
     }
 
@@ -321,9 +256,8 @@ ConfigureNCELParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
   return NCELmd;
 }
 
-SystMetaData
-ConfigureRESParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
-                             paramId_t firstParamId) {
+SystMetaData ConfigureRESParameterHeaders(fhicl::ParameterSet const &cfg,
+                                          paramId_t firstParamId) {
   SystMetaData RESmd;
 
   //************* CCRES
@@ -353,7 +287,7 @@ ConfigureRESParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
         GetParam(RESmd, "MvCCRES").opts.push_back("shape");
       }
     }
-    RESmd.headers.push_back(std::move(CCRESResp));
+    RESmd.push_back(std::move(CCRESResp));
   }
 
   //************* NCRES
@@ -383,7 +317,7 @@ ConfigureRESParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
         GetParam(RESmd, "MvNCRES").opts.push_back("shape");
       }
     }
-    RESmd.headers.push_back(std::move(NCRESResp));
+    RESmd.push_back(std::move(NCRESResp));
   }
 
   // These are all independent and based upon the channel that was generated
@@ -413,7 +347,7 @@ ConfigureRESParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
   std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
       std::make_unique<CLHEP::RandGaussQ>(*RNgine);
 
-  for (auto &hdr : RESmd.headers) {
+  for (auto &hdr : RESmd) {
     MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
   }
 
@@ -451,9 +385,8 @@ ConfigureRESParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
   return RESmd;
 }
 
-SystMetaData
-ConfigureCOHParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
-                             paramId_t firstParamId) {
+SystMetaData ConfigureCOHParameterHeaders(fhicl::ParameterSet const &cfg,
+                                          paramId_t firstParamId) {
   SystMetaData COHmd;
 
   bool MaCOHpiIsUsed = PARAM_IS_USED_BY_CFG(MaCOHpi);
@@ -470,14 +403,14 @@ ConfigureCOHParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
     if (R0COHpiIsUsed) {
       ADD_PARAM_TO_SYST_RESPONSELESS(R0COHpi, COHmd, COHResp.systParamId);
     }
-    COHmd.headers.push_back(std::move(COHResp));
+    COHmd.push_back(std::move(COHResp));
 
     std::unique_ptr<CLHEP::MTwistEngine> RNgine =
         std::make_unique<CLHEP::MTwistEngine>(0);
     std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
         std::make_unique<CLHEP::RandGaussQ>(*RNgine);
 
-    for (auto &hdr : COHmd.headers) {
+    for (auto &hdr : COHmd) {
       MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
     }
 
@@ -498,9 +431,8 @@ ConfigureCOHParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
   return COHmd;
 }
 
-SystMetaData
-ConfigureDISParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
-                             paramId_t firstParamId) {
+SystMetaData ConfigureDISParameterHeaders(fhicl::ParameterSet const &cfg,
+                                          paramId_t firstParamId) {
   SystMetaData DISmd;
 
   bool DISIsShapeOnly = cfg().DISIsShapeOnly();
@@ -544,9 +476,9 @@ ConfigureDISParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
         GetParam(DISmd, "CV2uBY").opts.push_back("shape");
       }
     }
-    DISmd.headers.push_back(std::move(DISResp));
+    DISmd.push_back(std::move(DISResp));
 
-    for (auto &hdr : DISmd.headers) {
+    for (auto &hdr : DISmd) {
       MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
     }
 
@@ -576,9 +508,9 @@ ConfigureDISParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
     if (AGKY_pT1piIsUsed) {
       ADD_PARAM_TO_SYST_RESPONSELESS(AGKY_pT1pi, DISmd, AGKYResp.systParamId);
     }
-    DISmd.headers.push_back(std::move(AGKYResp));
+    DISmd.push_back(std::move(AGKYResp));
 
-    for (auto &hdr : DISmd.headers) {
+    for (auto &hdr : DISmd) {
       MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
     }
 
@@ -598,16 +530,15 @@ ConfigureDISParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
 
   CHECK_USED_ADD_PARAM_TO_SYST(FormZone, DISmd);
 
-  for (auto &hdr : DISmd.headers) {
+  for (auto &hdr : DISmd) {
     MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
   }
 
   return DISmd;
 }
 
-SystMetaData
-ConfigureFSIParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
-                             paramId_t firstParamId) {
+SystMetaData ConfigureFSIParameterHeaders(fhicl::ParameterSet const &cfg,
+                                          paramId_t firstParamId) {
   SystMetaData FSImd;
 
   bool MFP_piIsUsed = PARAM_IS_USED_BY_CFG(MFP_pi);
@@ -642,14 +573,14 @@ ConfigureFSIParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
       ADD_PARAM_TO_SYST_RESPONSELESS(FrPiProd_pi, FSImd,
                                      FSI_pi_Resp.systParamId);
     }
-    FSImd.headers.push_back(std::move(FSI_pi_Resp));
+    FSImd.push_back(std::move(FSI_pi_Resp));
 
     std::unique_ptr<CLHEP::MTwistEngine> RNgine =
         std::make_unique<CLHEP::MTwistEngine>(0);
     std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
         std::make_unique<CLHEP::RandGaussQ>(*RNgine);
 
-    for (auto &hdr : FSImd.headers) {
+    for (auto &hdr : FSImd) {
       MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
     }
 
@@ -699,14 +630,14 @@ ConfigureFSIParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
     if (FrPiProd_NIsUsed) {
       ADD_PARAM_TO_SYST_RESPONSELESS(FrPiProd_N, FSImd, FSI_N_Resp.systParamId);
     }
-    FSImd.headers.push_back(std::move(FSI_N_Resp));
+    FSImd.push_back(std::move(FSI_N_Resp));
 
     std::unique_ptr<CLHEP::MTwistEngine> RNgine =
         std::make_unique<CLHEP::MTwistEngine>(0);
     std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
         std::make_unique<CLHEP::RandGaussQ>(*RNgine);
 
-    for (auto &hdr : FSImd.headers) {
+    for (auto &hdr : FSImd) {
       MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
     }
 
@@ -728,8 +659,8 @@ ConfigureFSIParameterHeaders(fhicl::Table<GENIEReWeightParamConfig> const &cfg,
   return FSImd;
 }
 
-SystMetaData ConfigureOtherParameterHeaders(
-    fhicl::Table<GENIEReWeightParamConfig> const &cfg, paramId_t firstParamId) {
+SystMetaData ConfigureOtherParameterHeaders(fhicl::ParameterSet const &cfg,
+                                            paramId_t firstParamId) {
   SystMetaData Othermd;
 
   CHECK_USED_ADD_PARAM_TO_SYST(CCQEPauliSupViaKF, Othermd);
@@ -738,8 +669,8 @@ SystMetaData ConfigureOtherParameterHeaders(
   size_t CCQEMomDistroFGtoSFIndex =
       GetParamIndex(Othermd, "CCQEMomDistroFGtoSF");
   if (IndexIsHandled(Othermd, CCQEMomDistroFGtoSFIndex)) {
-    Othermd.headers[CCQEMomDistroFGtoSFIndex].paramValidityRange[0] = 0;
-    Othermd.headers[CCQEMomDistroFGtoSFIndex].paramValidityRange[1] = 1;
+    Othermd[CCQEMomDistroFGtoSFIndex].paramValidityRange[0] = 0;
+    Othermd[CCQEMomDistroFGtoSFIndex].paramValidityRange[1] = 1;
   }
 
   std::unique_ptr<CLHEP::MTwistEngine> RNgine =
@@ -747,11 +678,13 @@ SystMetaData ConfigureOtherParameterHeaders(
   std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
       std::make_unique<CLHEP::RandGaussQ>(*RNgine);
 
-  for (auto &hdr : Othermd.headers) {
+  for (auto &hdr : Othermd) {
     MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
   }
 
   return Othermd;
 }
+
+#endif
 
 } // namespace nusyst

@@ -80,7 +80,7 @@ else()
   SET(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} ${EXTRA_LINK_FLAGS}")
 endif()
 
-set(EXTRA_CXX_FLAGS "-DNO_ART -std=c++1y ${ROOT_CXX_FLAGS_SCRUBBED} ${GENIE_CXX_FLAGS}")
+set(EXTRA_CXX_FLAGS "-DNO_ART -DGRWTEST -std=c++1y ${ROOT_CXX_FLAGS_SCRUBBED} ${GENIE_CXX_FLAGS}")
 if(CMAKE_CXX_FLAGS STREQUAL "")
   SET(CMAKE_CXX_FLAGS ${EXTRA_CXX_FLAGS})
 else()
@@ -88,31 +88,34 @@ else()
 endif()
 
 include_directories(${GENIE_INCLUDE_DIRS})
-include_directories(${CMAKE_INSTALL_PREFIX}/include)
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_INSTALL_PREFIX}/include)
 
 ####### responsecalculators library
-SET(RC_HDRFILES
-  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/BeRPA.hh
-  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/TemplateResponseCalculatorBase.hh
-  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MKSinglePiEnuq0q3_ReWeight.hh
-  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MINERvA2p2hq0q3.hh
-  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MINERvAq0q3Weighting_data.hh
-  ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MINERvARPAq0q3_ReWeight.hh)
-
-INSTALL(FILES ${RC_HDRFILES} DESTINATION include/nusyst/responsecalculators)
+# SET(RC_HDRFILES
+#   ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/BeRPA.hh
+#   ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/TemplateResponseCalculatorBase.hh
+#   ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MKSinglePiEnuq0q3_ReWeight.hh
+#   ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MINERvA2p2hq0q3.hh
+#   ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MINERvAq0q3Weighting_data.hh
+#   ${CMAKE_SOURCE_DIR}/nusyst/responsecalculators/MINERvARPAq0q3_ReWeight.hh)
+#
+# INSTALL(FILES ${RC_HDRFILES} DESTINATION include/nusyst/responsecalculators)
 
 ####### systproviders library
 SET(SP_IMPLFILES
   ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeight_tool.cc
   ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeightEngineConfig.cc
-  ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MKSinglePiEnuq0q3_tool.cc
- ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MINERvAq0q3Weighting_tool.cc)
+  ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeightParamConfig.cc
+  # ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MKSinglePiEnuq0q3_tool.cc
+ # ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MINERvAq0q3Weighting_tool.cc
+)
 
 SET(SP_HDRFILES
   ${CMAKE_SOURCE_DIR}/nusyst/systproviders/GENIEReWeight_tool.hh
-  ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MKSinglePiEnuq0q3_tool.hh
- ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MINERvAq0q3Weighting_tool.hh)
+  # ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MKSinglePiEnuq0q3_tool.hh
+ # ${CMAKE_SOURCE_DIR}/nusyst/systproviders/MINERvAq0q3Weighting_tool.hh
+)
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
   add_library(nusyst_systproviders STATIC ${SP_IMPLFILES})
@@ -128,21 +131,43 @@ INSTALL(FILES ${SP_HDRFILES} DESTINATION include/nusyst/systproviders)
 ####### GENIE RwExample
 add_executable(ReWeightGHep ReWeightGHep.cc)
 add_dependencies(ReWeightGHep larsyst)
+
 target_link_libraries(ReWeightGHep nusyst_systproviders)
 
 set_target_properties(ReWeightGHep PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
 target_link_libraries(ReWeightGHep
-  larsyst_utility
-  larsyst_interpreters)
+  larsyst_interface
+  larsyst_interpreters
+  larsyst_systproviders
+  larsyst_utility)
 target_link_libraries(ReWeightGHep ${GENIE_LIBS})
 target_link_libraries(ReWeightGHep ${ROOT_LIBS})
 
 INSTALL(TARGETS ReWeightGHep DESTINATION bin)
 
+####### GenerateSystProvider app
+
+add_executable(GenerateSystProviderConfigNuSyst ${CMAKE_SOURCE_DIR}/nusyst/artless/GenerateSystProviderConfigNuSyst.cc)
+add_dependencies(GenerateSystProviderConfigNuSyst larsyst)
+set_target_properties(GenerateSystProviderConfigNuSyst PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(GenerateSystProviderConfigNuSyst
+  larsyst_interface
+  larsyst_interpreters
+  larsyst_systproviders
+  larsyst_utility)
+target_link_libraries(GenerateSystProviderConfigNuSyst nusyst_systproviders)
+target_link_libraries(GenerateSystProviderConfigNuSyst ${GENIE_LIBS})
+target_link_libraries(GenerateSystProviderConfigNuSyst ${ROOT_LIBS})
+
+INSTALL(TARGETS GenerateSystProviderConfigNuSyst DESTINATION bin)
+
+
 ####### fhicl files
 file(GLOB FCL ${CMAKE_SOURCE_DIR}/nusyst/fcl/*.fcl)
 install(FILES ${FCL} DESTINATION ${CMAKE_INSTALL_PREFIX}/fcl)
 
+####### environment scripts
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.sh.in
   "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/setup.sh" @ONLY)
 install(FILES

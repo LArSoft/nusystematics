@@ -1,13 +1,15 @@
 #ifndef NUSYST_RESPONSE_HELPER_SEEN
 #define NUSYST_RESPONSE_HELPER_SEEN
 
-#include "nusyst/artless/configure_nusyst_providers.hh"
 #include "nusyst/interface/IGENIESystProvider_tool.hh"
-#include "nusyst/interface/types.hh"
 
-#include "larsyst/interface/types.hh"
+#include "nusyst/systproviders/GENIEReWeight_tool.hh"
+
+#include "larsyst/interface/SystParamHeader.hh"
+
 #include "larsyst/interpreters/ParamHeaderHelper.hh"
-#include "larsyst/interpreters/load_parameter_headers.hh"
+
+#include "larsyst/utility/ParameterAndProviderConfigurationUtility.hh"
 
 #include "fhiclcpp/make_ParameterSet.h"
 
@@ -16,30 +18,49 @@
 #include <string>
 
 namespace nusyst {
+
+inline std::unique_ptr<IGENIESystProvider_tool>
+make_instance(fhicl::ParameterSet const &paramset) {
+  std::string tool_type = paramset.get<std::string>("tool_type");
+
+  if (tool_type == "GENIEReWeight") {
+    return std::make_unique<GENIEReWeight>(paramset);
+    // } else if (tool_type == "MKSinglePiEnuq0q3") {
+    //   return std::make_unique<MKSinglePiEnuq0q3>(paramset);
+    // } else if (tool_type == "MINERvAq0q3Weighting") {
+    //   return std::make_unique<MINERvAq0q3Weighting>(paramset);
+  } else {
+  std:
+    std::cout << "[ERROR]: Unknown tool type: " << std::quoted(tool_type)
+              << std::endl;
+    throw;
+  }
+}
+
+NEW_LARSYST_EXCEPT(response_helper_found_no_parameters);
+
 class response_helper : public larsyst::ParamHeaderHelper {
 
 private:
   std::string config_file;
-  genie_provider_map_t syst_providers;
+  std::vector<std::unique_ptr<IGENIESystProvider_tool>> syst_providers;
   larsyst::param_header_map_t configuredParameterHeaders;
 
-  void LoadProviders(fhicl::ParameterSet const &ps) {
-    syst_providers = nusyst::load_syst_provider_configuration(ps);
+  void LoadProvidersAndHeaders(fhicl::ParameterSet const &ps) {
+    syst_providers = larsyst::ConfigureISystProvidersFromParameterHeaders<
+        IGENIESystProvider_tool>(ps, make_instance);
 
     if (!syst_providers.size()) {
-      std::cout
+      throw response_helper_found_no_parameters()
           << "[ERROR]: Expected to load some systematic providers from input: "
-          << std::quoted(config_file) << std::endl;
-      throw;
+          << std::quoted(config_file);
     }
-  }
 
-  void LoadHeaders(fhicl::ParameterSet const &ps) {
-    configuredParameterHeaders = larsyst::load_syst_provider_headers(ps);
+    configuredParameterHeaders = larsyst::BuildParameterHeaders(syst_providers);
     if (!configuredParameterHeaders.size()) {
-      std::cout << "[ERROR]: Expected to find some parameter headers in "
-                << std::quoted(config_file) << std::endl;
-      throw;
+      throw response_helper_found_no_parameters()
+          << "[ERROR]: Expected systematric providers loaded from input: "
+          << std::quoted(config_file) << " to provide some parameter headers.";
     }
 
     SetHeaders(configuredParameterHeaders);
@@ -59,8 +80,7 @@ public:
             .get<fhicl::ParameterSet>(
                 "generated_systematic_provider_configuration");
 
-    LoadProviders(ps);
-    LoadHeaders(ps);
+    LoadProvidersAndHeaders(ps);
   }
 
   larsyst::event_unit_response_t
@@ -68,9 +88,9 @@ public:
     larsyst::event_unit_response_t response;
     for (auto &sp : syst_providers) {
       larsyst::event_unit_response_t prov_response =
-          sp.second->GetEventResponse(GenieGHep);
+          sp->GetEventResponse(GenieGHep);
       for (auto &&er : prov_response) {
-        response.insert(std::move(er));
+        response.push_back(std::move(er));
       }
     }
     return response;

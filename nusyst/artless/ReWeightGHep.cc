@@ -1,10 +1,14 @@
 #include "nusyst/artless/response_helper.hh"
 
+#include "nusyst/utility/enumclass2int.hh"
+#include "nusyst/utility/GENIEUtils.hh"
+
 #include "EVGCore/EventRecord.h"
 #include "GHEP/GHepUtils.h"
 #include "Messenger/Messenger.h"
 #include "Ntuple/NtpMCEventRecord.h"
 
+//Included by fhiclcpp-simple will not be available in art-ful
 #include "string_parsers/to_string.hxx"
 
 #include "TFile.h"
@@ -85,6 +89,16 @@ int main(int argc, char const *argv[]) {
     MKValidTree->Branch("NEUTCh", &NEUTCh, "NEUTCh/I");
   }
 
+  TTree *HERGValidTree;
+  int event_it, param_id;
+  double var, presp;
+  HERGValidTree = new TTree("HERGValidTree", "");
+  HERGValidTree->SetDirectory(fout);
+  HERGValidTree->Branch("event_it", &event_it, "event_it/I");
+  HERGValidTree->Branch("param_id", &param_id, "param_id/I");
+  HERGValidTree->Branch("var", &var, "var/D");
+  HERGValidTree->Branch("presp", &presp, "presp/D");
+
   TTree *MINERvATUNEValidTree;
   double q0, q3, Wght_RPA;
   double Wght_2p2h[4];
@@ -105,12 +119,13 @@ int main(int argc, char const *argv[]) {
     }
   }
 
+  param_list_t params = nrh.GetParameters();
   for (size_t ev_it = 0; ev_it < NEvs; ++ev_it) {
     gevs->GetEntry(ev_it);
     genie::EventRecord *GenieGHep = GenieNtpl->event;
-    std::cout << "Event #" << ev_it
-              << ", Interaction: " << GenieGHep->Summary()->AsString()
-              << std::endl;
+    // std::cout << "Event #" << ev_it
+    //           << ", Interaction: " << GenieGHep->Summary()->AsString()
+    //           << std::endl;
 
     if (!ev_it) {
       genie::Messenger::Instance()->SetPrioritiesFromXmlFile(
@@ -118,11 +133,22 @@ int main(int argc, char const *argv[]) {
     }
 
     event_unit_response_t resp = nrh.GetEventResponses(*GenieGHep);
-    std::cout << "[INFO]: Response =  " << std::endl
-              << nrh.GetEventResponseInfo(resp) << std::endl;
+    // std::cout << "[INFO]: Response =  " << std::endl
+    //           << nrh.GetEventResponseInfo(resp) << std::endl;
 
     if (!GenieGHep->Summary()->ProcInfo().IsWeakCC()) {
       continue;
+    }
+
+    for (paramId_t p : params) {
+      event_it = ev_it;
+      param_id = p;
+      for (size_t var_it = 0; var_it < nrh.GetNDiscreteVariations(p);
+           ++var_it) {
+        var = nrh.GetHeader(p).paramVariations[var_it];
+        presp = nrh.GetDiscreteResponse(p, var_it, resp);
+        HERGValidTree->Fill();
+      }
     }
 
     if (GenieGHep->Summary()->ProcInfo().IsResonant() && have_MK) {

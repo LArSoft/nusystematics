@@ -1,4 +1,4 @@
-#include "GENIEReWeightEngineConfig.hh"
+#include "nusyst/systproviders/GENIEReWeightEngineConfig.hh"
 
 // GENIE
 #include "ReWeight/GReWeightAGKY.h"
@@ -18,104 +18,233 @@ using namespace larsyst;
 
 namespace nusyst {
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>> ConfigureQEWeightEngine(
-    SystMetaData const &QEmd,
-    std::unique_ptr<genie::rew::GReWeight> &GReWeightEngine) {
+std::vector<GENIEResponseParameter>
+ConfigureQEWeightEngine(SystMetaData const &QEmd,
+                        fhicl::ParameterSet const &tool_options) {
 
-  std::map<size_t, std::map<genie::rew::GSyst_t, size_t>> param_map;
+  std::vector<GENIEResponseParameter> param_map;
 
-  bool UseDipoleAxial = HasParam(QEmd, "NormCCQE") || HasParam(QEmd, "MaCCQE");
-  bool UseZExp =
-      HasParam(QEmd, "ZNormCCQE") || HasParam(QEmd, "ZExpAVariationResponse");
+  bool ignore_parameter_dependence =
+      tool_options.get<bool>("ignore_parameter_dependence", false);
 
-  if (UseDipoleAxial || UseZExp) {
-    GReWeightEngine->AdoptWghtCalc("xsec_ccqe_axFF",
-                                   new genie::rew::GReWeightNuXSecCCQE);
-    genie::rew::GReWeightNuXSecCCQE *rwccqe =
-        dynamic_cast<genie::rew::GReWeightNuXSecCCQE *>(
-            GReWeightEngine->WghtCalc("xsec_ccqe_axFF"));
+  bool UseFullHERG = tool_options.get<bool>("UseFullHERG", false);
 
-    if (UseDipoleAxial) {
+  if (HasAnyParams(QEmd, {"NormCCQE", "MaCCQE"})) {
+
+    if (HasParam(QEmd, "NormCCQE")) {
       size_t nqeidx = GetParamIndex(QEmd, "NormCCQE");
+      GENIEResponseParameter nqer;
+      nqer.pidx = nqeidx;
+      nqer.dependents.push_back({genie::rew::kXSecTwkDial_NormCCQE, nqeidx});
+
+      for (double var : QEmd[nqeidx].paramVariations) {
+        std::unique_ptr<genie::rew::GReWeight> grw =
+            std::make_unique<genie::rew::GReWeight>();
+
+        grw->AdoptWghtCalc("xsec_ccqe_axFF",
+                           new genie::rew::GReWeightNuXSecCCQE);
+        grw->Systematics().Init(genie::rew::kXSecTwkDial_NormCCQE, var);
+
+        grw->Reconfigure();
+        nqer.Herg.push_back(std::move(grw));
+        if (!UseFullHERG) {
+          break;
+        }
+      }
+
+      param_map.push_back(std::move(nqer));
+    }
+
+    if (HasParam(QEmd, "MaCCQE")) {
       size_t maqeidx = GetParamIndex(QEmd, "MaCCQE");
-      bool maqeHasShapeOpt = SystHasOpt(QEmd, "MaCCQE", "shape");
+      bool IsShape = tool_options.get<bool>("MAQEIsShapeOnly", false);
+      GENIEResponseParameter maqer;
+      maqer.pidx = maqeidx;
+      maqer.dependents.push_back({IsShape ? genie::rew::kXSecTwkDial_MaCCQEshape
+                                          : genie::rew::kXSecTwkDial_MaCCQE,
+                                  maqeidx});
 
-      bool IsShape = HasParam(QEmd, "NormCCQE") || maqeHasShapeOpt;
+      for (double var : QEmd[maqeidx].paramVariations) {
+        std::unique_ptr<genie::rew::GReWeight> grw =
+            std::make_unique<genie::rew::GReWeight>();
 
-      rwccqe->SetMode(IsShape
-                          ? genie::rew::GReWeightNuXSecCCQE::kModeNormAndMaShape
-                          : genie::rew::GReWeightNuXSecCCQE::kModeMa);
+        genie::rew::GReWeightNuXSecCCQE *rwccqe =
+            new genie::rew::GReWeightNuXSecCCQE();
 
-      if (HasParam(QEmd, "NormCCQE")) {
-        param_map[nqeidx].insert({genie::rew::kXSecTwkDial_NormCCQE, nqeidx});
+        rwccqe->SetMode(
+            IsShape ? genie::rew::GReWeightNuXSecCCQE::kModeNormAndMaShape
+                    : genie::rew::GReWeightNuXSecCCQE::kModeMa);
+
+        grw->AdoptWghtCalc("xsec_ccqe_axFF", rwccqe);
+
+        grw->Systematics().Init(IsShape ? genie::rew::kXSecTwkDial_MaCCQEshape
+                                        : genie::rew::kXSecTwkDial_MaCCQE,
+                                var);
+
+        grw->Reconfigure();
+        maqer.Herg.push_back(std::move(grw));
+        if (!UseFullHERG) {
+          break;
+        }
       }
 
-      if (HasParam(QEmd, "MaCCQE")) {
-        param_map[maqeidx].insert({IsShape
-                                       ? genie::rew::kXSecTwkDial_MaCCQEshape
-                                       : genie::rew::kXSecTwkDial_MaCCQE,
-                                   maqeidx});
+      param_map.push_back(std::move(maqer));
+    }
+  }
+
+  if (HasParam(QEmd, "AxFFCCQEshape")) {
+    size_t zaxidx = GetParamIndex(QEmd, "AxFFCCQEshape");
+
+    GENIEResponseParameter axffqer;
+    axffqer.pidx = zaxidx;
+    axffqer.dependents.push_back(
+        {genie::rew::kXSecTwkDial_AxFFCCQEshape, zaxidx});
+
+    std::unique_ptr<genie::rew::GReWeight> grw =
+        std::make_unique<genie::rew::GReWeight>();
+
+    grw->AdoptWghtCalc("xsec_ccqe_axFF_form",
+                       new genie::rew::GReWeightNuXSecCCQEaxial());
+
+    grw->Systematics().Init(genie::rew::kXSecTwkDial_AxFFCCQEshape, 1);
+
+    grw->Reconfigure();
+
+    axffqer.Herg.push_back(std::move(grw));
+
+    param_map.push_back(std::move(axffqer));
+  }
+
+  if (HasAnyParams(QEmd, {"ZNormCCQE", "ZExpAVariationResponse", "ZExpA1CCQE",
+                          "ZExpA2CCQE", "ZExpA3CCQE", "ZExpA4CCQE"})) {
+
+    if (HasParam(QEmd, "ZNormCCQE")) {
+      size_t znormidx = GetParamIndex(QEmd, "ZNormCCQE");
+      GENIEResponseParameter znr;
+      znr.pidx = znormidx;
+      znr.dependents.push_back({genie::rew::kXSecTwkDial_ZNormCCQE, znormidx});
+      for (double var : QEmd[znormidx].paramVariations) {
+        std::unique_ptr<genie::rew::GReWeight> grw =
+            std::make_unique<genie::rew::GReWeight>();
+
+        grw->AdoptWghtCalc("xsec_ccqe_axFF",
+                           new genie::rew::GReWeightNuXSecCCQE);
+        grw->Systematics().Init(genie::rew::kXSecTwkDial_ZNormCCQE, var);
+
+        grw->Reconfigure();
+        znr.Herg.push_back(std::move(grw));
+        if (!UseFullHERG) {
+          break;
+        }
+      }
+    }
+
+    // If not ignoring dependence then have to hook up multiple parameter
+    // variations to the response parameter.
+    if (HasParam(QEmd, "ZExpAVariationResponse") &&
+        HasAnyParams(
+            QEmd, {"ZExpA1CCQE", "ZExpA2CCQE", "ZExpA3CCQE", "ZExpA4CCQE"})) {
+
+      size_t zexpridx = GetParamIndex(QEmd, "ZExpAVariationResponse");
+      GENIEResponseParameter Zexpr;
+      Zexpr.pidx = zexpridx;
+
+      for (auto const &ZExpANameDial :
+           std::vector<std::pair<std::string, genie::rew::GSyst_t>>{
+               {"ZExpA1CCQE", genie::rew::kXSecTwkDial_ZExpA1CCQE},
+               {"ZExpA2CCQE", genie::rew::kXSecTwkDial_ZExpA2CCQE},
+               {"ZExpA3CCQE", genie::rew::kXSecTwkDial_ZExpA3CCQE},
+               {"ZExpA4CCQE", genie::rew::kXSecTwkDial_ZExpA4CCQE}}) {
+        if (HasParam(QEmd, ZExpANameDial.first)) {
+          Zexpr.dependents.push_back(
+              {ZExpANameDial.second, GetParamIndex(QEmd, ZExpANameDial.first)});
+        }
       }
 
-    } else {
-      rwccqe->SetMode(genie::rew::GReWeightNuXSecCCQE::kModeZExp);
+      for (size_t i = 0; i < QEmd[zexpridx].paramVariations.size(); ++i) {
+        std::unique_ptr<genie::rew::GReWeight> grw =
+            std::make_unique<genie::rew::GReWeight>();
 
-      if (HasParam(QEmd, "AxFFCCQEshape")) {
-        size_t zaxidx = GetParamIndex(QEmd, "AxFFCCQEshape");
-        GReWeightEngine->AdoptWghtCalc(
-            "xsec_ccqe_ZExp", new genie::rew::GReWeightNuXSecCCQEaxial);
-        param_map[zaxidx].insert(
-            {genie::rew::kXSecTwkDial_AxFFCCQEshape, zaxidx});
-      }
+        grw->AdoptWghtCalc("xsec_ccqe_axFF",
+                           new genie::rew::GReWeightNuXSecCCQE);
 
-      if (HasParam(QEmd, "ZNormCCQE")) {
-        size_t znormidx = GetParamIndex(QEmd, "ZNormCCQE");
-        param_map[znormidx].insert(
-            {genie::rew::kXSecTwkDial_ZNormCCQE, znormidx});
-      }
+        for (auto const &dep : Zexpr.dependents) {
+          grw->Systematics().Init(dep.gdial, QEmd[dep.pidx].paramVariations[i]);
+        }
 
-      // Turns of each zexpansion parameter effect a response via a single
-      // parameter.
-      size_t zrespidx = GetParamIndex(QEmd, "ZExpAVariationResponse");
-      if (HasParam(QEmd, "ZExpA1CCQE")) {
-        size_t za1idx = GetParamIndex(QEmd, "ZExpA1CCQE");
-        param_map[zrespidx].insert(
-            {genie::rew::kXSecTwkDial_ZExpA1CCQE, za1idx});
+        grw->Reconfigure();
+        Zexpr.Herg.push_back(std::move(grw));
+        if (!UseFullHERG) {
+          break;
+        }
       }
-      if (HasParam(QEmd, "ZExpA2CCQE")) {
-        size_t za2idx = GetParamIndex(QEmd, "ZExpA2CCQE");
-        param_map[zrespidx].insert(
-            {genie::rew::kXSecTwkDial_ZExpA2CCQE, za2idx});
-      }
-      if (HasParam(QEmd, "ZExpA3CCQE")) {
-        size_t za3idx = GetParamIndex(QEmd, "ZExpA3CCQE");
-        param_map[zrespidx].insert(
-            {genie::rew::kXSecTwkDial_ZExpA3CCQE, za3idx});
-      }
-      if (HasParam(QEmd, "ZExpA4CCQE")) {
-        size_t za4idx = GetParamIndex(QEmd, "ZExpA4CCQE");
-        param_map[zrespidx].insert(
-            {genie::rew::kXSecTwkDial_ZExpA4CCQE, za4idx});
+      // We are ignoring the dependence of the zexpansion parameters.
+    } else if (HasAnyParams(QEmd, {"ZExpA1CCQE", "ZExpA2CCQE", "ZExpA3CCQE",
+                                   "ZExpA4CCQE"})) {
+
+      for (auto const &ZExpANameDial :
+           std::vector<std::pair<std::string, genie::rew::GSyst_t>>{
+               {"ZExpA1CCQE", genie::rew::kXSecTwkDial_ZExpA1CCQE},
+               {"ZExpA2CCQE", genie::rew::kXSecTwkDial_ZExpA2CCQE},
+               {"ZExpA3CCQE", genie::rew::kXSecTwkDial_ZExpA3CCQE},
+               {"ZExpA4CCQE", genie::rew::kXSecTwkDial_ZExpA4CCQE}}) {
+
+        if (HasParam(QEmd, ZExpANameDial.first)) {
+          size_t zdialidx = GetParamIndex(QEmd, ZExpANameDial.first);
+          GENIEResponseParameter Zexpar;
+          Zexpar.pidx = zdialidx;
+          Zexpar.dependents.push_back({ZExpANameDial.second, zdialidx});
+          for (double var : QEmd[zdialidx].paramVariations) {
+            std::unique_ptr<genie::rew::GReWeight> grw =
+                std::make_unique<genie::rew::GReWeight>();
+
+            grw->AdoptWghtCalc("xsec_ccqe_axFF",
+                               new genie::rew::GReWeightNuXSecCCQE);
+            grw->Systematics().Init(ZExpANameDial.second, var);
+
+            grw->Reconfigure();
+            Zexpar.Herg.push_back(std::move(grw));
+            if (!UseFullHERG) {
+              break;
+            }
+          }
+        }
       }
     }
   }
 
   if (HasParam(QEmd, "VecFFCCQEshape")) {
-    GReWeightEngine->AdoptWghtCalc("xsec_ccqe_vecFF",
-                                   new genie::rew::GReWeightNuXSecCCQEvec);
     size_t vecffidx = GetParamIndex(QEmd, "VecFFCCQEshape");
-    param_map[vecffidx].insert(
+
+    GENIEResponseParameter vecffqer;
+    vecffqer.pidx = vecffidx;
+    vecffqer.dependents.push_back(
         {genie::rew::kXSecTwkDial_VecFFCCQEshape, vecffidx});
+
+    std::unique_ptr<genie::rew::GReWeight> grw =
+        std::make_unique<genie::rew::GReWeight>();
+
+    grw->AdoptWghtCalc("xsec_ccqe_vecFF",
+                       new genie::rew::GReWeightNuXSecCCQEvec);
+
+    grw->Systematics().Init(genie::rew::kXSecTwkDial_VecFFCCQEshape,
+                            QEmd[vecffidx].centralParamValue);
+    grw->Reconfigure();
+
+    vecffqer.Herg.push_back(std::move(grw));
+
+    param_map.push_back(std::move(vecffqer));
   }
   return param_map;
-}
+} // namespace nusyst
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
-ConfigureNCELWeightEngine(
+#ifndef GRWTEST
+
+std::vector<GENIEResponseParameter> ConfigureNCELWeightEngine(
     SystMetaData const &NCELmd,
     std::unique_ptr<genie::rew::GReWeight> &GReWeightEngine) {
 
-  std::map<size_t, std::map<genie::rew::GSyst_t, size_t>> param_map;
+  std::vector<GENIEResponseParameter> param_map;
 
   bool UseNCEL = HasParam(NCELmd, "MaNCEL") || HasParam(NCELmd, "EtaNCEL");
 
@@ -140,12 +269,11 @@ ConfigureNCELWeightEngine(
   return param_map;
 }
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
-ConfigureRESWeightEngine(
+std::vector<GENIEResponseParameter> ConfigureRESWeightEngine(
     SystMetaData const &RESmd,
     std::unique_ptr<genie::rew::GReWeight> &GReWeightEngine) {
 
-  std::map<size_t, std::map<genie::rew::GSyst_t, size_t>> param_map;
+  std::vector<GENIEResponseParameter> param_map;
 
   bool UseCCRES = HasParam(RESmd, "NormCCRES") || HasParam(RESmd, "MaCCRES") ||
                   HasParam(RESmd, "MvCCRES");
@@ -292,12 +420,11 @@ ConfigureRESWeightEngine(
   return param_map;
 }
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
-ConfigureCOHWeightEngine(
+std::vector<GENIEResponseParameter> ConfigureCOHWeightEngine(
     SystMetaData const &COHmd,
     std::unique_ptr<genie::rew::GReWeight> &GReWeightEngine) {
 
-  std::map<size_t, std::map<genie::rew::GSyst_t, size_t>> param_map;
+  std::vector<GENIEResponseParameter> param_map;
   bool UseCOH = HasParam(COHmd, "MaCOHpi") || HasParam(COHmd, "R0COHpi");
 
   if (UseCOH) {
@@ -321,12 +448,11 @@ ConfigureCOHWeightEngine(
   return param_map;
 }
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
-ConfigureDISWeightEngine(
+std::vector<GENIEResponseParameter> ConfigureDISWeightEngine(
     SystMetaData const &DISmd,
     std::unique_ptr<genie::rew::GReWeight> &GReWeightEngine) {
 
-  std::map<size_t, std::map<genie::rew::GSyst_t, size_t>> param_map;
+  std::vector<GENIEResponseParameter> param_map;
 
   bool UseDISXSec = HasParam(DISmd, "AhtBY") || HasParam(DISmd, "BhtBY") ||
                     HasParam(DISmd, "CV1uBY") || HasParam(DISmd, "CV2uBY");
@@ -414,18 +540,18 @@ ConfigureDISWeightEngine(
   return param_map;
 }
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
-ConfigureFSIWeightEngine(
+std::vector<GENIEResponseParameter> ConfigureFSIWeightEngine(
     SystMetaData const &FSImd,
     std::unique_ptr<genie::rew::GReWeight> &GReWeightEngine) {
   return {};
 }
 
-std::map<size_t, std::map<genie::rew::GSyst_t, size_t>>
-ConfigureOtherWeightEngine(
+std::vector<GENIEResponseParameter> ConfigureOtherWeightEngine(
     SystMetaData const &Othermd,
     std::unique_ptr<genie::rew::GReWeight> &GReWeightEngine) {
   return {};
 }
+
+#endif
 
 } // namespace nusyst
