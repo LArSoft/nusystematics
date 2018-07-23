@@ -1,0 +1,27 @@
+MKSPPEnuq0q3_Tool_Config: {
+    tool_type: "MKSinglePiEnuq0q3"
+    instance_name: "DUNE_TDR_FakeData"
+
+    MKSPP_Enuq0q3_input_manifest: {
+      InputTemplates: [
+        {
+          parameter_name: NumuNPiPlus
+          input_file: "MKInputs/CCnu_ppipChannel_ENuq0q3_NEUTRS_NEUTMK_ReWeight.root"
+          inputs: [ { value: 1
+              hist_name: "CCnu_ppipChannel_ENuq0q3_NEUTRS_NEUTMK_ReWeight" } ]
+        },
+        {
+          parameter_name: NumuPPiPlus
+          input_file: "MKInputs/CCnu_npipChannel_ENuq0q3_NEUTRS_NEUTMK_ReWeight.root"
+          inputs: [
+            { value: 1
+              hist_name: "CCnu_npipChannel_ENuq0q3_NEUTRS_NEUTMK_ReWeight"
+            }
+          ]
+        }
+      ]
+    }
+
+}
+
+syst_providers: [MKSPPEnuq0q3_Tool_Config]

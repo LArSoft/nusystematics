@@ -1,8 +1,8 @@
 # ======================================================================
-#  nusyst main build file
+#  nusystematics main build file
 #
 #  cd .../path/to/build/directory
-#  source .../path/to/nusyst/ups/setup_for_development <-d|-p>
+#  source .../path/to/nusystematics/ups/setup_for_development <-d|-p>
 #  cmake [-DCMAKE_INSTALL_PREFIX=/install/path]
 #        -DCMAKE_BUILD_TYPE=$CETPKG_TYPE
 #        $CETPKG_SOURCE
@@ -16,7 +16,7 @@
 # use cmake 2.8 or later
 cmake_minimum_required (VERSION 2.8)
 
-project(nusyst)
+project(nusystematics)
 
 if(NOT DEFINED USEART) #by default build in ART mode
   SET(USEART TRUE)
@@ -155,7 +155,7 @@ include_directories ( $ENV{LIBXML2_INC} )
 include_directories ( $ENV{LOG4CPP_INC} )
 
 # ADD SOURCE CODE SUBDIRECTORIES HERE
-add_subdirectory(nusyst)
+add_subdirectory(nusystematics)
 
 # tests
 add_subdirectory(test)
@@ -178,6 +178,6 @@ else() #
   endif()
   message(STATUS "Installing to: ${CMAKE_INSTALL_PREFIX}")
 
-  add_subdirectory(nusyst/artless)
+  add_subdirectory(nusystematics/artless)
 
 endif()

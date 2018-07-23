@@ -15,11 +15,11 @@ export TBB_LIB=/cvmfs/larsoft.opensciencegrid.org/products/tbb/v2018_1/Linux64bi
 export TBB_INC=/cvmfs/larsoft.opensciencegrid.org/products/tbb/v2018_1/Linux64bit+2.6-2.12-e15-prof/include
 
 # change tab title in this window
-echo -ne "\033]0;nusyst  --  ${HOSTNAME%%.*}"; echo -ne "\007"
+echo -ne "\033]0;nusystematics  --  ${HOSTNAME%%.*}"; echo -ne "\007"
 
-export NUSYST=`pwd`
-export LD_LIBRARY_PATH=$NUSYST/build/Linux/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$NUSYST/build/nusyst/artless:$LD_LIBRARY_PATH
+export nusystematics=`pwd`
+export LD_LIBRARY_PATH=$nusystematics/build/Linux/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$nusystematics/build/nusystematics/artless:$LD_LIBRARY_PATH
 
 echo "artless cmake cmd"
 echo "cmake ../ -DUSEART=0 -DLIBXML2_LIB=/cvmfs/larsoft.opensciencegrid.org/products/libxml2/v2_9_5/Linux64bit+2.6-2.12-prof/lib/ -DLIBXML2_INC=/cvmfs/larsoft.opensciencegrid.org/products/libxml2/v2_9_5/Linux64bit+2.6-2.12-prof/include/libxml2 -DPYTHIA6=/cvmfs/larsoft.opensciencegrid.org/products/pythia/v6_4_28i/Linux64bit+2.6-2.12-gcc640-prof/lib"
