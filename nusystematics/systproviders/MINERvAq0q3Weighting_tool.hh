@@ -11,6 +11,9 @@
 // GENIE
 #include "EVGCore/EventRecord.h"
 
+#include "TFile.h"
+#include "TTree.h"
+
 #include <memory>
 #include <string>
 
@@ -56,7 +59,7 @@ public:
   fhicl::ParameterSet GetExtraToolOptions() { return tool_options; }
 
   systtools::SystMetaData BuildSystMetaData(fhicl::ParameterSet const &,
-                                          systtools::paramId_t);
+                                            systtools::paramId_t);
 
   double GetMINERvARPATuneWeight(double val, double q0, double q3);
   double GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
@@ -66,8 +69,21 @@ public:
 
   std::string AsString();
 
+  ~MINERvAq0q3Weighting();
+
 private:
   fhicl::ParameterSet tool_options;
+
+  void InitValidTree();
+
+  bool fill_valid_tree;
+  TFile *valid_file;
+  TTree *valid_tree;
+
+  int NEUTMode, Pdgnu, pdgfslep, QELTarget;
+  double Enu, momfslep, cthetafslep, Q2, q0, q3, W;
+  std::vector<double> RPA_weights;
+  std::vector<double> MEC_weights;
 };
 
 #endif

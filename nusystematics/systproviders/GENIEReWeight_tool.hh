@@ -9,6 +9,9 @@
 #include "EVGCore/EventRecord.h"
 #include "ReWeight/GReWeight.h"
 
+#include "TFile.h"
+#include "TTree.h"
+
 #include <memory>
 #include <set>
 
@@ -23,7 +26,7 @@ public:
 #endif
 
   systtools::SystMetaData BuildSystMetaData(fhicl::ParameterSet const &,
-                                          systtools::paramId_t);
+                                            systtools::paramId_t);
   fhicl::ParameterSet GetExtraToolOptions() { return tool_options; }
 
   bool SetupResponseCalculator(fhicl::ParameterSet const &);
@@ -32,6 +35,8 @@ public:
 
   std::string AsString();
 
+  ~GENIEReWeight();
+
 private:
   std::vector<nusyst::GENIEResponseParameter> ResponseToGENIEParameters;
 
@@ -39,6 +44,16 @@ private:
       std::vector<nusyst::GENIEResponseParameter> &&);
 
   fhicl::ParameterSet tool_options;
+
+  void InitValidTree();
+
+  bool fill_valid_tree;
+  TFile *valid_file;
+  TTree *valid_tree;
+
+  int NEUTMode, Pdgnu;
+  double Enu, Q2, q0, q3, W;
+  std::vector<double> weights;
 
 #ifndef NO_ART
   std::string fGENIEModuleLabel = "generator";

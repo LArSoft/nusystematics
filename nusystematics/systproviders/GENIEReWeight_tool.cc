@@ -18,6 +18,7 @@
 #endif
 
 // GENIE
+#include "GHEP/GHepUtils.h"
 #include "Messenger/Messenger.h"
 
 #include <chrono>
@@ -28,7 +29,8 @@ using namespace systtools;
 using namespace nusyst;
 
 GENIEReWeight::GENIEReWeight(ParameterSet const &params)
-    : IGENIESystProvider_tool(params) {}
+    : IGENIESystProvider_tool(params), valid_file(nullptr),
+      valid_tree(nullptr) {}
 
 std::string GENIEReWeight::AsString() {
   CheckHaveMetaData();
@@ -42,8 +44,10 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
 
   bool ignore_parameter_dependence =
       params.get<bool>("ignore_parameter_dependence", false);
-
   tool_options.put("ignore_parameter_dependence", ignore_parameter_dependence);
+
+  fill_valid_tree = params.get<bool>("fill_valid_tree", false);
+  tool_options.put("fill_valid_tree", fill_valid_tree);
 
   SystMetaData QEmd =
       ConfigureQEParameterHeaders(params, firstParamId, tool_options);
@@ -124,6 +128,11 @@ bool GENIEReWeight::SetupResponseCalculator(
 
   std::cout << "[INFO]: Done!" << std::endl;
 
+  fill_valid_tree = tool_options.get("fill_valid_tree", false);
+  if (fill_valid_tree) {
+    InitValidTree();
+  }
+
   return true;
 }
 
@@ -164,7 +173,8 @@ GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {
   systtools::event_unit_response_t event_responses;
 
   for (auto &GENIEResponse : ResponseToGENIEParameters) {
-    systtools::SystParamHeader const &hdr = GetSystMetaData()[GENIEResponse.pidx];
+    systtools::SystParamHeader const &hdr =
+        GetSystMetaData()[GENIEResponse.pidx];
     size_t NVars = hdr.isCorrection ? 1 : hdr.paramVariations.size();
 #ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
     std::cout << "[INFO]: Resp dial: " << hdr.prettyName << " with " << NVars
@@ -205,5 +215,53 @@ GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {
 #endif
     }
   }
+
+  if (fill_valid_tree) {
+    TLorentzVector FSLepP4 = gev.Summary()->Kine().FSLeptonP4();
+    TLorentzVector ISLepP4 =
+        *gev.Summary()->InitState().GetProbeP4(genie::kRfLab);
+    TLorentzVector emTransfer = (ISLepP4 - FSLepP4);
+
+    Pdgnu = gev.Summary()->InitState().ProbePdg();
+    NEUTMode = 0;
+    if (gev.Summary()->ProcInfo().IsMEC() &&
+        gev.Summary()->ProcInfo().IsWeakCC()) {
+      NEUTMode = (Pdgnu > 0) ? 2 : -2;
+    } else {
+      NEUTMode = genie::utils::ghep::NeutReactionCode(&gev);
+    }
+
+    Enu = ISLepP4.E();
+    Q2 = -emTransfer.Mag2();
+    W = gev.Summary()->Kine().W(true);
+    q0 = emTransfer.E();
+    q3 = emTransfer.Vect().Mag();
+    valid_tree->Fill();
+  }
+
   return event_responses;
+}
+
+void GENIEReWeight::InitValidTree() {
+
+  valid_file = new TFile("GENIEReWeightValid.root", "RECREATE");
+  valid_tree = new TTree("valid_tree", "");
+
+  valid_tree->Branch("NEUTMode", &NEUTMode);
+  valid_tree->Branch("Enu", &Enu);
+  valid_tree->Branch("Pdgnu", &Pdgnu);
+  valid_tree->Branch("Q2", &Q2);
+  valid_tree->Branch("W", &W);
+  valid_tree->Branch("q0", &q0);
+  valid_tree->Branch("q3", &q3);
+  valid_tree->Branch("weights", &weights);
+}
+
+GENIEReWeight::~GENIEReWeight() {
+  if (valid_file) {
+    valid_tree->SetDirectory(valid_file);
+    valid_file->Write();
+    valid_file->Close();
+    delete valid_file;
+  }
 }

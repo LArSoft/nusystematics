@@ -110,12 +110,15 @@ public:
       switch (tweak) {
       case RPATweak_t::kCV: {
         weight += nusyst::RPAPolyQ2_CV[ii] * powerQ2;
+        break;
       }
       case RPATweak_t::kPlus1: {
         weight += nusyst::RPAPolyQ2_Plus1[ii] * powerQ2;
+        break;
       }
       case RPATweak_t::kMinus1: {
         weight += nusyst::RPAPolyQ2_Minus1[ii] * powerQ2;
+        break;
       }
       default: { throw invalid_MINERvA_RPA_tweak(); }
       }

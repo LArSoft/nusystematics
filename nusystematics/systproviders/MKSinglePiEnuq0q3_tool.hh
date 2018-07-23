@@ -9,6 +9,9 @@
 #include "EVGCore/EventRecord.h"
 #include "Interaction/SppChannel.h"
 
+#include "TFile.h"
+#include "TTree.h"
+
 #include <memory>
 #include <string>
 
@@ -36,8 +39,20 @@ public:
 
   std::string AsString();
 
+  ~MKSinglePiEnuq0q3();
+
 private:
   fhicl::ParameterSet tool_options;
+
+  void InitValidTree();
+
+  bool fill_valid_tree;
+  TFile *valid_file;
+  TTree *valid_tree;
+
+  int NEUTMode, Pdgnu, pdgfslep, pdghmfspi, SppChannel;
+  double Enu, momfslep, cthetafslep, momhmfspi, cthetahmfspi, Q2, q0, q3, W,
+      weight;
 };
 
 #endif

@@ -8,6 +8,8 @@
 
 #include "nusystematics/utility/exceptions.hh"
 
+#include "GHEP/GHepParticle.h"
+
 #include "TLorentzVector.h"
 
 using namespace systtools;
@@ -15,7 +17,8 @@ using namespace nusyst;
 using namespace fhicl;
 
 MINERvAq0q3Weighting::MINERvAq0q3Weighting(ParameterSet const &params)
-    : IGENIESystProvider_tool(params), RPATemplateReweighter(nullptr) {}
+    : IGENIESystProvider_tool(params), RPATemplateReweighter(nullptr),
+      valid_file(nullptr), valid_tree(nullptr) {}
 
 #ifndef NO_ART
 std::unique_ptr<EventResponse>
@@ -78,7 +81,8 @@ SystMetaData MINERvAq0q3Weighting::BuildSystMetaData(ParameterSet const &cfg,
                "MINERvATune_RPA, expected to find a FHiCL table keyed by "
                "MINERvATune_RPA_input_manifest describing the location of the "
                "histogram inputs. See "
-               "nusystematics/responsecalculators/TemplateResponseCalculatorBase.hh "
+               "nusystematics/responsecalculators/"
+               "TemplateResponseCalculatorBase.hh "
                "for the layout.";
       }
 
@@ -108,6 +112,9 @@ SystMetaData MINERvAq0q3Weighting::BuildSystMetaData(ParameterSet const &cfg,
       smd.push_back(param);
     }
   }
+
+  fill_valid_tree = cfg.get<bool>("fill_valid_tree", false);
+  tool_options.put("fill_valid_tree", fill_valid_tree);
 
   return smd;
 }
@@ -140,6 +147,12 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
     ConfiguredParameters[param_t::kMINERvA2p2h] =
         GetParamId(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement");
   }
+
+  fill_valid_tree = tool_options.get("fill_valid_tree", false);
+  if (fill_valid_tree) {
+    InitValidTree();
+  }
+  return true;
 }
 
 double MINERvAq0q3Weighting::GetMINERvARPATuneWeight(double val, double q0,
@@ -187,6 +200,7 @@ MINERvAq0q3Weighting::GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
     if (QELTarget != QELikeTarget_t::kQE) {
       return 1;
     }
+
     GaussParams = &Gauss2DParams_1p1hOnly;
   } else {
     throw invalid_parameter_value()
@@ -210,10 +224,18 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord &ev) {
     return resp;
   }
 
-  TLorentzVector FSLepP4 = ev.Summary()->Kine().FSLeptonP4();
-  TLorentzVector ISLepP4 = *ev.Summary()->InitState().GetProbeP4(genie::kRfLab);
-  TLorentzVector emTransfer = (ISLepP4 - FSLepP4);
+  genie::GHepParticle *FSLep = ev.FinalStatePrimaryLepton();
+  genie::GHepParticle *ISLep = ev.Probe();
 
+  if (!FSLep || !ISLep) {
+    throw incorrectly_generated()
+        << "[ERROR]: Failed to find IS and FS lepton in event: "
+        << ev.Summary()->AsString();
+  }
+
+  TLorentzVector FSLepP4 = *FSLep->P4();
+  TLorentzVector ISLepP4 = *ISLep->P4();
+  TLorentzVector emTransfer = (ISLepP4 - FSLepP4);
   std::array<double, 2> q0q3{{emTransfer.E(), emTransfer.Vect().Mag()}};
 
   if (ConfiguredParameters.find(param_t::kMINERvARPA) !=
@@ -252,7 +274,74 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord &ev) {
     }
   }
 
+  if (fill_valid_tree) {
+
+    pdgfslep = ev.FinalStatePrimaryLepton()->Pdg();
+    momfslep = FSLepP4.Vect().Mag();
+    cthetafslep = FSLepP4.Vect().CosTheta();
+
+    Pdgnu = ISLep->Pdg();
+    NEUTMode = 0;
+    if (ev.Summary()->ProcInfo().IsMEC() &&
+        ev.Summary()->ProcInfo().IsWeakCC()) {
+      NEUTMode = (Pdgnu > 0) ? 2 : -2;
+    } else {
+      NEUTMode = genie::utils::ghep::NeutReactionCode(&ev);
+    }
+
+    QELTarget = e2i(GetQELikeTarget(ev));
+
+    Enu = ISLepP4.E();
+    Q2 = -emTransfer.Mag2();
+    W = ev.Summary()->Kine().W(true);
+    q0 = emTransfer.E();
+    q3 = emTransfer.Vect().Mag();
+
+    RPA_weights.clear();
+    paramId_t RPA_param = GetParamId(GetSystMetaData(), "MINERvATune_RPA");
+    if (RPA_param != kParamUnhandled<paramId_t>) {
+      RPA_weights = GetParamElementFromContainer(resp, RPA_param).responses;
+    }
+
+    MEC_weights.clear();
+    paramId_t MEC_param =
+        GetParamId(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement");
+    if (MEC_param != kParamUnhandled<paramId_t>) {
+      MEC_weights = GetParamElementFromContainer(resp, MEC_param).responses;
+    }
+    valid_tree->Fill();
+  }
+
   return resp;
 }
 
 std::string MINERvAq0q3Weighting::AsString() { return ""; }
+
+void MINERvAq0q3Weighting::InitValidTree() {
+
+  valid_file = new TFile("MINERvAq0q3WeightValid.root", "RECREATE");
+  valid_tree = new TTree("valid_tree", "");
+
+  valid_tree->Branch("NEUTMode", &NEUTMode);
+  valid_tree->Branch("QELTarget", &QELTarget);
+  valid_tree->Branch("Enu", &Enu);
+  valid_tree->Branch("Pdg_nu", &Pdgnu);
+  valid_tree->Branch("Pdg_FSLep", &pdgfslep);
+  valid_tree->Branch("P_FSLep", &momfslep);
+  valid_tree->Branch("CosTheta_FSLep", &cthetafslep);
+  valid_tree->Branch("Q2", &Q2);
+  valid_tree->Branch("W", &W);
+  valid_tree->Branch("q0", &q0);
+  valid_tree->Branch("q3", &q3);
+  valid_tree->Branch("RPA_weights", &RPA_weights);
+  valid_tree->Branch("MEC_weights", &MEC_weights);
+}
+
+MINERvAq0q3Weighting::~MINERvAq0q3Weighting() {
+  if (valid_file) {
+    valid_tree->SetDirectory(valid_file);
+    valid_file->Write();
+    valid_file->Close();
+    delete valid_file;
+  }
+}
