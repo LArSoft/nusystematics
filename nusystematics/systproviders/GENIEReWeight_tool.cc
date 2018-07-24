@@ -53,19 +53,22 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
       ConfigureQEParameterHeaders(params, firstParamId, tool_options);
   firstParamId += QEmd.size();
 
-#ifndef GRWTEST
   SystMetaData NCELmd =
       ConfigureNCELParameterHeaders(params, firstParamId, tool_options);
   firstParamId += NCELmd.size();
+
   SystMetaData RESmd =
       ConfigureRESParameterHeaders(params, firstParamId, tool_options);
   firstParamId += RESmd.size();
+
   SystMetaData COHmd =
       ConfigureCOHParameterHeaders(params, firstParamId, tool_options);
   firstParamId += COHmd.size();
+
   SystMetaData DISmd =
       ConfigureDISParameterHeaders(params, firstParamId, tool_options);
   firstParamId += DISmd.size();
+#ifndef GRWTEST
   SystMetaData FSImd =
       ConfigureFSIParameterHeaders(params, firstParamId, tool_options);
   firstParamId += FSImd.size();
@@ -74,13 +77,13 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
   firstParamId += Othermd.size();
 
   // Don't extend inline to make firstParamId incrementing more clear.
-  extend_SystMetaData(QEmd, NCELmd);
-  extend_SystMetaData(QEmd, RESmd);
-  extend_SystMetaData(QEmd, COHmd);
-  extend_SystMetaData(QEmd, DISmd);
-  extend_SystMetaData(QEmd, FSImd);
-  extend_SystMetaData(QEmd, Othermd);
+  ExtendSystMetaData(QEmd, FSImd);
+  ExtendSystMetaData(QEmd, Othermd);
 #endif
+  ExtendSystMetaData(QEmd, DISmd);
+  ExtendSystMetaData(QEmd, NCELmd);
+  ExtendSystMetaData(QEmd, RESmd);
+  ExtendSystMetaData(QEmd, COHmd);
 
   return QEmd;
 }
@@ -111,15 +114,19 @@ bool GENIEReWeight::SetupResponseCalculator(
   extend_ResponseToGENIEParameters(
       ConfigureQEWeightEngine(GetSystMetaData(), tool_options));
 
-#ifndef GRWTEST
   extend_ResponseToGENIEParameters(
       ConfigureNCELWeightEngine(GetSystMetaData(), tool_options));
+
   extend_ResponseToGENIEParameters(
       ConfigureRESWeightEngine(GetSystMetaData(), tool_options));
+
   extend_ResponseToGENIEParameters(
       ConfigureCOHWeightEngine(GetSystMetaData(), tool_options));
+
   extend_ResponseToGENIEParameters(
       ConfigureDISWeightEngine(GetSystMetaData(), tool_options));
+
+#ifndef GRWTEST
   extend_ResponseToGENIEParameters(
       ConfigureFSIWeightEngine(GetSystMetaData(), tool_options));
   extend_ResponseToGENIEParameters(
@@ -167,6 +174,8 @@ DEFINE_ART_CLASS_TOOL(GENIEReWeight)
 
 #endif
 
+#define GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
+
 systtools::event_unit_response_t
 GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {
 
@@ -179,7 +188,7 @@ GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {
 #ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
     std::cout << "[INFO]: Resp dial: " << hdr.prettyName << " with " << NVars
               << " variations of " << GENIEResponse.dependents.size()
-              << std::endl;
+              << " dependent parameters." << std::endl;
 #endif
 
     // Have one GENIEReWeight per response rather than per variation, must
@@ -190,27 +199,49 @@ GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {
 
       if (IsReducedHERG) { // Need a reconfigure for each variation
         for (auto const &dep : GENIEResponse.dependents) {
+          SystParamHeader const &hdr = GetSystMetaData()[dep.pidx];
           GENIEResponse.Herg.front()->Systematics().Set(
-              dep.gdial, GetSystMetaData()[dep.pidx].paramVariations[var_it]);
+              dep.gdial, hdr.isCorrection ? hdr.centralParamValue
+                                          : hdr.paramVariations[var_it]);
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
+          std::cout << "\t\t Var = " << (hdr.isCorrection
+              ? hdr.centralParamValue
+              : hdr.paramVariations[var_it])
+                    << " GDial: " << genie::rew::GSyst::AsString(dep.gdial)
+                    << " at "
+                    << GENIEResponse.Herg.front()
+                           ->Systematics()
+                           .Info(dep.gdial)
+                           ->CurValue
+                    << std::endl;
+
+#endif
         }
         GENIEResponse.Herg.front()->Reconfigure();
         event_responses.back().responses.push_back(
             GENIEResponse.Herg.front()->CalcWeight(gev));
       } else {
+#ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
+        for (GENIEResponseParameter::DependentParameter const &dep :
+             GENIEResponse.dependents) {
+          SystParamHeader const &hdr = GetSystMetaData()[dep.pidx];
+          std::cout << "\t\t Var = "
+                    << (hdr.isCorrection ? hdr.centralParamValue
+                                         : hdr.paramVariations[var_it])
+                    << " GDial: " << genie::rew::GSyst::AsString(dep.gdial)
+                    << " at "
+                    << GENIEResponse.Herg[var_it]
+                           ->Systematics()
+                           .Info(dep.gdial)
+                           ->CurValue
+                    << std::endl;
+        }
+#endif
         event_responses.back().responses.push_back(
             GENIEResponse.Herg[var_it]->CalcWeight(gev));
       }
-
 #ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
-      std::cout << "\t Var = " << hdr.paramVariations[var_it] << " GDial: "
-                << genie::rew::GSyst::AsString(
-                       GENIEResponse.dependents.front().gdial)
-                << " at "
-                << GENIEResponse.Herg[var_it]
-                       ->Systematics()
-                       .Info(GENIEResponse.dependents.front().gdial)
-                       ->CurValue
-                << " -> " << event_responses.back().responses.back()
+      std::cout << "\t -> " << event_responses.back().responses.back()
                 << std::endl;
 #endif
     }

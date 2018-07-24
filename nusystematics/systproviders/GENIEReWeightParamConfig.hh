@@ -13,24 +13,28 @@ systtools::SystMetaData
 ConfigureQEParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t,
                             fhicl::ParameterSet &tool_options);
 
+systtools::SystMetaData
+ConfigureNCELParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t,
+                              fhicl::ParameterSet &tool_options);
+
+systtools::SystMetaData
+ConfigureRESParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t,
+                             fhicl::ParameterSet &tool_options);
+systtools::SystMetaData
+ConfigureCOHParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t,
+                             fhicl::ParameterSet &tool_options);
+
+systtools::SystMetaData
+ConfigureDISParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t,
+                             fhicl::ParameterSet &tool_options);
+
 #ifndef GRWTEST
 
-systtools::SystMetaData ConfigureNCELParameterHeaders(fhicl::ParameterSet const &,
-                                                    systtools::paramId_t);
-
-systtools::SystMetaData ConfigureRESParameterHeaders(fhicl::ParameterSet const &,
-                                                   systtools::paramId_t);
-
-systtools::SystMetaData ConfigureCOHParameterHeaders(fhicl::ParameterSet const &,
-                                                   systtools::paramId_t);
-
-systtools::SystMetaData ConfigureDISParameterHeaders(fhicl::ParameterSet const &,
-                                                   systtools::paramId_t);
-
-systtools::SystMetaData ConfigureFSIParameterHeaders(fhicl::ParameterSet const &,
-                                                   systtools::paramId_t);
 systtools::SystMetaData
-ConfigureOtherParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t);
+ConfigureFSIParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t);
+systtools::SystMetaData
+ConfigureOtherParameterHeaders(fhicl::ParameterSet const &,
+                               systtools::paramId_t);
 
 #endif
 

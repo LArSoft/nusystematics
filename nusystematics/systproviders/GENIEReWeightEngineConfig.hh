@@ -19,8 +19,6 @@ std::vector<GENIEResponseParameter>
 ConfigureQEWeightEngine(systtools::SystMetaData const &,
                         fhicl::ParameterSet const &tool_options);
 
-#ifndef GRWTEST
-
 std::vector<GENIEResponseParameter>
 ConfigureNCELWeightEngine(systtools::SystMetaData const &,
                           fhicl::ParameterSet const &tool_options);
@@ -36,6 +34,7 @@ ConfigureCOHWeightEngine(systtools::SystMetaData const &,
 std::vector<GENIEResponseParameter>
 ConfigureDISWeightEngine(systtools::SystMetaData const &,
                          fhicl::ParameterSet const &tool_options);
+#ifndef GRWTEST
 
 std::vector<GENIEResponseParameter>
 ConfigureFSIWeightEngine(systtools::SystMetaData const &,

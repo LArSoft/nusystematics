@@ -2,14 +2,18 @@
 
 #include "systematicstools/interface/ISystProvider_tool.hh"
 
-#include "systematicstools/utility/string_parsers.hh"
 #include "systematicstools/utility/ResponselessParamUtility.hh"
+#include "systematicstools/utility/string_parsers.hh"
+
+#include "ReWeight/GSyst.h"
 
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <vector>
 
 using namespace systtools;
+using namespace genie::rew;
 
 namespace nusyst {
 
@@ -19,32 +23,31 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
   SystMetaData QEmd;
 
   bool MaCCQEIsShapeOnly = cfg.get<bool>("MaCCQEIsShapeOnly", false);
-
   tool_options.put("MaCCQEIsShapeOnly", MaCCQEIsShapeOnly);
 
   bool ignore_parameter_dependence =
       tool_options.get<bool>("ignore_parameter_dependence", false);
 
   // Axial FFs
-  bool DipoleNormCCQEIsUsed =
-      FHiCLSimpleToolConfigurationParameterExists(cfg, "NormCCQE");
+  bool DipoleNormCCQEIsUsed = FHiCLSimpleToolConfigurationParameterExists(
+      cfg, GSyst::AsString(kXSecTwkDial_NormCCQE));
   bool DipoleIsShapeOnly = MaCCQEIsShapeOnly || DipoleNormCCQEIsUsed;
-  bool DipoleMaCCQEIsUsed =
-      FHiCLSimpleToolConfigurationParameterExists(cfg, "MaCCQE");
+  bool DipoleMaCCQEIsUsed = FHiCLSimpleToolConfigurationParameterExists(
+      cfg, GSyst::AsString(kXSecTwkDial_MaCCQE));
 
   bool IsDipoleReWeight =
       DipoleIsShapeOnly || DipoleNormCCQEIsUsed || DipoleMaCCQEIsUsed;
 
-  bool ZNormIsUsed =
-      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZNormCCQE");
-  bool ZExpA1IsUsed =
-      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZExpA1CCQE");
-  bool ZExpA2IsUsed =
-      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZExpA2CCQE");
-  bool ZExpA3IsUsed =
-      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZExpA3CCQE");
-  bool ZExpA4IsUsed =
-      FHiCLSimpleToolConfigurationParameterExists(cfg, "ZExpA4CCQE");
+  bool ZNormIsUsed = FHiCLSimpleToolConfigurationParameterExists(
+      cfg, GSyst::AsString(kXSecTwkDial_ZNormCCQE));
+  bool ZExpA1IsUsed = FHiCLSimpleToolConfigurationParameterExists(
+      cfg, GSyst::AsString(kXSecTwkDial_ZExpA1CCQE));
+  bool ZExpA2IsUsed = FHiCLSimpleToolConfigurationParameterExists(
+      cfg, GSyst::AsString(kXSecTwkDial_ZExpA2CCQE));
+  bool ZExpA3IsUsed = FHiCLSimpleToolConfigurationParameterExists(
+      cfg, GSyst::AsString(kXSecTwkDial_ZExpA3CCQE));
+  bool ZExpA4IsUsed = FHiCLSimpleToolConfigurationParameterExists(
+      cfg, GSyst::AsString(kXSecTwkDial_ZExpA4CCQE));
 
   bool IsZExpReWeight = ZNormIsUsed || ZExpA1IsUsed || ZExpA2IsUsed ||
                         ZExpA3IsUsed || ZExpA4IsUsed;
@@ -64,16 +67,18 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
   if (IsDipoleReWeight) {
     if (DipoleNormCCQEIsUsed) {
       systtools::SystParamHeader param;
-      ParseFHiCLSimpleToolConfigurationParameter(cfg, "NormCCQE", param,
-                                                 firstParamId);
+      ParseFHiCLSimpleToolConfigurationParameter(
+          cfg, GSyst::AsString(kXSecTwkDial_NormCCQE), param, firstParamId);
       param.systParamId = firstParamId++;
       QEmd.push_back(std::move(param));
     }
     if (DipoleMaCCQEIsUsed) {
       systtools::SystParamHeader param;
-      ParseFHiCLSimpleToolConfigurationParameter(cfg, "MaCCQE", param,
-                                                 firstParamId);
+      ParseFHiCLSimpleToolConfigurationParameter(
+          cfg, GSyst::AsString(kXSecTwkDial_MaCCQE), param, firstParamId);
       param.systParamId = firstParamId++;
+      param.prettyName = GSyst::AsString(
+          DipoleIsShapeOnly ? kXSecTwkDial_MaCCQEshape : kXSecTwkDial_MaCCQE);
       QEmd.push_back(std::move(param));
     }
   } else if (IsZExpReWeight) {
@@ -81,97 +86,51 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
     // output its response via the a meta-parameter.
     if (ZNormIsUsed) {
       systtools::SystParamHeader param;
-      ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZNormCCQE", param,
-                                                 firstParamId);
+      ParseFHiCLSimpleToolConfigurationParameter(
+          cfg, GSyst::AsString(kXSecTwkDial_ZNormCCQE), param, firstParamId);
       param.systParamId = firstParamId++;
       QEmd.push_back(std::move(param));
     }
-    if (ZExpA1IsUsed || ZExpA2IsUsed || ZExpA3IsUsed || ZExpA4IsUsed) {
-      SystParamHeader ZExp;
+    SystParamHeader ZExp;
+    if (!ignore_parameter_dependence) {
+      ZExp.prettyName = "ZExpAVariationResponse";
+      ZExp.systParamId = firstParamId++;
+    }
+    for (GSyst_t gdial : {kXSecTwkDial_ZExpA1CCQE, kXSecTwkDial_ZExpA2CCQE,
+                          kXSecTwkDial_ZExpA3CCQE, kXSecTwkDial_ZExpA4CCQE}) {
+      if (!FHiCLSimpleToolConfigurationParameterExists(
+              cfg, GSyst::AsString(gdial))) {
+        continue;
+      }
+      systtools::SystParamHeader param;
+      ParseFHiCLSimpleToolConfigurationParameter(cfg, GSyst::AsString(gdial),
+                                                 param, firstParamId);
+      param.systParamId = firstParamId++;
       if (!ignore_parameter_dependence) {
-        ZExp.prettyName = "ZExpAVariationResponse";
-        ZExp.systParamId = firstParamId++;
-      }
-
-      if (ZExpA1IsUsed) {
-        systtools::SystParamHeader param;
-        ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZExpA1", param,
-                                                   firstParamId);
-        param.systParamId = firstParamId++;
-        if (!ignore_parameter_dependence) {
-          param.isResponselessParam = true;
-          param.responseParamId = ZExp.systParamId;
-          if (param.isSplineable) {
-            throw invalid_ToolConfigurationFHiCL()
-                << "[ERROR]: Attempted to build spline from "
-                   "parameter ZExpA1 , which enters into an intrinsically "
-                   "multi-parameter response calculation. Either run in random "
-                   "throw mode or set \"ignore_parameter_dependence\" in the "
-                   "GENIEReWeight_tool configuration.";
-          }
+        param.isResponselessParam = true;
+        param.responseParamId = ZExp.systParamId;
+        if (param.isSplineable) {
+          throw invalid_ToolConfigurationFHiCL()
+              << "[ERROR]: Attempted to build spline from "
+                 "parameter "
+              << param.prettyName
+              << ", which enters into an intrinsically "
+                 "multi-parameter response calculation. Either run in "
+                 "random "
+                 "throw mode or set \"ignore_parameter_dependence\" in the "
+                 "GENIEReWeight_tool configuration.";
         }
-        QEmd.push_back(std::move(param));
       }
-      if (ZExpA2IsUsed) {
-        systtools::SystParamHeader param;
-        ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZExpA2", param,
-                                                   firstParamId);
-        param.systParamId = firstParamId++;
-        if (!ignore_parameter_dependence) {
-          param.isResponselessParam = true;
-          param.responseParamId = ZExp.systParamId;
-          if (param.isSplineable) {
-            throw invalid_ToolConfigurationFHiCL()
-                << "[ERROR]: Attempted to build spline from "
-                   "parameter ZExpA2 , which enters into an intrinsically "
-                   "multi-parameter response calculation. Either run in random "
-                   "throw mode or set \"ignore_parameter_dependence\" in the "
-                   "GENIEReWeight_tool configuration.";
-          }
-        }
-        QEmd.push_back(std::move(param));
-      }
-      if (ZExpA3IsUsed) {
-        systtools::SystParamHeader param;
-        ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZExpA3", param,
-                                                   firstParamId);
-        param.systParamId = firstParamId++;
-        if (!ignore_parameter_dependence) {
-          param.isResponselessParam = true;
-          param.responseParamId = ZExp.systParamId;
-          if (param.isSplineable) {
-            throw invalid_ToolConfigurationFHiCL()
-                << "[ERROR]: Attempted to build spline from "
-                   "parameter ZExpA3 , which enters into an intrinsically "
-                   "multi-parameter response calculation. Either run in random "
-                   "throw mode or set \"ignore_parameter_dependence\" in the "
-                   "GENIEReWeight_tool configuration.";
-          }
-        }
-        QEmd.push_back(std::move(param));
-      }
-      if (ZExpA4IsUsed) {
-        systtools::SystParamHeader param;
-        ParseFHiCLSimpleToolConfigurationParameter(cfg, "ZExpA4", param,
-                                                   firstParamId);
-        param.systParamId = firstParamId++;
-        if (!ignore_parameter_dependence) {
-          param.isResponselessParam = true;
-          param.responseParamId = ZExp.systParamId;
-          if (param.isSplineable) {
-            throw invalid_ToolConfigurationFHiCL()
-                << "[ERROR]: Attempted to build spline from "
-                   "parameter ZExpA4 , which enters into an intrinsically "
-                   "multi-parameter response calculation. Either run in random "
-                   "throw mode or set \"ignore_parameter_dependence\" in the "
-                   "GENIEReWeight_tool configuration.";
-          }
-        }
-        QEmd.push_back(std::move(param));
-      }
-      if (!ignore_parameter_dependence) {
-        QEmd.push_back(std::move(ZExp));
-      }
+      QEmd.push_back(std::move(param));
+    }
+    if (!ignore_parameter_dependence) {
+      QEmd.push_back(std::move(ZExp));
+      FinalizeAndValidateDependentParameters(
+          QEmd, "ZExpAVariationResponse",
+          {GSyst::AsString(kXSecTwkDial_ZExpA1CCQE),
+           GSyst::AsString(kXSecTwkDial_ZExpA2CCQE),
+           GSyst::AsString(kXSecTwkDial_ZExpA3CCQE),
+           GSyst::AsString(kXSecTwkDial_ZExpA4CCQE)});
     }
   }
 
@@ -179,7 +138,7 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
 
   if (!VecFFCCQEIsBBA) {
     SystParamHeader vecFFQE;
-    vecFFQE.prettyName = "VecFFCCQEshape";
+    vecFFQE.prettyName = GSyst::AsString(kXSecTwkDial_VecFFCCQEshape);
     vecFFQE.systParamId = firstParamId++;
     vecFFQE.isCorrection = true;
     vecFFQE.centralParamValue = 1;
@@ -191,350 +150,408 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
 
   if (AxFFCCQEDipoleToZExp) {
     SystParamHeader axFFQE;
-    axFFQE.prettyName = "AxFFCCQEshape";
+    axFFQE.prettyName = GSyst::AsString(kXSecTwkDial_AxFFCCQEshape);
     axFFQE.systParamId = firstParamId++;
     axFFQE.isCorrection = true;
     axFFQE.centralParamValue = 1;
     QEmd.push_back(std::move(axFFQE));
   }
 
-  if (HasParam(QEmd, "ZExpAVariationResponse")) {
-    FinalizeAndValidateDependentParameters(
-        QEmd, "ZExpAVariationResponse",
-        {"ZExpA1CCQE", "ZExpA2CCQE", "ZExpA3CCQE", "ZExpA4CCQE"});
-  }
-
   return QEmd;
-}
-
-#ifndef GRWTEST
+} // namespace nusyst
 
 SystMetaData ConfigureNCELParameterHeaders(fhicl::ParameterSet const &cfg,
-                                           paramId_t firstParamId) {
+                                           paramId_t firstParamId,
+                                           fhicl::ParameterSet &tool_options) {
   SystMetaData NCELmd;
 
-  bool MaNCELIsUsed = PARAM_IS_USED_BY_CFG(MaNCEL);
-  bool EtaNCELIsUsed = PARAM_IS_USED_BY_CFG(EtaNCEL);
+  bool ignore_parameter_dependence =
+      tool_options.get<bool>("ignore_parameter_dependence", false);
 
-  if (MaNCELIsUsed || EtaNCELIsUsed) {
-    SystParamHeader NCELResp;
+  SystParamHeader NCELResp;
+  if (!ignore_parameter_dependence) {
     NCELResp.prettyName = "NCELVariationResponse";
     NCELResp.systParamId = firstParamId++;
+  }
 
-    if (MaNCELIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(MaNCEL, NCELmd, NCELResp.systParamId);
+  for (GSyst_t const &dial : {kXSecTwkDial_MaNCEL, kXSecTwkDial_EtaNCEL}) {
+    std::string const &pname = GSyst::AsString(dial);
+    if (!FHiCLSimpleToolConfigurationParameterExists(cfg, pname)) {
+      continue;
     }
-    if (EtaNCELIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(EtaNCEL, NCELmd, NCELResp.systParamId);
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(cfg, pname, param, firstParamId);
+    param.systParamId = firstParamId++;
+    if (!ignore_parameter_dependence) {
+      param.isResponselessParam = true;
+      param.responseParamId = NCELResp.systParamId;
+      if (param.isSplineable) {
+        throw invalid_ToolConfigurationFHiCL()
+            << "[ERROR]: Attempted to build spline from "
+               "parameter "
+            << param.prettyName
+            << ", which enters into an intrinsically "
+               "multi-parameter response calculation. Either run in random "
+               "throw mode or set \"ignore_parameter_dependence\" in the "
+               "GENIEReWeight_tool configuration.";
+      }
     }
+    NCELmd.push_back(std::move(param));
+  }
+
+  if (!ignore_parameter_dependence && NCELmd.size()) {
     NCELmd.push_back(std::move(NCELResp));
-
-    std::unique_ptr<CLHEP::MTwistEngine> RNgine =
-        std::make_unique<CLHEP::MTwistEngine>(0);
-    std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
-        std::make_unique<CLHEP::RandGaussQ>(*RNgine);
-
-    for (auto &hdr : NCELmd) {
-      MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
-    }
-
-    uint64_t NVariations = 0;
-
-    auto const &NCELParamNames = {"MaNCEL", "EtaNCEL"};
-    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(NCELParamNames, NCELmd,
-                                               NVariations);
-    std::vector<double> dummyParamVars;
-    for (size_t i = 0; i < NVariations; ++i) {
-      dummyParamVars.push_back(i);
-    }
-
-    GetParam(NCELmd, "NCELVariationResponse").paramVariations =
-        std::move(dummyParamVars);
+    FinalizeAndValidateDependentParameters(
+        NCELmd, "NCELVariationResponse",
+        {GSyst::AsString(kXSecTwkDial_MaNCEL),
+         GSyst::AsString(kXSecTwkDial_EtaNCEL)});
   }
 
   return NCELmd;
 }
 
 SystMetaData ConfigureRESParameterHeaders(fhicl::ParameterSet const &cfg,
-                                          paramId_t firstParamId) {
+                                          paramId_t firstParamId,
+                                          fhicl::ParameterSet &tool_options) {
   SystMetaData RESmd;
 
   //************* CCRES
-  bool NormCCRESIsUsed = PARAM_IS_USED_BY_CFG(NormCCRES);
-  bool CCRESIsShapeOnly = cfg().CCRESIsShapeOnly() || NormCCRESIsUsed;
-  bool MaCCRESIsUsed = PARAM_IS_USED_BY_CFG(MaCCRES);
-  bool MvCCRESIsUsed = PARAM_IS_USED_BY_CFG(MvCCRES);
+  bool CCRESIsShapeOnly = cfg.get<bool>("CCRESIsShapeOnly", false);
+  tool_options.put("CCRESIsShapeOnly", CCRESIsShapeOnly);
 
-  if (NormCCRESIsUsed) {
-    ADD_PARAM_TO_SYST(NormCCRES, RESmd);
+  bool ignore_parameter_dependence =
+      tool_options.get<bool>("ignore_parameter_dependence", false);
+  bool NormCCRESIsUsed = FHiCLSimpleToolConfigurationParameterExists(
+      cfg, GSyst::AsString(kXSecTwkDial_NormCCRES));
+
+  if (NormCCRESIsUsed && !CCRESIsShapeOnly) {
+    throw invalid_ToolConfigurationFHiCL()
+        << "[ERROR]: When configuring GENIEReWeight_tool, NormCCRES was "
+           "requested but CCRES was not specified to be shape-only.";
   }
 
-  if (MaCCRESIsUsed || MvCCRESIsUsed) {
-    SystParamHeader CCRESResp;
-    CCRESResp.prettyName = "CCRESVariationResponse";
-    CCRESResp.systParamId = firstParamId++;
+  if (NormCCRESIsUsed) {
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(
+        cfg, GSyst::AsString(kXSecTwkDial_NormCCRES), param, firstParamId);
+    param.systParamId = firstParamId++;
+    RESmd.push_back(std::move(param));
+  }
 
-    if (MaCCRESIsUsed) {
-      ADD_PARAM_TO_SYST(MaCCRES, RESmd);
-      if (CCRESIsShapeOnly) {
-        GetParam(RESmd, "MaCCRES").opts.push_back("shape");
+  SystParamHeader CCRESresp;
+  if (!ignore_parameter_dependence) {
+    CCRESresp.prettyName = "CCResVariationResponse";
+    CCRESresp.systParamId = firstParamId++;
+  }
+
+  size_t NCCResParams = 0;
+  for (std::pair<GSyst_t, GSyst_t> const &name_dial :
+       std::vector<std::pair<GSyst_t, GSyst_t>>{
+           {{kXSecTwkDial_MaCCRES, kXSecTwkDial_MaCCRESshape},
+            {kXSecTwkDial_MvCCRES, kXSecTwkDial_MvCCRESshape}}}) {
+    std::string const &pname = GSyst::AsString(name_dial.first);
+    if (!FHiCLSimpleToolConfigurationParameterExists(cfg, pname)) {
+      continue;
+    }
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(cfg, pname, param, firstParamId);
+    param.systParamId = firstParamId++;
+    param.prettyName = CCRESIsShapeOnly ? GSyst::AsString(name_dial.second)
+                                        : GSyst::AsString(name_dial.first);
+
+    if (!ignore_parameter_dependence) {
+      param.isResponselessParam = true;
+      param.responseParamId = CCRESresp.systParamId;
+      if (param.isSplineable) {
+        throw invalid_ToolConfigurationFHiCL()
+            << "[ERROR]: Attempted to build spline from "
+               "parameter "
+            << pname
+            << ", which enters into an intrinsically "
+               "multi-parameter response calculation. Either run in random "
+               "throw mode or set \"ignore_parameter_dependence\" in the "
+               "GENIEReWeight_tool configuration.";
       }
     }
-    if (MvCCRESIsUsed) {
-      ADD_PARAM_TO_SYST(MvCCRES, RESmd);
-      if (CCRESIsShapeOnly) {
-        GetParam(RESmd, "MvCCRES").opts.push_back("shape");
-      }
-    }
-    RESmd.push_back(std::move(CCRESResp));
+    RESmd.push_back(std::move(param));
+    NCCResParams++;
+  }
+
+  if (!ignore_parameter_dependence && NCCResParams) {
+    RESmd.push_back(std::move(CCRESresp));
+    FinalizeAndValidateDependentParameters(
+        RESmd, "CCResVariationResponse",
+        {GSyst::AsString(CCRESIsShapeOnly ? kXSecTwkDial_MaCCRESshape
+                                          : kXSecTwkDial_MaCCRES),
+         GSyst::AsString(CCRESIsShapeOnly ? kXSecTwkDial_MvCCRESshape
+                                          : kXSecTwkDial_MvCCRES)});
   }
 
   //************* NCRES
-  bool NormNCRESIsUsed = PARAM_IS_USED_BY_CFG(NormNCRES);
-  bool NCRESIsShapeOnly = cfg().NCRESIsShapeOnly() || NormNCRESIsUsed;
-  bool MaNCRESIsUsed = PARAM_IS_USED_BY_CFG(MaNCRES);
-  bool MvNCRESIsUsed = PARAM_IS_USED_BY_CFG(MvNCRES);
+  bool NCRESIsShapeOnly = cfg.get<bool>("NCRESIsShapeOnly", false);
+  tool_options.put("NCRESIsShapeOnly", NCRESIsShapeOnly);
 
-  if (NormNCRESIsUsed) {
-    ADD_PARAM_TO_SYST(NormNCRES, RESmd);
+  bool NormNCRESIsUsed = FHiCLSimpleToolConfigurationParameterExists(
+      cfg, GSyst::AsString(kXSecTwkDial_NormNCRES));
+
+  if (NormNCRESIsUsed && !NCRESIsShapeOnly) {
+    throw invalid_ToolConfigurationFHiCL()
+        << "[ERROR]: When configuring GENIEReWeight_tool, NormNCRES was "
+           "requested but NCRES was not specified to be shape-only.";
   }
 
-  if (MaNCRESIsUsed || MvNCRESIsUsed) {
-    SystParamHeader NCRESResp;
-    NCRESResp.prettyName = "NCRESVariationResponse";
-    NCRESResp.systParamId = firstParamId++;
+  if (NormNCRESIsUsed) {
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(
+        cfg, GSyst::AsString(kXSecTwkDial_NormNCRES), param, firstParamId);
+    param.systParamId = firstParamId++;
+    RESmd.push_back(std::move(param));
+  }
 
-    if (MaNCRESIsUsed) {
-      ADD_PARAM_TO_SYST(MaNCRES, RESmd);
-      if (NCRESIsShapeOnly) {
-        GetParam(RESmd, "MaNCRES").opts.push_back("shape");
+  SystParamHeader NCRESresp;
+  if (!ignore_parameter_dependence) {
+    NCRESresp.prettyName = "NCResVariationResponse";
+    NCRESresp.systParamId = firstParamId++;
+  }
+
+  size_t NNCResParams = 0;
+  for (std::pair<GSyst_t, GSyst_t> const &name_dial :
+       std::vector<std::pair<GSyst_t, GSyst_t>>{
+           {{kXSecTwkDial_MaNCRES, kXSecTwkDial_MaNCRESshape},
+            {kXSecTwkDial_MvNCRES, kXSecTwkDial_MvNCRESshape}}}) {
+    std::string const &pname = GSyst::AsString(name_dial.first);
+    if (!FHiCLSimpleToolConfigurationParameterExists(cfg, pname)) {
+      continue;
+    }
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(cfg, pname, param, firstParamId);
+    param.systParamId = firstParamId++;
+    param.prettyName = NCRESIsShapeOnly ? GSyst::AsString(name_dial.second)
+                                        : GSyst::AsString(name_dial.first);
+    if (!ignore_parameter_dependence) {
+      param.isResponselessParam = true;
+      param.responseParamId = NCRESresp.systParamId;
+      if (param.isSplineable) {
+        throw invalid_ToolConfigurationFHiCL()
+            << "[ERROR]: Attempted to build spline from "
+               "parameter "
+            << param.prettyName
+            << ", which enters into an intrinsically "
+               "multi-parameter response calculation. Either run in random "
+               "throw mode or set \"ignore_parameter_dependence\" in the "
+               "GENIEReWeight_tool configuration.";
       }
     }
-    if (MvNCRESIsUsed) {
-      ADD_PARAM_TO_SYST(MvNCRES, RESmd);
-      if (NCRESIsShapeOnly) {
-        GetParam(RESmd, "MvNCRES").opts.push_back("shape");
-      }
-    }
-    RESmd.push_back(std::move(NCRESResp));
+    RESmd.push_back(std::move(param));
+    NNCResParams++;
+  }
+
+  if (!ignore_parameter_dependence && NNCResParams) {
+    RESmd.push_back(std::move(NCRESresp));
+    FinalizeAndValidateDependentParameters(
+        RESmd, "NCResVariationResponse",
+        {GSyst::AsString(NCRESIsShapeOnly ? kXSecTwkDial_MaNCRESshape
+                                          : kXSecTwkDial_MaNCRES),
+         GSyst::AsString(NCRESIsShapeOnly ? kXSecTwkDial_MvNCRESshape
+                                          : kXSecTwkDial_MvNCRES)});
   }
 
   // These are all independent and based upon the channel that was generated
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvpCC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvpCC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvpNC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvpNC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvnCC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvnCC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvnNC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvnNC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarpCC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarpCC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarpNC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarpNC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarnCC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarnCC2pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarnNC1pi, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(NonRESBGvbarnNC2pi, RESmd);
+  for (GSyst_t const &gdial : std::vector<GSyst_t>{
+           {kXSecTwkDial_RvpCC1pi, kXSecTwkDial_RvpCC2pi, kXSecTwkDial_RvpNC1pi,
+            kXSecTwkDial_RvpNC2pi, kXSecTwkDial_RvnCC1pi, kXSecTwkDial_RvnCC2pi,
+            kXSecTwkDial_RvnNC1pi, kXSecTwkDial_RvnNC2pi,
+            kXSecTwkDial_RvbarpCC1pi, kXSecTwkDial_RvbarpCC2pi,
+            kXSecTwkDial_RvbarpNC1pi, kXSecTwkDial_RvbarpNC2pi,
+            kXSecTwkDial_RvbarnCC1pi, kXSecTwkDial_RvbarnCC2pi,
+            kXSecTwkDial_RvbarnNC1pi, kXSecTwkDial_RvbarnNC2pi,
 
-  CHECK_USED_ADD_PARAM_TO_SYST(RDecBR1gamma, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(RDecBR1eta, RESmd);
-  CHECK_USED_ADD_PARAM_TO_SYST(Theta_Delta2Npi, RESmd);
-
-  std::unique_ptr<CLHEP::MTwistEngine> RNgine =
-      std::make_unique<CLHEP::MTwistEngine>(0);
-  std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
-      std::make_unique<CLHEP::RandGaussQ>(*RNgine);
-
-  for (auto &hdr : RESmd) {
-    MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
-  }
-
-  if (HasParam(RESmd, "CCRESVariationResponse")) {
-    uint64_t NCCRESVariations = 0;
-
-    auto const &CCRESParamNames = {"MaCCRES", "MvCCRES"};
-    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(CCRESParamNames, RESmd,
-                                               NCCRESVariations);
-    std::vector<double> CCRESdummyParamVars;
-    for (size_t i = 0; i < NCCRESVariations; ++i) {
-      CCRESdummyParamVars.push_back(i);
+            kRDcyTwkDial_BR1gamma, kRDcyTwkDial_BR1eta,
+            kRDcyTwkDial_Theta_Delta2Npi}}) {
+    std::string const &pname = GSyst::AsString(gdial);
+    if (!FHiCLSimpleToolConfigurationParameterExists(cfg, pname)) {
+      continue;
     }
-
-    GetParam(RESmd, "CCRESVariationResponse").paramVariations =
-        std::move(CCRESdummyParamVars);
-  }
-
-  if (HasParam(RESmd, "NCRESVariationResponse")) {
-
-    uint64_t NNCRESVariations = 0;
-
-    auto const &NCRESParamNames = {"MaNCRES", "MvNCRES"};
-    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(NCRESParamNames, RESmd,
-                                               NNCRESVariations);
-    std::vector<double> NCRESdummyParamVars;
-    for (size_t i = 0; i < NNCRESVariations; ++i) {
-      NCRESdummyParamVars.push_back(i);
-    }
-
-    GetParam(RESmd, "NCRESVariationResponse").paramVariations =
-        std::move(NCRESdummyParamVars);
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(cfg, pname, param, firstParamId);
+    param.systParamId = firstParamId++;
+    RESmd.push_back(std::move(param));
   }
 
   return RESmd;
 }
 
 SystMetaData ConfigureCOHParameterHeaders(fhicl::ParameterSet const &cfg,
-                                          paramId_t firstParamId) {
+                                          paramId_t firstParamId,
+                                          fhicl::ParameterSet &tool_options) {
   SystMetaData COHmd;
 
-  bool MaCOHpiIsUsed = PARAM_IS_USED_BY_CFG(MaCOHpi);
-  bool R0COHpiIsUsed = PARAM_IS_USED_BY_CFG(R0COHpi);
+  bool ignore_parameter_dependence =
+      tool_options.get<bool>("ignore_parameter_dependence", false);
 
-  if (MaCOHpiIsUsed || R0COHpiIsUsed) {
-    SystParamHeader COHResp;
+  SystParamHeader COHResp;
+  if (!ignore_parameter_dependence) {
     COHResp.prettyName = "COHVariationResponse";
     COHResp.systParamId = firstParamId++;
+  }
 
-    if (MaCOHpiIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(MaCOHpi, COHmd, COHResp.systParamId);
+  for (GSyst_t const &dial : {kXSecTwkDial_MaCOHpi, kXSecTwkDial_R0COHpi}) {
+    std::string const &pname = GSyst::AsString(dial);
+    if (!FHiCLSimpleToolConfigurationParameterExists(cfg, pname)) {
+      continue;
     }
-    if (R0COHpiIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(R0COHpi, COHmd, COHResp.systParamId);
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(cfg, pname, param, firstParamId);
+    param.systParamId = firstParamId++;
+    if (!ignore_parameter_dependence) {
+      param.isResponselessParam = true;
+      param.responseParamId = COHResp.systParamId;
+      if (param.isSplineable) {
+        throw invalid_ToolConfigurationFHiCL()
+            << "[ERROR]: Attempted to build spline from "
+               "parameter "
+            << param.prettyName
+            << ", which enters into an intrinsically "
+               "multi-parameter response calculation. Either run in random "
+               "throw mode or set \"ignore_parameter_dependence\" in the "
+               "GENIEReWeight_tool configuration.";
+      }
     }
+    COHmd.push_back(std::move(param));
+  }
+
+  if (!ignore_parameter_dependence && COHmd.size()) {
     COHmd.push_back(std::move(COHResp));
-
-    std::unique_ptr<CLHEP::MTwistEngine> RNgine =
-        std::make_unique<CLHEP::MTwistEngine>(0);
-    std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
-        std::make_unique<CLHEP::RandGaussQ>(*RNgine);
-
-    for (auto &hdr : COHmd) {
-      MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
-    }
-
-    uint64_t NVariations = 0;
-
-    auto const &COHParamNames = {"MaCOHpi", "R0COHpi"};
-    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(COHParamNames, COHmd,
-                                               NVariations);
-    std::vector<double> dummyParamVars;
-    for (size_t i = 0; i < NVariations; ++i) {
-      dummyParamVars.push_back(i);
-    }
-
-    GetParam(COHmd, "COHVariationResponse").paramVariations =
-        std::move(dummyParamVars);
+    FinalizeAndValidateDependentParameters(
+        COHmd, "COHVariationResponse",
+        {GSyst::AsString(kXSecTwkDial_MaCOHpi),
+         GSyst::AsString(kXSecTwkDial_R0COHpi)});
   }
 
   return COHmd;
 }
 
 SystMetaData ConfigureDISParameterHeaders(fhicl::ParameterSet const &cfg,
-                                          paramId_t firstParamId) {
+                                          paramId_t firstParamId,
+                                          fhicl::ParameterSet &tool_options) {
   SystMetaData DISmd;
 
-  bool DISIsShapeOnly = cfg().DISIsShapeOnly();
+  bool DISBYIsShapeOnly = cfg.get<bool>("DISBYIsShapeOnly", false);
+  tool_options.put("DISBYIsShapeOnly", DISBYIsShapeOnly);
 
-  bool AhtBYIsUsed = PARAM_IS_USED_BY_CFG(AhtBY);
-  bool BhtBYIsUsed = PARAM_IS_USED_BY_CFG(BhtBY);
-  bool CV1uBYIsUsed = PARAM_IS_USED_BY_CFG(CV1uBY);
-  bool CV2uBYIsUsed = PARAM_IS_USED_BY_CFG(CV2uBY);
+  bool ignore_parameter_dependence =
+      tool_options.get<bool>("ignore_parameter_dependence", false);
 
-  std::unique_ptr<CLHEP::MTwistEngine> RNgine =
-      std::make_unique<CLHEP::MTwistEngine>(0);
-  std::unique_ptr<CLHEP::RandGaussQ> RNJesus =
-      std::make_unique<CLHEP::RandGaussQ>(*RNgine);
-
-  if (AhtBYIsUsed || BhtBYIsUsed || CV1uBYIsUsed || CV2uBYIsUsed) {
-    SystParamHeader DISResp;
-    DISResp.prettyName = "DISVariationResponse";
-    DISResp.systParamId = firstParamId++;
-
-    if (AhtBYIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(AhtBY, DISmd, DISResp.systParamId);
-      if (DISIsShapeOnly) {
-        GetParam(DISmd, "AhtBY").opts.push_back("shape");
-      }
-    }
-    if (BhtBYIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(BhtBY, DISmd, DISResp.systParamId);
-      if (DISIsShapeOnly) {
-        GetParam(DISmd, "BhtBY").opts.push_back("shape");
-      }
-    }
-    if (CV1uBYIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(CV1uBY, DISmd, DISResp.systParamId);
-      if (DISIsShapeOnly) {
-        GetParam(DISmd, "CV1uBY").opts.push_back("shape");
-      }
-    }
-    if (CV2uBYIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(CV2uBY, DISmd, DISResp.systParamId);
-      if (DISIsShapeOnly) {
-        GetParam(DISmd, "CV2uBY").opts.push_back("shape");
-      }
-    }
-    DISmd.push_back(std::move(DISResp));
-
-    for (auto &hdr : DISmd) {
-      MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
-    }
-
-    uint64_t NVariations = 0;
-
-    auto const &DISParamNames = {"AhtBY", "BhtBY", "CV1uBY", "CV2uBY"};
-    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(DISParamNames, DISmd,
-                                               NVariations);
-    std::vector<double> dummyParamVars;
-    for (size_t i = 0; i < NVariations; ++i) {
-      dummyParamVars.push_back(i);
-    }
-
-    GetParam(DISmd, "DISVariationResponse").paramVariations =
-        std::move(dummyParamVars);
+  SystParamHeader DISBYResponse;
+  if (!ignore_parameter_dependence) {
+    DISBYResponse.prettyName = "DISBYVariationResponse";
+    DISBYResponse.systParamId = firstParamId++;
   }
 
-  bool AGKY_xF1piIsUsed = PARAM_IS_USED_BY_CFG(AGKY_xF1pi);
-  bool AGKY_pT1piIsUsed = PARAM_IS_USED_BY_CFG(AGKY_pT1pi);
-  if (AGKY_xF1piIsUsed || AGKY_pT1piIsUsed) {
-    SystParamHeader AGKYResp;
-    AGKYResp.prettyName = "AGKYVariationResponse";
-    AGKYResp.systParamId = firstParamId++;
-    if (AGKY_xF1piIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(AGKY_xF1pi, DISmd, AGKYResp.systParamId);
+  size_t NDISBYParams = 0;
+  for (std::pair<GSyst_t, GSyst_t> const &name_dial :
+       std::vector<std::pair<GSyst_t, GSyst_t>>{
+           {{kXSecTwkDial_AhtBY, kXSecTwkDial_AhtBYshape},
+            {kXSecTwkDial_BhtBY, kXSecTwkDial_BhtBYshape},
+            {kXSecTwkDial_CV1uBY, kXSecTwkDial_CV1uBYshape},
+            {kXSecTwkDial_CV2uBY, kXSecTwkDial_CV2uBYshape}}}) {
+    std::string const &pname = GSyst::AsString(name_dial.first);
+    if (!FHiCLSimpleToolConfigurationParameterExists(cfg, pname)) {
+      continue;
     }
-    if (AGKY_pT1piIsUsed) {
-      ADD_PARAM_TO_SYST_RESPONSELESS(AGKY_pT1pi, DISmd, AGKYResp.systParamId);
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(cfg, pname, param, firstParamId);
+    param.systParamId = firstParamId++;
+    param.prettyName = DISBYIsShapeOnly ? GSyst::AsString(name_dial.second)
+                                        : GSyst::AsString(name_dial.first);
+    if (!ignore_parameter_dependence) {
+      param.isResponselessParam = true;
+      param.responseParamId = DISBYResponse.systParamId;
+      if (param.isSplineable) {
+        throw invalid_ToolConfigurationFHiCL()
+            << "[ERROR]: Attempted to build spline from "
+               "parameter "
+            << param.prettyName
+            << ", which enters into an intrinsically "
+               "multi-parameter response calculation. Either run in "
+               "random "
+               "throw mode or set \"ignore_parameter_dependence\" in the "
+               "GENIEReWeight_tool configuration.";
+      }
     }
-    DISmd.push_back(std::move(AGKYResp));
-
-    for (auto &hdr : DISmd) {
-      MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
-    }
-
-    uint64_t NVariations = 0;
-
-    auto const &AGKYParamNames = {"AGKY_xF1pi", "AGKY_pT1pi"};
-    GET_NVARIATIONS_OF_RESPONSELESS_PARAMETERS(AGKYParamNames, DISmd,
-                                               NVariations);
-    std::vector<double> dummyParamVars;
-    for (size_t i = 0; i < NVariations; ++i) {
-      dummyParamVars.push_back(i);
-    }
-
-    GetParam(DISmd, "AGKYVariationResponse").paramVariations =
-        std::move(dummyParamVars);
+    DISmd.push_back(std::move(param));
+    NDISBYParams++;
+  }
+  if (!ignore_parameter_dependence && NDISBYParams) {
+    DISmd.push_back(std::move(DISBYResponse));
+    FinalizeAndValidateDependentParameters(
+        DISmd, "DISBYVariationResponse",
+        {GSyst::AsString(DISBYIsShapeOnly ? kXSecTwkDial_AhtBYshape
+                                          : kXSecTwkDial_AhtBY),
+         GSyst::AsString(DISBYIsShapeOnly ? kXSecTwkDial_BhtBYshape
+                                          : kXSecTwkDial_BhtBY),
+         GSyst::AsString(DISBYIsShapeOnly ? kXSecTwkDial_CV1uBYshape
+                                          : kXSecTwkDial_CV1uBY),
+         GSyst::AsString(DISBYIsShapeOnly ? kXSecTwkDial_CV2uBYshape
+                                          : kXSecTwkDial_CV2uBY)});
   }
 
-  CHECK_USED_ADD_PARAM_TO_SYST(FormZone, DISmd);
+  SystParamHeader AGKYResponse;
+  if (!ignore_parameter_dependence) {
+    AGKYResponse.prettyName = "AGKYVariationResponse";
+    AGKYResponse.systParamId = firstParamId++;
+  }
 
-  for (auto &hdr : DISmd) {
-    MakeThrowsIfNeeded(hdr, RNJesus, cfg().numberOfThrows());
+  size_t NAGKYParams = 0;
+  for (GSyst_t const &gdial :
+       {kHadrAGKYTwkDial_xF1pi, kHadrAGKYTwkDial_pT1pi}) {
+    std::string const &pname = GSyst::AsString(gdial);
+    if (!FHiCLSimpleToolConfigurationParameterExists(cfg, pname)) {
+      continue;
+    }
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(cfg, pname, param, firstParamId);
+    param.systParamId = firstParamId++;
+    if (!ignore_parameter_dependence) {
+      param.isResponselessParam = true;
+      param.responseParamId = AGKYResponse.systParamId;
+      if (param.isSplineable) {
+        throw invalid_ToolConfigurationFHiCL()
+            << "[ERROR]: Attempted to build spline from "
+               "parameter "
+            << param.prettyName
+            << ", which enters into an intrinsically "
+               "multi-parameter response calculation. Either run in "
+               "random "
+               "throw mode or set \"ignore_parameter_dependence\" "
+               "in the "
+               "GENIEReWeight_tool configuration.";
+      }
+    }
+    DISmd.push_back(std::move(param));
+    NAGKYParams++;
+  }
+  if (!ignore_parameter_dependence && NAGKYParams) {
+    DISmd.push_back(std::move(AGKYResponse));
+    FinalizeAndValidateDependentParameters(
+        DISmd, "AGKYVariationResponse",
+        {GSyst::AsString(kHadrAGKYTwkDial_xF1pi),
+         GSyst::AsString(kHadrAGKYTwkDial_pT1pi)});
+  }
+
+  std::string const &fz_pname = GSyst::AsString(kHadrNuclTwkDial_FormZone);
+  if (FHiCLSimpleToolConfigurationParameterExists(cfg, fz_pname)) {
+    systtools::SystParamHeader param;
+    ParseFHiCLSimpleToolConfigurationParameter(cfg, fz_pname, param,
+                                               firstParamId);
+    param.systParamId = firstParamId++;
+    DISmd.push_back(std::move(param));
   }
 
   return DISmd;
 }
+
+#ifndef GRWTEST
 
 SystMetaData ConfigureFSIParameterHeaders(fhicl::ParameterSet const &cfg,
                                           paramId_t firstParamId) {
