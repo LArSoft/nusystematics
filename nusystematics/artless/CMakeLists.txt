@@ -23,12 +23,6 @@ else()
     SET(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} -L${SYSTTOOLS_DIR}/lib")
   endif()
 
-  if(CMAKE_CXX_FLAGS STREQUAL "")
-    SET(CMAKE_CXX_FLAGS "-I${SYSTTOOLS_DIR}/include")
-  else()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_LINK_FLAGS} -I${SYSTTOOLS_DIR}/include")
-  endif()
-
   set(SYSTTOOLS_PATH ${SYSTTOOLS_DIR})
   set(EXTERNAL_SYSTTOOLS 0)
 endif()
@@ -48,7 +42,7 @@ else()
   set(CMAKE_ROOTSYS $ENV{ROOTSYS})
 endif()
 
-# Get cflags from ROOT
+#Get cflags from ROOT
 execute_process (COMMAND root-config
   --cflags OUTPUT_VARIABLE ROOT_CXX_FLAGS_RAW OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REPLACE " " ";" ROOT_CXX_FLAGS_PREPARSE "${ROOT_CXX_FLAGS_RAW}")
@@ -59,13 +53,13 @@ foreach(FLG ${ROOT_CXX_FLAGS_PREPARSE})
     SET(ROOT_CXX_FLAGS_SCRUBBED "${ROOT_CXX_FLAGS_SCRUBBED} ${FLG}")
   endif()
 endforeach()
-# Get libdir from ROOT
+#Get libdir from ROOT
 execute_process (COMMAND root-config
   --libdir OUTPUT_VARIABLE ROOT_LIBDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-# Get version from ROOT
+#Get version from ROOT
 execute_process (COMMAND root-config
   --version OUTPUT_VARIABLE ROOT_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-# Get features from ROOT
+#Get features from ROOT
 execute_process (COMMAND root-config
   --features OUTPUT_VARIABLE ROOT_FEATURES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -114,6 +108,10 @@ else()
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CXX_FLAGS}")
 endif()
 
+
+if(NOT EXTERNAL_SYSTTOOLS)
+  include_directories(${SYSTTOOLS_DIR}/include)
+endif()
 include_directories(${GENIE_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_INSTALL_PREFIX}/include)
@@ -150,6 +148,7 @@ SET(SP_HDRFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeight_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiEnuq0q3_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAq0q3Weighting_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEResponseParameterAssociation.hh
 )
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
@@ -193,6 +192,41 @@ target_link_libraries(GenerateSystProviderConfigNuSyst ${GENIE_LIBS})
 target_link_libraries(GenerateSystProviderConfigNuSyst ${ROOT_LIBS})
 
 INSTALL(TARGETS GenerateSystProviderConfigNuSyst DESTINATION bin)
+
+####### DumpPrecalculatedPolyResponse app
+add_executable(DumpPrecalculatedPolyResponse ${CMAKE_SOURCE_DIR}/nusystematics/artless/DumpPrecalculatedPolyResponse.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(DumpPrecalculatedPolyResponse systematicstools)
+endif()
+set_target_properties(DumpPrecalculatedPolyResponse PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(DumpPrecalculatedPolyResponse nusystematics_systproviders)
+target_link_libraries(DumpPrecalculatedPolyResponse ${SYSTTOOLS_LIBS})
+target_link_libraries(DumpPrecalculatedPolyResponse ${GENIE_LIBS})
+target_link_libraries(DumpPrecalculatedPolyResponse ${ROOT_LIBS})
+
+INSTALL(TARGETS DumpPrecalculatedPolyResponse DESTINATION bin)
+
+####### TestPolyResponse5 app
+add_executable(TestPolyResponse5 ${CMAKE_SOURCE_DIR}/nusystematics/artless/TestPolyResponse5.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(TestPolyResponse5 systematicstools)
+endif()
+set_target_properties(TestPolyResponse5 PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(TestPolyResponse5 nusystematics_systproviders)
+target_link_libraries(TestPolyResponse5 ${SYSTTOOLS_LIBS})
+target_link_libraries(TestPolyResponse5 ${GENIE_LIBS})
+target_link_libraries(TestPolyResponse5 ${ROOT_LIBS})
+
+INSTALL(TARGETS TestPolyResponse5 DESTINATION bin)
+
+
+####### interface
+INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/interface/IGENIESystProvider_tool.hh DESTINATION include/nusystematics/interface)
+
+####### response_helper
+INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/artless/response_helper.hh DESTINATION include/nusystematics/artless)
 
 ####### fhicl files
 file(GLOB FCL ${CMAKE_SOURCE_DIR}/nusystematics/fcl/*.fcl)

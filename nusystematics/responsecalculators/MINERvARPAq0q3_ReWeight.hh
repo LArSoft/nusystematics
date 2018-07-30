@@ -11,7 +11,7 @@
 
 #include <ostream>
 
-#define MINERvARPAq0q3_ReWeight_DEBUG
+// #define MINERvARPAq0q3_ReWeight_DEBUG
 
 NEW_SYSTTOOLS_EXCEPT(invalid_MINERvA_RPA_tweak);
 

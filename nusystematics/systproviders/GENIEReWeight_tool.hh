@@ -19,6 +19,8 @@
 
 class GENIEReWeight : public nusyst::IGENIESystProvider_tool {
 public:
+  NEW_SYSTTOOLS_EXCEPT(invalid_engine_state);
+
   explicit GENIEReWeight(fhicl::ParameterSet const &);
 
 #ifndef NO_ART
@@ -33,11 +35,24 @@ public:
 
   systtools::event_unit_response_t GetEventResponse(genie::EventRecord &);
 
+  double GetEventWeightResponse(genie::EventRecord &,
+                                systtools::param_value_list_t const &);
+
+  systtools::event_unit_response_t GetEventResponse(genie::EventRecord &,
+                                                    systtools::paramId_t);
+
   std::string AsString();
 
   ~GENIEReWeight();
 
 private:
+  /// Set when GetEventWeightResponse has been used as it reconfigures weight
+  /// engines such that GetEventResponse will not perform as expected.
+  bool fHaveReconfiguredOneOfTheHERG;
+
+  systtools::ParamResponses GetEventGENIEParameterResponse(genie::EventRecord &,
+                                                           size_t idx);
+
   std::vector<nusyst::GENIEResponseParameter> ResponseToGENIEParameters;
 
   void extend_ResponseToGENIEParameters(

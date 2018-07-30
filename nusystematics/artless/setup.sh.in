@@ -87,3 +87,7 @@ add_to_PATH "@GENIE@/bin"
 add_to_LD_LIBRARY_PATH "@GENIE@/lib" "@LHAPDF_LIB@" "@LIBXML2_LIB@" "@LOG4CPP_LIB@"
 
 source @SYSTTOOLS_PATH@/systematicstools.setup.sh
+
+add_to_PATH "@CMAKE_INSTALL_PREFIX@/bin"
+
+add_to_LD_LIBRARY_PATH "@CMAKE_INSTALL_PREFIX@/lib"

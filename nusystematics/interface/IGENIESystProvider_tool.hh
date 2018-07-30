@@ -17,13 +17,27 @@ public:
   /// Calculates configured response for a given GHep record
   virtual systtools::event_unit_response_t
   GetEventResponse(genie::EventRecord &) = 0;
+  /// Calculates the response to a single parameter for a given GHep record
+  virtual systtools::event_unit_response_t
+  GetEventResponse(genie::EventRecord &, systtools::paramId_t) {
+    throw systtools::ISystProvider_tool_method_unimplemented()
+        << "[ERROR]: " << GetFullyQualifiedName()
+        << " does not implement systtools::event_unit_response_t "
+           "GetEventResponse(genie::EventRecord &, systtools::paramId_t).";
+  }
 
   /// Calculates the multiplicatively combined responses for a given set of
   /// parameter--value pairs.
   ///
   /// \note This convenience method should only be used for weight responses.
   virtual double GetEventWeightResponse(genie::EventRecord &,
-                                        systtools::param_value_list_t const &){throw;};
+                                        systtools::param_value_list_t const &) {
+    throw systtools::ISystProvider_tool_method_unimplemented()
+        << "[ERROR]: " << GetFullyQualifiedName()
+        << " does not implement double "
+           "GetEventWeightResponse(genie::EventRecord "
+           "&,systtools::param_value_list_t const &).";
+  }
 };
 } // namespace nusyst
 

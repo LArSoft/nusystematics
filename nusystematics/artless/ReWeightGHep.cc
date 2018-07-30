@@ -76,12 +76,12 @@ int main(int argc, char const *argv[]) {
   for (size_t ev_it = 0; ev_it < NToRead; ++ev_it) {
     gevs->GetEntry(ev_it);
     genie::EventRecord *GenieGHep = GenieNtpl->event;
-    std::cout << "Event #" << ev_it
-              << ", Interaction: " << GenieGHep->Summary()->AsString()
-              << std::endl;
+    // std::cout << "Event #" << ev_it
+    //           << ", Interaction: " << GenieGHep->Summary()->AsString()
+    //           << std::endl;
 
     event_unit_response_t resp = nrh.GetEventResponses(*GenieGHep);
-    std::cout << "[INFO]: Response =  " << std::endl
-              << nrh.GetEventResponseInfo(resp) << std::endl;
+    // std::cout << "[INFO]: Response =  " << std::endl
+    //           << nrh.GetEventResponseInfo(resp) << std::endl;
   }
 }
