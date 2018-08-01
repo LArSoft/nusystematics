@@ -18,7 +18,8 @@ using namespace fhicl;
 
 MINERvAq0q3Weighting::MINERvAq0q3Weighting(ParameterSet const &params)
     : IGENIESystProvider_tool(params), RPATemplateReweighter(nullptr),
-      valid_file(nullptr), valid_tree(nullptr) {}
+      valid_file(nullptr), valid_tree(nullptr),
+      ApplyRPAToSPP(false) ApplyRPAToRES(false) {}
 
 #ifndef NO_ART
 std::unique_ptr<EventResponse>
@@ -90,6 +91,15 @@ SystMetaData MINERvAq0q3Weighting::BuildSystMetaData(ParameterSet const &cfg,
           cfg.get<fhicl::ParameterSet>("MINERvATune_RPA_input_manifest");
       tool_options.put("MINERvATune_RPA_input_manifest", ps);
 
+      ApplyRPAToSPP = cfg.get("apply_RPA_to_SPP", false);
+      ApplyRPAToRES = cfg.get("apply_RPA_to_RES", false);
+      if (ApplyRPAToSPP) {
+        tool_options.put("apply_RPA_to_SPP", true);
+      }
+      if (ApplyRPAToRES) {
+        tool_options.put("apply_RPA_to_RES", true);
+      }
+
       smd.push_back(param);
     }
   }
@@ -141,6 +151,9 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
             {{"MINERvATune_RPA", ConfiguredParameters[param_t::kMINERvARPA]}}},
         tool_options.get<fhicl::ParameterSet>(
             "MINERvATune_RPA_input_manifest"));
+
+    ApplyRPAToSPP = tool_options.get("apply_RPA_to_SPP", false);
+    ApplyRPAToRES = tool_options.get("apply_RPA_to_RES", false);
   }
 
   if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement")) {
@@ -184,7 +197,7 @@ MINERvAq0q3Weighting::GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
           (QELTarget == QELikeTarget_t::knp))) {
       return 1;
     }
-    
+
     GaussParams = &Gauss2DParams_CV;
   } else if (val == 1) {
 
@@ -223,10 +236,24 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord &ev) {
   // make default response for configured parameter
   event_unit_response_t resp;
 
-  if (!ev.Summary()->ProcInfo().IsWeakCC() ||
-      !(ev.Summary()->ProcInfo().IsQuasiElastic() ||
-        ev.Summary()->ProcInfo().IsMEC())) {
+  if (!ev.Summary()->ProcInfo().IsWeakCC()) {
     return resp;
+  }
+
+  if (!(ev.Summary()->ProcInfo().IsQuasiElastic() ||
+        ev.Summary()->ProcInfo().IsMEC()) &&
+      !(ApplyRPAToSPP || ApplyRPAToRES)) {
+    return resp;
+  } else if (ApplyRPAToSPP || ApplyRPAToRES) {
+    bool GoodSPP = false;
+    if (ApplyRPAToSPP) {
+      genie::SppChannel_t sppch = nusyst::SPPChannelFromGHep(ev);
+      GoodSPP = (sppch != genie::kSppNull);
+    }
+    bool GoodRES = ApplyRPAToRES && !ev.Summary()->ProcInfo().IsResonant();
+    if (!(GoodRES || GoodSPP)) {
+      return resp;
+    }
   }
 
   genie::GHepParticle *FSLep = ev.FinalStatePrimaryLepton();
@@ -243,6 +270,7 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord &ev) {
   TLorentzVector emTransfer = (ISLepP4 - FSLepP4);
   std::array<double, 2> q0q3{{emTransfer.E(), emTransfer.Vect().Mag()}};
 
+  // Can apply to RES/SPP events
   if (ConfiguredParameters.find(param_t::kMINERvARPA) !=
       ConfiguredParameters.end()) {
 
@@ -261,8 +289,11 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord &ev) {
     }
   }
 
-  if (ConfiguredParameters.find(param_t::kMINERvA2p2h) !=
-      ConfiguredParameters.end()) {
+  // Only ever applies to 2p2h/qe events
+  if ((ConfiguredParameters.find(param_t::kMINERvA2p2h) !=
+       ConfiguredParameters.end()) &&
+      (ev.Summary()->ProcInfo().IsQuasiElastic() ||
+       ev.Summary()->ProcInfo().IsMEC())) {
 
     SystParamHeader hdr = GetParam(GetSystMetaData(),
                                    ConfiguredParameters[param_t::kMINERvA2p2h]);
