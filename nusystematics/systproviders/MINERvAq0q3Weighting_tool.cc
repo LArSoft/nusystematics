@@ -180,6 +180,11 @@ MINERvAq0q3Weighting::GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
                                                QELikeTarget_t QELTarget) {
   std::array<double, 6> const *GaussParams;
   if (val == 0) {
+    if (!((QELTarget == QELikeTarget_t::kNN) ||
+          (QELTarget == QELikeTarget_t::knp))) {
+      return 1;
+    }
+    
     GaussParams = &Gauss2DParams_CV;
   } else if (val == 1) {
 
@@ -219,8 +224,8 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord &ev) {
   event_unit_response_t resp;
 
   if (!ev.Summary()->ProcInfo().IsWeakCC() ||
-      (!ev.Summary()->ProcInfo().IsQuasiElastic() &&
-       !ev.Summary()->ProcInfo().IsMEC())) {
+      !(ev.Summary()->ProcInfo().IsQuasiElastic() ||
+        ev.Summary()->ProcInfo().IsMEC())) {
     return resp;
   }
 
