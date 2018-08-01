@@ -1,6 +1,6 @@
 #include "nusystematics/systproviders/GENIEReWeightParamConfig.hh"
 
-#include "systematicstools/interface/ISystProvider_tool.hh"
+#include "systematicstools/interface/ISystProviderTool.hh"
 
 #include "systematicstools/utility/ResponselessParamUtility.hh"
 #include "systematicstools/utility/string_parsers.hh"
@@ -162,9 +162,6 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
   bool MaCCQEIsShapeOnly = cfg.get<bool>("MaCCQEIsShapeOnly", false);
   tool_options.put("MaCCQEIsShapeOnly", MaCCQEIsShapeOnly);
 
-  bool ignore_parameter_dependence =
-      tool_options.get<bool>("ignore_parameter_dependence", false);
-
   // Axial FFs
   bool DipoleNormCCQEIsUsed = FHiCLSimpleToolConfigurationParameterExists(
       cfg, GSyst::AsString(kXSecTwkDial_NormCCQE));
@@ -280,8 +277,6 @@ SystMetaData ConfigureRESParameterHeaders(fhicl::ParameterSet const &cfg,
   bool CCRESIsShapeOnly = cfg.get<bool>("CCRESIsShapeOnly", false);
   tool_options.put("CCRESIsShapeOnly", CCRESIsShapeOnly);
 
-  bool ignore_parameter_dependence =
-      tool_options.get<bool>("ignore_parameter_dependence", false);
   bool NormCCRESIsUsed = FHiCLSimpleToolConfigurationParameterExists(
       cfg, GSyst::AsString(kXSecTwkDial_NormCCRES));
 

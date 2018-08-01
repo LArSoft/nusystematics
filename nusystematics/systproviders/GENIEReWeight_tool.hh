@@ -71,7 +71,7 @@ private:
   std::vector<double> weights;
 
 #ifndef NO_ART
-  std::string fGENIEModuleLabel = "generator";
+  std::string fGENIEModuleLabel;
 #endif
 };
 

@@ -29,8 +29,9 @@ using namespace systtools;
 using namespace nusyst;
 
 GENIEReWeight::GENIEReWeight(ParameterSet const &params)
-    : IGENIESystProvider_tool(params), valid_file(nullptr), valid_tree(nullptr),
-      fHaveReconfiguredOneOfTheHERG(false) {}
+    : IGENIESystProvider_tool(params), fHaveReconfiguredOneOfTheHERG(false),
+      valid_file(nullptr), valid_tree(nullptr), fGENIEModuleLabel("generator") {
+}
 
 std::string GENIEReWeight::AsString() {
   CheckHaveMetaData();
@@ -162,9 +163,9 @@ std::unique_ptr<EventResponse> GENIEReWeight::GetEventResponse(art::Event &e) {
         evgb::RetrieveGHEP(mcTruthHandle->at(eu_it), gTruthHandle->at(eu_it)));
   }
 
-  er->responses.resize(NEventUnits);
+  er->resize(NEventUnits);
   for (size_t eu_it = 0; eu_it < NEventUnits; ++eu_it) {
-    er->responses.push_back(GetEventResponse(*gheps[eu_it]));
+    er->push_back(GetEventResponse(*gheps[eu_it]));
   }
   return er;
 }
@@ -218,9 +219,6 @@ double GENIEReWeight::GetEventWeightResponse(
   fHaveReconfiguredOneOfTheHERG = true;
 
   for (auto &GENIEResponse : ResponseToGENIEParameters) {
-    systtools::SystParamHeader const &hdr =
-        GetSystMetaData()[GENIEResponse.pidx];
-
     for (auto const &dep : GENIEResponse.dependents) {
       SystParamHeader const &hdr = GetSystMetaData()[dep.pidx];
       double pval = hdr.centralParamValue;

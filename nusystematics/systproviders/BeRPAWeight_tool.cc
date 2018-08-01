@@ -1,9 +1,9 @@
-#include "systematicstools/interface/ISystProvider_tool.hh"
+#include "systematicstools/interface/ISystProviderTool.hh"
 
 using namespace systtools;
 using namespace fhicl;
 
-class BeRPAWeightProvider : public ISystProvider_tool {
+class BeRPAWeightProvider : public ISystProviderTool {
 public:
   explicit BeRPAWeightProvider(ParameterSet const &);
 
@@ -21,7 +21,7 @@ private:
 };
 
 BeRPAWeightProvider::BeRPAWeightProvider(ParameterSet const &params)
-    : ISystProvider_tool(params) {
+    : ISystProviderTool(params) {
   DefaultValues[kA] = {0.59, 0.59 * 0.20};
   DefaultValues[kB] = {1.05, 1.05 * 0.20};
   DefaultValues[kD] = {1.13, 1.13 * 0.15};
