@@ -70,9 +70,7 @@ private:
   double Enu, Q2, q0, q3, W;
   std::vector<double> weights;
 
-#ifndef NO_ART
   std::string fGENIEModuleLabel;
-#endif
 };
 
 #endif

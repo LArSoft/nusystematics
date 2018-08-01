@@ -8,6 +8,8 @@
 
 #include "nusystematics/utility/exceptions.hh"
 
+#include "systematicstools/utility/FHiCLSystParamHeaderUtility.hh"
+
 #include "GHEP/GHepParticle.h"
 
 #include "TLorentzVector.h"

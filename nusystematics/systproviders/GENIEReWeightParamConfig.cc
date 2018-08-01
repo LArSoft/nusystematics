@@ -2,6 +2,7 @@
 
 #include "systematicstools/interface/ISystProviderTool.hh"
 
+#include "systematicstools/utility/FHiCLSystParamHeaderUtility.hh"
 #include "systematicstools/utility/ResponselessParamUtility.hh"
 #include "systematicstools/utility/string_parsers.hh"
 
