@@ -18,8 +18,8 @@ using namespace fhicl;
 
 MINERvAq0q3Weighting::MINERvAq0q3Weighting(ParameterSet const &params)
     : IGENIESystProvider_tool(params), RPATemplateReweighter(nullptr),
-      valid_file(nullptr), valid_tree(nullptr),
-      ApplyRPAToSPP(false) ApplyRPAToRES(false) {}
+      valid_file(nullptr), valid_tree(nullptr), ApplyRPAToSPP(false),
+      ApplyRPAToRES(false) {}
 
 #ifndef NO_ART
 std::unique_ptr<EventResponse>

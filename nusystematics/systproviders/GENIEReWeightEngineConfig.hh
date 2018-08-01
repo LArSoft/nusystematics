@@ -34,7 +34,6 @@ ConfigureCOHWeightEngine(systtools::SystMetaData const &,
 std::vector<GENIEResponseParameter>
 ConfigureDISWeightEngine(systtools::SystMetaData const &,
                          fhicl::ParameterSet const &tool_options);
-#ifndef GRWTEST
 
 std::vector<GENIEResponseParameter>
 ConfigureFSIWeightEngine(systtools::SystMetaData const &,
@@ -43,8 +42,6 @@ ConfigureFSIWeightEngine(systtools::SystMetaData const &,
 std::vector<GENIEResponseParameter>
 ConfigureOtherWeightEngine(systtools::SystMetaData const &,
                            fhicl::ParameterSet const &tool_options);
-
-#endif
 
 } // namespace nusyst
 

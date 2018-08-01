@@ -84,6 +84,8 @@ private:
   double Enu, momfslep, cthetafslep, Q2, q0, q3, W;
   std::vector<double> RPA_weights;
   std::vector<double> MEC_weights;
+  bool ApplyRPAToSPP;
+  bool ApplyRPAToRES;
 };
 
 #endif

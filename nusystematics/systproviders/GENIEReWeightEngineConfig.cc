@@ -2,7 +2,9 @@
 
 // GENIE
 #include "ReWeight/GReWeightAGKY.h"
+#include "ReWeight/GReWeightFGM.h"
 #include "ReWeight/GReWeightFZone.h"
+#include "ReWeight/GReWeightINuke.h"
 #include "ReWeight/GReWeightNonResonanceBkg.h"
 #include "ReWeight/GReWeightNuXSecCCQE.h"
 #include "ReWeight/GReWeightNuXSecCCQEaxial.h"
@@ -374,20 +376,42 @@ ConfigureDISWeightEngine(SystMetaData const &DISmd,
   return param_map;
 }
 
-#ifndef GRWTEST
-
 std::vector<GENIEResponseParameter>
-ConfigureFSIWeightEngine(SystMetaData const &FSImd,
-                         std::unique_ptr<GReWeight> &GReWeightEngine) {
-  return {};
+ConfigureFSIWeightEngine(systtools::SystMetaData const &FSImd,
+                         fhicl::ParameterSet const &tool_options) {
+  std::vector<GENIEResponseParameter> param_map;
+
+  bool UseFullHERG = tool_options.get<bool>("UseFullHERG", false);
+
+  AddResponseAndDependentDials(
+      FSImd, "FSI_pi_VariationResponse",
+      {kINukeTwkDial_MFP_pi, kINukeTwkDial_FrCEx_pi, kINukeTwkDial_FrElas_pi,
+       kINukeTwkDial_FrInel_pi, kINukeTwkDial_FrAbs_pi,
+       kINukeTwkDial_FrPiProd_pi},
+      "INuke_pi", []() { return new GReWeightINuke; }, UseFullHERG, param_map);
+
+  AddResponseAndDependentDials(
+      FSImd, "FSI_N_VariationResponse",
+      {kINukeTwkDial_MFP_N, kINukeTwkDial_FrCEx_N, kINukeTwkDial_FrElas_N,
+       kINukeTwkDial_FrInel_N, kINukeTwkDial_FrAbs_N, kINukeTwkDial_FrPiProd_N},
+      "INuke_N", []() { return new GReWeightINuke; }, UseFullHERG, param_map);
+
+  return param_map;
 }
 
 std::vector<GENIEResponseParameter>
-ConfigureOtherWeightEngine(SystMetaData const &Othermd,
-                           std::unique_ptr<GReWeight> &GReWeightEngine) {
-  return {};
-}
+ConfigureOtherWeightEngine(systtools::SystMetaData const &Othermd,
+                           fhicl::ParameterSet const &tool_options) {
 
-#endif
+  std::vector<GENIEResponseParameter> param_map;
+
+  bool UseFullHERG = tool_options.get<bool>("UseFullHERG", false);
+
+  AddIndependentParameters(
+      Othermd, {kSystNucl_CCQEPauliSupViaKF, kSystNucl_CCQEMomDistroFGtoSF},
+      "FGM", []() { return new GReWeightFGM; }, UseFullHERG, param_map);
+
+  return param_map;
+}
 
 } // namespace nusyst

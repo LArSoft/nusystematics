@@ -68,22 +68,22 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
   SystMetaData DISmd =
       ConfigureDISParameterHeaders(params, firstParamId, tool_options);
   firstParamId += DISmd.size();
-#ifndef GRWTEST
+
   SystMetaData FSImd =
       ConfigureFSIParameterHeaders(params, firstParamId, tool_options);
   firstParamId += FSImd.size();
+
   SystMetaData Othermd =
       ConfigureOtherParameterHeaders(params, firstParamId, tool_options);
   firstParamId += Othermd.size();
 
   // Don't extend inline to make firstParamId incrementing more clear.
-  ExtendSystMetaData(QEmd, FSImd);
-  ExtendSystMetaData(QEmd, Othermd);
-#endif
   ExtendSystMetaData(QEmd, DISmd);
   ExtendSystMetaData(QEmd, NCELmd);
   ExtendSystMetaData(QEmd, RESmd);
   ExtendSystMetaData(QEmd, COHmd);
+  ExtendSystMetaData(QEmd, FSImd);
+  ExtendSystMetaData(QEmd, Othermd);
 
   return QEmd;
 }
@@ -126,12 +126,11 @@ bool GENIEReWeight::SetupResponseCalculator(
   extend_ResponseToGENIEParameters(
       ConfigureDISWeightEngine(GetSystMetaData(), tool_options));
 
-#ifndef GRWTEST
   extend_ResponseToGENIEParameters(
       ConfigureFSIWeightEngine(GetSystMetaData(), tool_options));
+
   extend_ResponseToGENIEParameters(
       ConfigureOtherWeightEngine(GetSystMetaData(), tool_options));
-#endif
 
   std::cout << "[INFO]: Done!" << std::endl;
 

@@ -28,15 +28,14 @@ systtools::SystMetaData
 ConfigureDISParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t,
                              fhicl::ParameterSet &tool_options);
 
-#ifndef GRWTEST
-
 systtools::SystMetaData
-ConfigureFSIParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t);
+ConfigureFSIParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t,
+                             fhicl::ParameterSet &tool_options);
+
 systtools::SystMetaData
 ConfigureOtherParameterHeaders(fhicl::ParameterSet const &,
-                               systtools::paramId_t);
-
-#endif
+                               systtools::paramId_t,
+                               fhicl::ParameterSet &tool_options);
 
 } // namespace nusyst
 
