@@ -235,7 +235,7 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
     ExtendSystMetaData(QEmd, std::move(ZExpmd));
   }
 
-  bool VecFFCCQEIsBBA = cfg.get<bool>("VecFFCCQEIsBBA", false);
+  bool VecFFCCQEIsBBA = cfg.get<bool>("VecFFCCQEIsBBA", true);
 
   if (!VecFFCCQEIsBBA) {
     SystParamHeader vecFFQE;
