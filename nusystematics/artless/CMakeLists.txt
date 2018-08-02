@@ -200,6 +200,9 @@ endif()
 set_target_properties(DumpPrecalculatedPolyResponse PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
 
 target_link_libraries(DumpPrecalculatedPolyResponse nusystematics_systproviders)
+target_link_libraries(DumpPrecalculatedPolyResponse ${SYSTTOOLS_LIBS})
+target_link_libraries(DumpPrecalculatedPolyResponse ${GENIE_LIBS})
+target_link_libraries(DumpPrecalculatedPolyResponse ${ROOT_LIBS})
 
 INSTALL(TARGETS DumpPrecalculatedPolyResponse DESTINATION bin)
 
@@ -211,6 +214,9 @@ endif()
 set_target_properties(TestPolyResponse5 PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
 
 target_link_libraries(TestPolyResponse5 nusystematics_systproviders)
+target_link_libraries(TestPolyResponse5 ${SYSTTOOLS_LIBS})
+target_link_libraries(TestPolyResponse5 ${GENIE_LIBS})
+target_link_libraries(TestPolyResponse5 ${ROOT_LIBS})
 
 INSTALL(TARGETS TestPolyResponse5 DESTINATION bin)
 
