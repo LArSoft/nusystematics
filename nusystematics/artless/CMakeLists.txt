@@ -16,15 +16,14 @@ if (NOT DEFINED SYSTTOOLS_DIR)
   set(SYSTTOOLS_PATH ${CMAKE_INSTALL_PREFIX})
   set(EXTERNAL_SYSTTOOLS 1)
 else()
-
-  if(CMAKE_LINK_FLAGS STREQUAL "")
-    SET(CMAKE_LINK_FLAGS "-L${SYSTTOOLS_DIR}/lib")
-  else()
-    SET(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} -L${SYSTTOOLS_DIR}/lib")
-  endif()
-
   set(SYSTTOOLS_PATH ${SYSTTOOLS_DIR})
   set(EXTERNAL_SYSTTOOLS 0)
+endif()
+
+if(CMAKE_LINK_FLAGS STREQUAL "")
+  SET(CMAKE_LINK_FLAGS "-L${SYSTTOOLS_PATH}/lib")
+else()
+  SET(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} -L${SYSTTOOLS_PATH}/lib")
 endif()
 
 set(SYSTTOOLS_LIBS
@@ -201,9 +200,6 @@ endif()
 set_target_properties(DumpPrecalculatedPolyResponse PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
 
 target_link_libraries(DumpPrecalculatedPolyResponse nusystematics_systproviders)
-target_link_libraries(DumpPrecalculatedPolyResponse ${SYSTTOOLS_LIBS})
-target_link_libraries(DumpPrecalculatedPolyResponse ${GENIE_LIBS})
-target_link_libraries(DumpPrecalculatedPolyResponse ${ROOT_LIBS})
 
 INSTALL(TARGETS DumpPrecalculatedPolyResponse DESTINATION bin)
 
@@ -215,12 +211,8 @@ endif()
 set_target_properties(TestPolyResponse5 PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
 
 target_link_libraries(TestPolyResponse5 nusystematics_systproviders)
-target_link_libraries(TestPolyResponse5 ${SYSTTOOLS_LIBS})
-target_link_libraries(TestPolyResponse5 ${GENIE_LIBS})
-target_link_libraries(TestPolyResponse5 ${ROOT_LIBS})
 
 INSTALL(TARGETS TestPolyResponse5 DESTINATION bin)
-
 
 ####### interface
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/interface/IGENIESystProvider_tool.hh DESTINATION include/nusystematics/interface)
