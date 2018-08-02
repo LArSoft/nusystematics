@@ -191,7 +191,7 @@ void TemplateResponseCalculatorBase<NDims, Continuous>::LoadInputHistograms(
 }
 template <size_t NDims, bool Continuous>
 TemplateResponseCalculatorBase<NDims,
-                               Continuous>::TemplateResponseCalculatorBase(){};
+                               Continuous>::TemplateResponseCalculatorBase(){}
 
 template <size_t NDims, bool Continuous>
 template <bool Enable>

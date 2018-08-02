@@ -50,7 +50,28 @@ simple_plugin(GENIEReWeight tool
  )
 
 simple_plugin(MKSinglePiEnuq0q3 tool
-  nusystematics_MKSinglePiEnuq0q3_config
+  systematicstools_utility
+  nutools_EventGeneratorBase_GENIE
+    ${ART_FRAMEWORK_CORE}
+    ${ART_FRAMEWORK_PRINCIPAL}
+    ${ART_FRAMEWORK_SERVICES_REGISTRY}
+    ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+    ${CLHEP}
+    ${LOG4CPP}
+    ${XML2}
+    ${PYTHIA6}
+    ${LHAPDF}
+    ${GENIE_LIB_LIST}
+    ${ROOT_BASIC_LIB_LIST}
+    ${ROOT_EG}
+    ${ROOT_TREEPLAYER}
+    ${ROOT_FFTW}
+    ${ROOT_REFLEX}
+    ${ROOTSYS}/lib/libEGPythia6.so
+    ${ROOT_GUI}
+ )
+
+simple_plugin(MINERvAq0q3Weighting tool
   systematicstools_utility
   nutools_EventGeneratorBase_GENIE
     ${ART_FRAMEWORK_CORE}

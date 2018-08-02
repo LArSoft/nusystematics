@@ -3,17 +3,10 @@
 #include "nusystematics/systproviders/GENIEReWeightEngineConfig.hh"
 #include "nusystematics/systproviders/GENIEReWeightParamConfig.hh"
 
-#ifndef NO_ART
-#include "nusimdata/SimulationBase/GTruth.h"
-#include "nusimdata/SimulationBase/MCTruth.h"
-#endif
-
 #include "systematicstools/utility/printers.hh"
 #include "systematicstools/utility/string_parsers.hh"
 
 #ifndef NO_ART
-#include "nutools/EventGeneratorBase/GENIE/GENIE2ART.h"
-
 #include "art/Utilities/ToolMacros.h"
 #endif
 
@@ -30,7 +23,7 @@ using namespace nusyst;
 
 GENIEReWeight::GENIEReWeight(ParameterSet const &params)
     : IGENIESystProvider_tool(params), fHaveReconfiguredOneOfTheHERG(false),
-      valid_file(nullptr), valid_tree(nullptr), fGENIEModuleLabel("generator") {
+      valid_file(nullptr), valid_tree(nullptr) {
 }
 
 std::string GENIEReWeight::AsString() {
@@ -144,34 +137,7 @@ bool GENIEReWeight::SetupResponseCalculator(
 }
 
 #ifndef NO_ART
-std::unique_ptr<EventResponse> GENIEReWeight::GetEventResponse(art::Event &e) {
-  std::unique_ptr<EventResponse> er = std::make_unique<EventResponse>();
-
-  art::Handle<std::vector<simb::MCTruth>> mcTruthHandle;
-  art::Handle<std::vector<simb::GTruth>> gTruthHandle;
-  e.getByLabel(fGENIEModuleLabel, mcTruthHandle);
-  e.getByLabel(fGENIEModuleLabel, gTruthHandle);
-
-  size_t NEventUnits = mcTruthHandle->size();
-  if (mcTruthHandle->size() != gTruthHandle->size()) {
-    NEventUnits = std::min(mcTruthHandle->size(), gTruthHandle->size());
-  }
-
-  std::vector<std::unique_ptr<genie::EventRecord>> gheps;
-  for (size_t eu_it = 0; eu_it < NEventUnits; ++eu_it) {
-    gheps.emplace_back(
-        evgb::RetrieveGHEP(mcTruthHandle->at(eu_it), gTruthHandle->at(eu_it)));
-  }
-
-  er->resize(NEventUnits);
-  for (size_t eu_it = 0; eu_it < NEventUnits; ++eu_it) {
-    er->push_back(GetEventResponse(*gheps[eu_it]));
-  }
-  return er;
-}
-
 DEFINE_ART_CLASS_TOOL(GENIEReWeight)
-
 #endif
 
 // #define GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG

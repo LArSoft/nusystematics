@@ -1,13 +1,14 @@
 #include "MKSinglePiEnuq0q3_tool.hh"
 
-#ifndef NO_ART
-#include "nutools/EventGeneratorBase/GENIE/GENIE2ART.h"
-#endif
-
 #include "nusystematics/utility/GENIEUtils.hh"
 #include "nusystematics/utility/exceptions.hh"
 
+#ifndef NO_ART
+#include "art/Utilities/ToolMacros.h"
+#endif
+
 #include "GHEP/GHepParticle.h"
+
 #include "Messenger/Messenger.h"
 
 using namespace systtools;
@@ -27,37 +28,7 @@ struct channel_id {
 } // namespace
 
 #ifndef NO_ART
-std::unique_ptr<EventResponse>
-MKSinglePiEnuq0q3::GetEventResponse(art::Event &e) {
-  std::unique_ptr<EventResponse> er = std::make_unique<EventResponse>();
-
-  art::Handle<std::vector<simb::MCTruth>> mcTruthHandle;
-  art::Handle<std::vector<simb::GTruth>> gTruthHandle;
-  e.getByLabel(fGENIEModuleLabel, mcTruthHandle);
-  e.getByLabel(fGENIEModuleLabel, gTruthHandle);
-
-  size_t NEventUnits = mcTruthHandle->size();
-  if (mcTruthHandle->size() != gTruthHandle->size()) {
-    std::cout << "[WARN]: Found " << mcTruthHandle->size()
-              << " MC truth instances, and " << gTruthHandle->size()
-              << " GENIE truth instances in event " << e.event() << std::endl;
-    NEventUnits = std::min(mcTruthHandle->size(), gTruthHandle->size());
-  }
-
-  std::vector<std::unique_ptr<genie::EventRecord>> gheps;
-  for (size_t eu_it = 0; eu_it < NEventUnits; ++eu_it) {
-    gheps.emplace_back(
-        evgb::RetrieveGHEP(mcTruthHandle->at(eu_it), gTruthHandle->at(eu_it)));
-    std::cout << "[INFO]: GENIE Interaction: "
-              << gheps.back()->Summary()->AsString() << std::endl;
-  }
-
-  er->responses.resize(NEventUnits);
-  for (size_t eu_it = 0; eu_it < NEventUnits; ++eu_it) {
-    er->responses.push_back(GetEventResponse(*gheps[eu_it]));
-  }
-  return er;
-}
+DEFINE_ART_CLASS_TOOL(MKSinglePiEnuq0q3)
 #endif
 
 SystMetaData MKSinglePiEnuq0q3::BuildSystMetaData(ParameterSet const &cfg,

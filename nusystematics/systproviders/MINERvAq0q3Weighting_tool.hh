@@ -52,10 +52,6 @@ public:
 
   bool SetupResponseCalculator(fhicl::ParameterSet const &);
 
-#ifndef NO_ART
-  std::unique_ptr<systtools::EventResponse> GetEventResponse(art::Event &);
-#endif
-
   fhicl::ParameterSet GetExtraToolOptions() { return tool_options; }
 
   systtools::SystMetaData BuildSystMetaData(fhicl::ParameterSet const &,

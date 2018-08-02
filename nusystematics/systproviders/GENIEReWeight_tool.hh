@@ -23,10 +23,6 @@ public:
 
   explicit GENIEReWeight(fhicl::ParameterSet const &);
 
-#ifndef NO_ART
-  std::unique_ptr<systtools::EventResponse> GetEventResponse(art::Event &);
-#endif
-
   systtools::SystMetaData BuildSystMetaData(fhicl::ParameterSet const &,
                                             systtools::paramId_t);
   fhicl::ParameterSet GetExtraToolOptions() { return tool_options; }
@@ -69,8 +65,6 @@ private:
   int NEUTMode, Pdgnu;
   double Enu, Q2, q0, q3, W;
   std::vector<double> weights;
-
-  std::string fGENIEModuleLabel;
 };
 
 #endif

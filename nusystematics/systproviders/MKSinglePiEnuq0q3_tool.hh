@@ -25,10 +25,6 @@ class MKSinglePiEnuq0q3 : public nusyst::IGENIESystProvider_tool {
 public:
   explicit MKSinglePiEnuq0q3(fhicl::ParameterSet const &);
 
-#ifndef NO_ART
-  std::unique_ptr<systtools::EventResponse> GetEventResponse(art::Event &);
-#endif
-
   bool SetupResponseCalculator(fhicl::ParameterSet const &);
   fhicl::ParameterSet GetExtraToolOptions() { return tool_options; }
 
