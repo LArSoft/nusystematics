@@ -111,8 +111,8 @@ int main(int argc, char const *argv[]) {
   TTree *ot = new TTree("resp_tree", "");
 
   param_list_t params = nrh.GetParameters();
-  std::unique_ptr<PrecalculatedResponseReader<6>> prr =
-      PrecalculatedResponseReader<6>::MakeTreeWriter(nrh.GetHeaders(), ot);
+  std::unique_ptr<PrecalculatedResponseReader<Order>> prr =
+      PrecalculatedResponseReader<Order>::MakeTreeWriter(nrh.GetHeaders(), ot);
 
   size_t NToRead = std::min(NEvs, cliopts::NMax);
   size_t NToShout = NToRead / 100;
