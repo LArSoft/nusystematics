@@ -29,12 +29,12 @@ public:
 
   bool SetupResponseCalculator(fhicl::ParameterSet const &);
 
-  systtools::event_unit_response_t GetEventResponse(genie::EventRecord &);
+  systtools::event_unit_response_t GetEventResponse(genie::EventRecord const &);
 
-  double GetEventWeightResponse(genie::EventRecord &,
+  double GetEventWeightResponse(genie::EventRecord const &,
                                 systtools::param_value_list_t const &);
 
-  systtools::event_unit_response_t GetEventResponse(genie::EventRecord &,
+  systtools::event_unit_response_t GetEventResponse(genie::EventRecord const &,
                                                     systtools::paramId_t);
 
   std::string AsString();
@@ -46,8 +46,8 @@ private:
   /// engines such that GetEventResponse will not perform as expected.
   bool fHaveReconfiguredOneOfTheHERG;
 
-  systtools::ParamResponses GetEventGENIEParameterResponse(genie::EventRecord &,
-                                                           size_t idx);
+  systtools::ParamResponses
+  GetEventGENIEParameterResponse(genie::EventRecord const &, size_t idx);
 
   std::vector<nusyst::GENIEResponseParameter> ResponseToGENIEParameters;
 

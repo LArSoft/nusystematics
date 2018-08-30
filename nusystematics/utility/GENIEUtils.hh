@@ -13,13 +13,13 @@ inline genie::SppChannel_t SPPChannelFromGHep(genie::EventRecord const &ev) {
   int NEUTCh = genie::utils::ghep::NeutReactionCode(&ev);
 
   switch (NEUTCh) {
-  case 11: {
+  case 11: { // kCCSPP_PPip
     return genie::kSpp_vp_cc_10100;
   }
-  case 12: {
+  case 12: { // kCCSPP_PPi0
     return genie::kSpp_vn_cc_10010;
   }
-  case 13: {
+  case 13: { // kCCSPP_NPip
     return genie::kSpp_vn_cc_01100;
   }
   case -11: {

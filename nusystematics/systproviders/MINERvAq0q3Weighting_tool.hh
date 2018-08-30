@@ -61,7 +61,7 @@ public:
   double GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
                                   nusyst::QELikeTarget_t QELTarget);
 
-  systtools::event_unit_response_t GetEventResponse(genie::EventRecord &);
+  systtools::event_unit_response_t GetEventResponse(genie::EventRecord const&);
 
   std::string AsString();
 

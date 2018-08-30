@@ -18,7 +18,8 @@ using namespace fhicl;
 // #define DEBUG_MKSINGLEPI
 
 MKSinglePiEnuq0q3::MKSinglePiEnuq0q3(ParameterSet const &params)
-    : IGENIESystProvider_tool(params), templateReweighter(nullptr), valid_file(nullptr), valid_tree(nullptr) {}
+    : IGENIESystProvider_tool(params), templateReweighter(nullptr),
+      valid_file(nullptr), valid_tree(nullptr) {}
 
 namespace {
 struct channel_id {
@@ -152,21 +153,21 @@ bool MKSinglePiEnuq0q3::SetupResponseCalculator(
 }
 
 event_unit_response_t
-MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord &ev) {
+MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord const &ev) {
 
   event_unit_response_t resp{{{ResponseParameterId, std::vector<double>{{1}}}}};
 
-  if (!ev.Summary()->ProcInfo().IsResonant() ||
+  if (!(ev.Summary()->ProcInfo().IsResonant() ||
+        ev.Summary()->ProcInfo().IsDeepInelastic()) ||
       !ev.Summary()->ProcInfo().IsWeakCC()) {
     return resp;
   }
 
-  genie::SppChannel_t chan = SPPChannelFromGHep(ev);
-
-  if ((chan == genie::kSppNull) ||
-      (ChannelParameterMapping.find(chan) == ChannelParameterMapping.end())) {
+  if (ev.Summary()->Kine().W(true) > 1.7) {
     return resp;
   }
+
+  genie::SppChannel_t chan = genie::kSppNull;
 
   genie::Target const &tgt = ev.Summary()->InitState().Tgt();
   if (!tgt.HitNucIsSet()) {
@@ -189,32 +190,110 @@ MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord &ev) {
   TLorentzVector FSLepP4 = *FSLep->P4();
   TLorentzVector ISLepP4 = *ISLep->P4();
 
-#ifdef DEBUG_MKSINGLEPI
-  std::cout << "[INFO]: Lab frame ENu: " << ISLepP4.E()
-            << ", q0: " << (ISLepP4 - FSLepP4).E()
-            << ", q3: " << (ISLepP4 - FSLepP4).Vect().Mag()
-            << ", Target Nucleon: [ " << NucP4[0] << ", " << NucP4[1] << ", "
-            << NucP4[2] << ", M: " << NucP4.M() << "]" << std::endl;
-#endif
-
   FSLepP4.Boost(-NucP4.BoostVector());
   ISLepP4.Boost(-NucP4.BoostVector());
   NucP4.Boost(-NucP4.BoostVector());
 
-#ifdef DEBUG_MKSINGLEPI
-  std::cout << "[INFO]: Post-boost: Target Nucleon: [ " << NucP4[0] << ", "
-            << NucP4[1] << ", " << NucP4[2] << ", M: " << NucP4.M() << "]"
-            << std::endl;
-#endif
-
   TLorentzVector emTransfer = (ISLepP4 - FSLepP4);
 
-  double wght = templateReweighter->GetVariation(
-      ChannelParameterMapping[chan], 1, std::array<double, 3>{{ISLepP4.E(), emTransfer.E(), emTransfer.Vect().Mag()}});
+  double wght = 1;
+
+  if (ev.Summary()->ProcInfo().IsResonant()) {
+    chan = SPPChannelFromGHep(ev);
+
+    if ((chan == genie::kSppNull) ||
+        (ChannelParameterMapping.find(chan) == ChannelParameterMapping.end())) {
+      return resp;
+    }
+
+#ifdef DEBUG_MKSINGLEPI
+    int NEUTCh = genie::utils::ghep::NeutReactionCode(&ev);
+
+    int NPi0 = 0, NPip = 0, NP = 0, NN = 0;
+
+    bool nuclear_target = ev.Summary()->InitState().Tgt().IsNucleus();
+
+    TIter event_iter(&ev);
+    genie::GHepParticle *p = 0;
+
+    while ((p = dynamic_cast<genie::GHepParticle *>(event_iter.Next()))) {
+      genie::GHepStatus_t ghep_ist = (genie::GHepStatus_t)p->Status();
+      int ghep_pdgc = p->Pdg();
+      int ghep_fm = p->FirstMother();
+      int ghep_fmpdgc = (ghep_fm == -1) ? 0 : ev.Particle(ghep_fm)->Pdg();
+
+      // For nuclear targets use hadrons marked as 'hadron in the nucleus'
+      // which are the ones passed in the intranuclear rescattering
+      // For free nucleon targets use particles marked as 'final state'
+      // but make an exception for decayed pi0's,eta's (count them and not their
+      // daughters)
+
+      bool decayed =
+          (ghep_ist == genie::kIStDecayedState &&
+           (ghep_pdgc == genie::kPdgPi0 || ghep_pdgc == genie::kPdgEta));
+      bool parent_included =
+          (ghep_fmpdgc == genie::kPdgPi0 || ghep_fmpdgc == genie::kPdgEta);
+
+      bool count_it =
+          (nuclear_target && ghep_ist == genie::kIStHadronInTheNucleus) ||
+          (!nuclear_target && decayed) ||
+          (!nuclear_target && ghep_ist == genie::kIStStableFinalState &&
+           !parent_included);
+
+      if (!count_it)
+        continue;
+      if (ghep_pdgc == genie::kPdgPiP) {
+        NPip++; // pi+
+      } else if (ghep_pdgc == genie::kPdgPi0) {
+        NPi0++; // pi0NPim = 0
+      } else if (ghep_pdgc == genie::kPdgProton) {
+        NP++; // pi0NPim = 0
+      } else if (ghep_pdgc == genie::kPdgNeutron) {
+        NN++; // pi0NPim = 0
+      }
+    }
+
+    std::cout << "[INFO]: Event, NEUTChannel: " << NEUTCh
+              << ", GENIE SPPChannel: " << chan
+              << ", W = " << ev.Summary()->Kine().W(true)
+              << ", PID: " << ChannelParameterMapping[chan]
+              << ", NPi0 = " << NPi0 << ", NPip = " << NPip << ", NP = " << NP
+              << ", NN = " << NN << std::endl;
+#endif
+
+#ifdef DEBUG_MKSINGLEPI
+    std::cout << "[INFO]: Lab frame ENu: " << ISLepP4.E()
+              << ", q0: " << (ISLepP4 - FSLepP4).E()
+              << ", q3: " << (ISLepP4 - FSLepP4).Vect().Mag()
+              << ", Target Nucleon: [ " << NucP4[0] << ", " << NucP4[1] << ", "
+              << NucP4[2] << ", M: " << NucP4.M() << "]" << std::endl;
+#endif
+
+#ifdef DEBUG_MKSINGLEPI
+    std::cout << "[INFO]: Post-boost: Target Nucleon: [ " << NucP4[0] << ", "
+              << NucP4[1] << ", " << NucP4[2] << ", M: " << NucP4.M() << "]"
+              << std::endl;
+#endif
+
+    wght = templateReweighter->GetVariation(
+        ChannelParameterMapping[chan], 1,
+        std::array<double, 3>{
+            {ISLepP4.E(), emTransfer.E(), emTransfer.Vect().Mag()}});
+
+  } else { // GENIE non-resonant gets weighted to 0.
+    wght = 0;
+  }
 
   resp.push_back({ResponseParameterId, std::vector<double>{{wght}}});
 
   if (fill_valid_tree) {
+
+    q0_nuc_rest_frame = emTransfer.E();
+    q3_nuc_rest_frame = emTransfer.Vect().Mag();
+
+    ISLepP4 = *ISLep->P4();
+    FSLepP4 = *FSLep->P4();
+    emTransfer = (ISLepP4 - FSLepP4);
 
     pdgfslep = ev.FinalStatePrimaryLepton()->Pdg();
     momfslep = FSLepP4.Vect().Mag();
@@ -256,6 +335,12 @@ MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord &ev) {
     q0 = emTransfer.E();
     q3 = emTransfer.Vect().Mag();
 
+    OutOfReWeightPS = (templateReweighter->GetBin(
+                           ChannelParameterMapping[chan],
+                           std::array<double, 3>{{ISLepP4.E(), emTransfer.E(),
+                                                  emTransfer.Vect().Mag()}}) ==
+                       templateReweighter->kBinOutsideRange);
+
     valid_tree->Fill();
   }
 
@@ -282,7 +367,10 @@ void MKSinglePiEnuq0q3::InitValidTree() {
   valid_tree->Branch("W", &W);
   valid_tree->Branch("q0", &q0);
   valid_tree->Branch("q3", &q3);
+  valid_tree->Branch("q0_nuc_rest_frame", &q0_nuc_rest_frame);
+  valid_tree->Branch("q3_nuc_rest_frame", &q3_nuc_rest_frame);
   valid_tree->Branch("weight", &weight);
+  valid_tree->Branch("OutOfReWeightPS", &OutOfReWeightPS);
 }
 
 MKSinglePiEnuq0q3::~MKSinglePiEnuq0q3() {

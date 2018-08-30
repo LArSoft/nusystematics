@@ -5,17 +5,26 @@ MKSPPEnuq0q3_Tool_Config: {
     MKSPP_Enuq0q3_input_manifest: {
       InputTemplates: [
         {
-          parameter_name: NumuNPiPlus
+          parameter_name: NumuPPiPlus
           input_file: "MKInputs/CCnu_ppipChannel_ENuq0q3_GENIERS_NEUTMK_ReWeight.root"
           inputs: [ { value: 1
               hist_name: "CCnu_ppipChannel_ENuq0q3_GENIERS_NEUTMK_ReWeight" } ]
         },
         {
-          parameter_name: NumuPPiPlus
+          parameter_name: NumuNPiPlus
           input_file: "MKInputs/CCnu_npipChannel_ENuq0q3_GENIERS_NEUTMK_ReWeight.root"
           inputs: [
             { value: 1
               hist_name: "CCnu_npipChannel_ENuq0q3_GENIERS_NEUTMK_ReWeight"
+            }
+          ]
+        },
+        {
+          parameter_name: NumuPPi0
+          input_file: "MKInputs/CCnu_ppi0Channel_ENuq0q3_GENIERS_NEUTMK_ReWeight.root"
+          inputs: [
+            { value: 1
+              hist_name: "CCnu_ppi0Channel_ENuq0q3_GENIERS_NEUTMK_ReWeight"
             }
           ]
         }

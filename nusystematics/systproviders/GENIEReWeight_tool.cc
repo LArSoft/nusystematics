@@ -23,8 +23,7 @@ using namespace nusyst;
 
 GENIEReWeight::GENIEReWeight(ParameterSet const &params)
     : IGENIESystProvider_tool(params), fHaveReconfiguredOneOfTheHERG(false),
-      valid_file(nullptr), valid_tree(nullptr) {
-}
+      valid_file(nullptr), valid_tree(nullptr) {}
 
 std::string GENIEReWeight::AsString() {
   CheckHaveMetaData();
@@ -143,7 +142,7 @@ DEFINE_ART_CLASS_TOOL(GENIEReWeight)
 // #define GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
 
 systtools::event_unit_response_t
-GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {
+GENIEReWeight::GetEventResponse(genie::EventRecord const &gev) {
 
   systtools::event_unit_response_t event_responses;
   size_t NResps = ResponseToGENIEParameters.size();
@@ -178,7 +177,8 @@ GENIEReWeight::GetEventResponse(genie::EventRecord &gev) {
 }
 
 double GENIEReWeight::GetEventWeightResponse(
-    genie::EventRecord &gev, systtools::param_value_list_t const &set_params) {
+    genie::EventRecord const &gev,
+    systtools::param_value_list_t const &set_params) {
 
   double weight = 1;
 
@@ -202,7 +202,7 @@ double GENIEReWeight::GetEventWeightResponse(
 }
 
 systtools::event_unit_response_t
-GENIEReWeight::GetEventResponse(genie::EventRecord &gev,
+GENIEReWeight::GetEventResponse(genie::EventRecord const &gev,
                                 systtools::paramId_t pid) {
 
   size_t NResps = ResponseToGENIEParameters.size();
@@ -218,7 +218,7 @@ GENIEReWeight::GetEventResponse(genie::EventRecord &gev,
 }
 
 systtools::ParamResponses
-GENIEReWeight::GetEventGENIEParameterResponse(genie::EventRecord &gev,
+GENIEReWeight::GetEventGENIEParameterResponse(genie::EventRecord const &gev,
                                               size_t idx) {
 
   GENIEResponseParameter &GENIEResponse = ResponseToGENIEParameters[idx];

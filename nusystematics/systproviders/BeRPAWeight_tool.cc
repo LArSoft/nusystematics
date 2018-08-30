@@ -10,7 +10,7 @@ public:
   SystMetaData ConfigureFromFHICL(ParameterSet const &, paramId_t);
 
   bool Configure();
-  std::unique_ptr<EventResponse> GetEventResponse(art::Event &);
+  std::unique_ptr<EventResponse> GetEventResponse(art::Event const &);
   std::string AsString();
 
 private:
@@ -132,7 +132,7 @@ bool BeRPAWeightProvider::Configure() {
 }
 
 std::unique_ptr<EventResponse>
-BeRPAWeightProvider::GetEventResponse(art::Event &e) {
+BeRPAWeightProvider::GetEventResponse(art::Event const &e) {
 
   art::Handle<std::vector<simb::GTruth>> gTruthHandle;
   e.getByLabel(fGENIEModuleLabel, gTruthHandle);

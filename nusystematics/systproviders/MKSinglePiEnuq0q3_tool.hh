@@ -31,7 +31,7 @@ public:
   systtools::SystMetaData BuildSystMetaData(fhicl::ParameterSet const &,
                                             systtools::paramId_t);
 
-  systtools::event_unit_response_t GetEventResponse(genie::EventRecord &);
+  systtools::event_unit_response_t GetEventResponse(genie::EventRecord const&);
 
   std::string AsString();
 
@@ -46,9 +46,9 @@ private:
   TFile *valid_file;
   TTree *valid_tree;
 
-  int NEUTMode, Pdgnu, pdgfslep, pdghmfspi, SppChannel;
-  double Enu, momfslep, cthetafslep, momhmfspi, cthetahmfspi, Q2, q0, q3, W,
-      weight;
+  int NEUTMode, Pdgnu, pdgfslep, pdghmfspi, SppChannel, OutOfReWeightPS;
+  double Enu, momfslep, cthetafslep, momhmfspi, cthetahmfspi, Q2, q0, q3,
+      q0_nuc_rest_frame, q3_nuc_rest_frame, W, weight;
 };
 
 #endif

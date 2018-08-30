@@ -41,27 +41,52 @@ public:
 
     Int_t XBin = firstHist->GetXaxis()->FindFixBin(kinematics[kIndex_q0]);
     if (IsFlowBin(firstHist->GetXaxis(), XBin)) {
-      throw is_flow_bin() << "[WARN]: q0: " << kinematics[kIndex_q0]
-                          << " outside normal bin range: "
-                          << firstHist->GetXaxis()->GetBinLowEdge(1) << " -- "
-                          << firstHist->GetXaxis()->GetBinUpEdge(
-                                 firstHist->GetXaxis()->GetNbins());
+#ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
+      std::cout << "[DEBUG]: q0: " << kinematics[kIndex_q0]
+                << " outside normal bin range: "
+                << firstHist->GetXaxis()->GetBinLowEdge(1) << " -- "
+                << firstHist->GetXaxis()->GetBinUpEdge(
+                       firstHist->GetXaxis()->GetNbins())
+                << std::endl;
+#endif
+      return kBinOutsideRange;
     }
     Int_t YBin = firstHist->GetYaxis()->FindFixBin(kinematics[kIndex_q3]);
     if (IsFlowBin(firstHist->GetYaxis(), YBin)) {
-      throw is_flow_bin() << "[WARN]: q3: " << kinematics[kIndex_q3]
-                          << " outside normal bin range: "
-                          << firstHist->GetYaxis()->GetBinLowEdge(1) << " -- "
-                          << firstHist->GetYaxis()->GetBinUpEdge(
-                                 firstHist->GetYaxis()->GetNbins());
+#ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
+      std::cout << "[DEBUG]: q3: " << kinematics[kIndex_q3]
+                << " outside normal bin range: "
+                << firstHist->GetYaxis()->GetBinLowEdge(1) << " -- "
+                << firstHist->GetYaxis()->GetBinUpEdge(
+                       firstHist->GetYaxis()->GetNbins())
+                << std::endl;
+#endif
+      return kBinOutsideRange;
     }
     Int_t ZBin = firstHist->GetZaxis()->FindFixBin(kinematics[kIndex_Enu]);
     if (IsFlowBin(firstHist->GetZaxis(), ZBin)) {
-      throw is_flow_bin() << "[WARN]: Enu: " << kinematics[kIndex_Enu]
-                          << " outside normal bin range: "
-                          << firstHist->GetZaxis()->GetBinLowEdge(1) << " -- "
-                          << firstHist->GetZaxis()->GetBinUpEdge(
-                                 firstHist->GetZaxis()->GetNbins());
+#ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
+      std::cout << "[DEBUG]: Enu: " << kinematics[kIndex_Enu]
+                << " outside normal bin range: "
+                << firstHist->GetZaxis()->GetBinLowEdge(1) << " -- "
+                << firstHist->GetZaxis()->GetBinUpEdge(
+                       firstHist->GetZaxis()->GetNbins())
+                << std::endl;
+#endif
+      return kBinOutsideRange;
+    }
+
+    if (firstHist->GetBinContent(XBin, YBin, ZBin) <
+        std::numeric_limits<double>::epsilon()) {
+#ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
+      std::cout << "[DEBUG]: Bin Enu: " << kinematics[kIndex_Enu]
+                << ", q0: " << kinematics[kIndex_q0]
+                << ", q3: " << kinematics[kIndex_q3] << " = { " << XBin << ", "
+                << YBin << ", " << ZBin
+                << " } = " << firstHist->GetBin(XBin, YBin, ZBin)
+                << ", had no content, returning default bin id." << std::endl;
+#endif
+      return kBinOutsideRange;
     }
 
 #ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
@@ -71,6 +96,7 @@ public:
               << YBin << ", " << ZBin
               << " } = " << firstHist->GetBin(XBin, YBin, ZBin) << std::endl;
 #endif
+
     return firstHist->GetBin(XBin, YBin, ZBin);
   }
 

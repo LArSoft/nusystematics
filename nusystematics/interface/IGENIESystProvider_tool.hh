@@ -23,7 +23,8 @@ public:
                                    "genie_module_label", "generator")) {}
 
 #ifndef NO_ART
-  std::unique_ptr<systtools::EventResponse> GetEventResponse(art::Event &ev) {
+  std::unique_ptr<systtools::EventResponse>
+  GetEventResponse(art::Event const &ev) {
     std::unique_ptr<systtools::EventResponse> er =
         std::make_unique<systtools::EventResponse>();
 
@@ -53,10 +54,11 @@ public:
 
   /// Calculates configured response for a given GHep record
   virtual systtools::event_unit_response_t
-  GetEventResponse(genie::EventRecord &) = 0;
+  GetEventResponse(genie::EventRecord const &) = 0;
+
   /// Calculates the response to a single parameter for a given GHep record
   virtual systtools::event_unit_response_t
-  GetEventResponse(genie::EventRecord &, systtools::paramId_t) {
+  GetEventResponse(genie::EventRecord const &, systtools::paramId_t) {
     throw systtools::ISystProviderTool_method_unimplemented()
         << "[ERROR]: " << GetFullyQualifiedName()
         << " does not implement systtools::event_unit_response_t "
@@ -67,7 +69,7 @@ public:
   /// parameter--value pairs.
   ///
   /// \note This convenience method should only be used for weight responses.
-  virtual double GetEventWeightResponse(genie::EventRecord &,
+  virtual double GetEventWeightResponse(genie::EventRecord const &,
                                         systtools::param_value_list_t const &) {
     throw systtools::ISystProviderTool_method_unimplemented()
         << "[ERROR]: " << GetFullyQualifiedName()

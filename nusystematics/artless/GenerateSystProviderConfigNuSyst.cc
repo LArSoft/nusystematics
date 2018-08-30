@@ -22,6 +22,7 @@ std::string fclname = "";
 std::string outputfile = "";
 std::string envvar = "FHICL_FILE_PATH";
 std::string fhicl_key = "syst_providers";
+bool WrapWithPROLOG = false;
 } // namespace cliopts
 
 void SayUsage(char const *argv[]) {
@@ -31,6 +32,7 @@ void SayUsage(char const *argv[]) {
                "\t-o <output.fcl>  : fhicl file to write, stdout by default.\n"
                "\t-k <list key>    : fhicl key to look for list of providers,\n"
                "\t                   \"syst_providers\" by default.\n"
+               "\t-P               : Wrap output file in {BEGIN,END}_PROLOG.\n"
             << std::endl;
 }
 
@@ -47,6 +49,8 @@ void HandleOpts(int argc, char const *argv[]) {
       cliopts::outputfile = argv[++opt];
     } else if (std::string(argv[opt]) == "-k") {
       cliopts::fhicl_key = argv[++opt];
+    } else if (std::string(argv[opt]) == "-P") {
+      cliopts::WrapWithPROLOG = true;
     } else {
       std::cout << "[ERROR]: Unknown option: " << argv[opt] << std::endl;
       SayUsage(argv);
@@ -103,7 +107,15 @@ int main(int argc, char const *argv[]) {
     os = &std::cout;
   }
 
+  if (cliopts::WrapWithPROLOG) {
+    (*os) << "BEGIN_PROLOG" << std::endl;
+  }
+
   (*os) << wrapped_out_ps.to_indented_string() << std::endl;
+
+  if (cliopts::WrapWithPROLOG) {
+    (*os) << "END_PROLOG" << std::endl;
+  }
 
   if (cliopts::outputfile.size()) {
     static_cast<std::ofstream *>(os)->close();

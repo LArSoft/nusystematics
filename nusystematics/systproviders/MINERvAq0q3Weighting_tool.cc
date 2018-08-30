@@ -202,7 +202,7 @@ MINERvAq0q3Weighting::GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
 }
 
 event_unit_response_t
-MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord &ev) {
+MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
 
   // make default response for configured parameter
   event_unit_response_t resp;

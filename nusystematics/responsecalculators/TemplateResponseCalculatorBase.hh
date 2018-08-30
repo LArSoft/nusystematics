@@ -84,6 +84,8 @@ public:
 
   typedef size_t bin_it_t;
 
+  bin_it_t kBinOutsideRange = std::numeric_limits<bin_it_t>::max();
+
   virtual bin_it_t GetBin(systtools::paramId_t,
                           std::array<double, NDims> const &) = 0;
 
@@ -191,7 +193,7 @@ void TemplateResponseCalculatorBase<NDims, Continuous>::LoadInputHistograms(
 }
 template <size_t NDims, bool Continuous>
 TemplateResponseCalculatorBase<NDims,
-                               Continuous>::TemplateResponseCalculatorBase(){}
+                               Continuous>::TemplateResponseCalculatorBase() {}
 
 template <size_t NDims, bool Continuous>
 template <bool Enable>
@@ -208,13 +210,19 @@ typename std::enable_if<!Enable, double>::type
 TemplateResponseCalculatorBase<NDims, Continuous>::GetVariation(
     systtools::paramId_t param, double val,
     typename std::enable_if<!Enable, bin_it_t>::type bin) {
+
+  if (bin == kBinOutsideRange) {
+    return 1;
+  }
+
   for (auto &resp : BinnedResponses[param]) {
     if (fabs(val - resp.first) <
         (std::numeric_limits<double>::epsilon() * 1E4)) {
 #ifdef TemplateResponseCalculatorBase_DEBUG
       std::cout << "[INFO]: Getting bin content for bin: " << bin
                 << " for parameter: " << param << " at value: " << val << " = "
-                << resp.second->GetBinContent(bin) << std::endl;
+                << resp.second->GetBinContent(bin)
+                << " from hist: " << resp.second->GetName() << std::endl;
 #endif
       return resp.second->GetBinContent(bin);
     }
