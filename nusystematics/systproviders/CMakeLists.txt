@@ -1,3 +1,4 @@
+
 art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
   SOURCE
     GENIEReWeightParamConfig.cc
@@ -10,6 +11,10 @@ art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
     ${ART_FRAMEWORK_PRINCIPAL}
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
     ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+    canvas
+    ${MF_MESSAGELOGGER}
+    ${FHICLCPP}
+    cetlib cetlib_except
     ${CLHEP}
     ${LOG4CPP}
     ${XML2}
@@ -34,6 +39,10 @@ simple_plugin(GENIEReWeight tool
     ${ART_FRAMEWORK_PRINCIPAL}
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
     ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+    canvas
+    ${MF_MESSAGELOGGER}
+    ${FHICLCPP}
+    cetlib cetlib_except
     ${CLHEP}
     ${LOG4CPP}
     ${XML2}
@@ -51,11 +60,16 @@ simple_plugin(GENIEReWeight tool
 
 simple_plugin(MKSinglePiEnuq0q3 tool
   systematicstools_utility
+  systematicstools_interface
   nutools_EventGeneratorBase_GENIE
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_PRINCIPAL}
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
     ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+    canvas
+    ${MF_MESSAGELOGGER}
+    ${FHICLCPP}
+    cetlib cetlib_except
     ${CLHEP}
     ${LOG4CPP}
     ${XML2}
@@ -73,11 +87,16 @@ simple_plugin(MKSinglePiEnuq0q3 tool
 
 simple_plugin(MINERvAq0q3Weighting tool
   systematicstools_utility
+  systematicstools_interface
   nutools_EventGeneratorBase_GENIE
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_PRINCIPAL}
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
     ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+    canvas
+    ${MF_MESSAGELOGGER}
+    ${FHICLCPP}
+    cetlib cetlib_except
     ${CLHEP}
     ${LOG4CPP}
     ${XML2}
