@@ -60,8 +60,9 @@ include(BuildPlugins)
 # include search path
 include_directories ( $ENV{GENIE_INC}/GENIE )
 
+# get libxml2
+cet_find_library( XML2 NAMES xml2 PATHS $ENV{LIBXML2_FQ_DIR}/lib NO_DEFAULT_PATH )
 # the GENIE libraries are already defined, but we need the lib list
-
 set(GENIE_LIB_LIST  ${GALGORITHM}
                     ${GBARYONRESONANCE}
                     ${GBASE}
