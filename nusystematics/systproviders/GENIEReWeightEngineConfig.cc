@@ -166,7 +166,7 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
 
   // Add NormCCQE
   AddIndependentParameters(
-      QEmd, {{kXSecTwkDial_NormCCQE}}, "xsec_ccqe_axFF",
+      QEmd, {kXSecTwkDial_NormCCQE}, "xsec_ccqe_axFF",
       []() {
         GReWeightNuXSecCCQE *rwccqe = new GReWeightNuXSecCCQE();
 
@@ -179,7 +179,7 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
   bool MAQEIsShapeOnly = tool_options.get<bool>("MAQEIsShapeOnly", false);
   AddIndependentParameters(
       QEmd,
-      {{MAQEIsShapeOnly ? kXSecTwkDial_MaCCQEshape : kXSecTwkDial_MaCCQE}},
+      {MAQEIsShapeOnly ? kXSecTwkDial_MaCCQEshape : kXSecTwkDial_MaCCQE},
       "xsec_ccqe_axFF",
       [=]() {
         GReWeightNuXSecCCQE *rwccqe = new GReWeightNuXSecCCQE();
@@ -193,11 +193,11 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
 
   // Add AxFFCCQEShape
   AddIndependentParameters(
-      QEmd, {{kXSecTwkDial_AxFFCCQEshape}}, "xsec_ccqe_axFF",
+      QEmd, {kXSecTwkDial_AxFFCCQEshape}, "xsec_ccqe_axFF",
       []() { return new GReWeightNuXSecCCQEaxial(); }, UseFullHERG, param_map);
 
   // Add ZNormCCQE
-  AddIndependentParameters(QEmd, {{kXSecTwkDial_ZNormCCQE}}, "xsec_ccqe_axFF",
+  AddIndependentParameters(QEmd, {kXSecTwkDial_ZNormCCQE}, "xsec_ccqe_axFF",
                            []() {
                              GReWeightNuXSecCCQE *rwccqe =
                                  new GReWeightNuXSecCCQE();
@@ -222,7 +222,7 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
       UseFullHERG, param_map);
 
   AddIndependentParameters(
-      QEmd, {{kXSecTwkDial_VecFFCCQEshape}}, "xsec_ccqe_vecFF",
+      QEmd, {kXSecTwkDial_VecFFCCQEshape}, "xsec_ccqe_vecFF",
       []() { return new GReWeightNuXSecCCQEvec; }, UseFullHERG, param_map);
 
   return param_map;
@@ -254,7 +254,7 @@ ConfigureRESWeightEngine(SystMetaData const &RESmd,
 
   // Add any CCRES parameters
   AddIndependentParameters(
-      RESmd, {{kXSecTwkDial_NormCCRES}}, "xsec_ccres_FF",
+      RESmd, {kXSecTwkDial_NormCCRES}, "xsec_ccres_FF",
       []() {
         GReWeightNuXSecCCRES *rwccres = new GReWeightNuXSecCCRES();
 
@@ -279,7 +279,7 @@ ConfigureRESWeightEngine(SystMetaData const &RESmd,
       UseFullHERG, param_map);
 
   AddIndependentParameters(
-      RESmd, {{kXSecTwkDial_NormNCRES}}, "xsec_ncres_FF",
+      RESmd, {kXSecTwkDial_NormNCRES}, "xsec_ncres_FF",
       []() {
         GReWeightNuXSecNCRES *rwncres = new GReWeightNuXSecNCRES();
 
@@ -369,7 +369,7 @@ ConfigureDISWeightEngine(SystMetaData const &DISmd,
       {kHadrAGKYTwkDial_xF1pi, kHadrAGKYTwkDial_pT1pi}, "hadronization",
       []() { return new GReWeightAGKY; }, UseFullHERG, param_map);
 
-  AddIndependentParameters(DISmd, {{kHadrNuclTwkDial_FormZone}}, "form_zone",
+  AddIndependentParameters(DISmd, {kHadrNuclTwkDial_FormZone}, "form_zone",
                            []() { return new GReWeightFZone; }, UseFullHERG,
                            param_map);
 

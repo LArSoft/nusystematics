@@ -1,4 +1,4 @@
-#include "MINERvAq0q3Weighting_tool.hh"
+#include "nusystematics/systproviders/MINERvAq0q3Weighting_tool.hh"
 
 #include "nusystematics/responsecalculators/MINERvA2p2hq0q3.hh"
 
