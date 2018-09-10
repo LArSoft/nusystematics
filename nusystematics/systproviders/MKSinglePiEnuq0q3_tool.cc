@@ -155,7 +155,7 @@ bool MKSinglePiEnuq0q3::SetupResponseCalculator(
 event_unit_response_t
 MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord const &ev) {
 
-  event_unit_response_t resp{{{ResponseParameterId, std::vector<double>{{1}}}}};
+  event_unit_response_t resp{{{ResponseParameterId, std::vector<double>{1}}}};
 
   if (!(ev.Summary()->ProcInfo().IsResonant() ||
         ev.Summary()->ProcInfo().IsDeepInelastic()) ||
@@ -284,7 +284,7 @@ MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord const &ev) {
     wght = 0;
   }
 
-  resp.push_back({ResponseParameterId, std::vector<double>{{wght}}});
+  resp.push_back({ResponseParameterId, std::vector<double>{wght}});
 
   if (fill_valid_tree) {
 
