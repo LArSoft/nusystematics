@@ -32,14 +32,14 @@ fcldir product_dir fcl
 # Add the dependent product and version
 
 product          version
-larsoft          v07_05_00
+nutools          v2_24_04
 systematicstools v00_01_00
 cetbuildtools    v7_04_00 - only_for_build
 end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the depdencies.
 # Make a table by adding columns before "notes".
-qualifier   larsoft    systematicstools
+qualifier   nutools    systematicstools
 e17:debug   e17:debug  e17:debug
 e17:prof    e17:prof   e17:prof
 c2:debug    c2:debug   c2:debug
