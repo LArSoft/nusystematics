@@ -1,8 +1,8 @@
 #ifndef nusystematics_UTILITY_GENIEUTILS_SEEN
 #define nusystematics_UTILITY_GENIEUTILS_SEEN
 
-#include "GHEP/GHepUtils.h"
-#include "Interaction/SppChannel.h"
+#include "Framework/GHEP/GHepUtils.h"
+#include "Framework/Interaction/SppChannel.h"
 
 namespace nusyst {
 /// Gets the GENIE SPP channel enum for a supplied GHepEvent

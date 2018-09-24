@@ -13,7 +13,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // GENIE
-#include "EVGCore/EventRecord.h"
+#include "Framework/EventGen/EventRecord.h"
 
 namespace nusyst {
 class IGENIESystProvider_tool : public systtools::ISystProviderTool {

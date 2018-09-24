@@ -11,8 +11,8 @@
 #endif
 
 // GENIE
-#include "GHEP/GHepUtils.h"
-#include "Messenger/Messenger.h"
+#include "Framework/GHEP/GHepUtils.h"
+#include "Framework/Messenger/Messenger.h"
 
 #include <chrono>
 #include <sstream>

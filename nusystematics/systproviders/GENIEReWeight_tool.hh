@@ -6,8 +6,8 @@
 #include "nusystematics/systproviders/GENIEResponseParameterAssociation.hh"
 
 // GENIE
-#include "EVGCore/EventRecord.h"
-#include "ReWeight/GReWeight.h"
+#include "Framework/EventGen/EventRecord.h"
+#include "Tools/ReWeight/GReWeight.h"
 
 #include "TFile.h"
 #include "TTree.h"
