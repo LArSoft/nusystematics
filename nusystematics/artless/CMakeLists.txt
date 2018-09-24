@@ -100,7 +100,7 @@ else()
   SET(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} ${EXTRA_LINK_FLAGS}")
 endif()
 
-set(EXTRA_CXX_FLAGS "-DNO_ART -std=c++1y ${ROOT_CXX_FLAGS_SCRUBBED} ${GENIE_CXX_FLAGS}")
+set(EXTRA_CXX_FLAGS "-DNO_ART -std=c++1y -Wall -Wextra -Werror ${ROOT_CXX_FLAGS_SCRUBBED} ${GENIE_CXX_FLAGS}")
 if(CMAKE_CXX_FLAGS STREQUAL "")
   SET(CMAKE_CXX_FLAGS ${EXTRA_CXX_FLAGS})
 else()
@@ -127,7 +127,7 @@ INSTALL(FILES ${UTIL_HDRFILES} DESTINATION include/nusystematics/utility)
 SET(RC_HDRFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/BeRPA.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/TemplateResponseCalculatorBase.hh
-  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MKSinglePiEnuq0q3_ReWeight.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MKSinglePiTemplate_ReWeight.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvA2p2hq0q3.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvAq0q3Weighting_data.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvARPAq0q3_ReWeight.hh)
@@ -139,13 +139,13 @@ SET(SP_IMPLFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeight_tool.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeightEngineConfig.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeightParamConfig.cc
-  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiEnuq0q3_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiTemplate_tool.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAq0q3Weighting_tool.cc
 )
 
 SET(SP_HDRFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeight_tool.hh
-  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiEnuq0q3_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiTemplate_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAq0q3Weighting_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEResponseParameterAssociation.hh
 )

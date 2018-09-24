@@ -18,9 +18,10 @@ using namespace genie::rew;
 
 namespace nusyst {
 
-SystMetaData ConfigureSetOfIndependentParameters(
-    fhicl::ParameterSet const &cfg, paramId_t firstParamId,
-    fhicl::ParameterSet &tool_options, std::vector<genie::rew::GSyst_t> Dials) {
+SystMetaData
+ConfigureSetOfIndependentParameters(fhicl::ParameterSet const &cfg,
+                                    paramId_t firstParamId,
+                                    std::vector<genie::rew::GSyst_t> Dials) {
 
   SystMetaData MD;
   for (GSyst_t const &gdial : Dials) {
@@ -334,7 +335,7 @@ SystMetaData ConfigureRESParameterHeaders(fhicl::ParameterSet const &cfg,
 
   // These are all independent and based upon the channel that was generated
   SystMetaData RESOther = ConfigureSetOfIndependentParameters(
-      cfg, firstParamId, tool_options,
+      cfg, firstParamId,
       {kXSecTwkDial_RvpCC1pi, kXSecTwkDial_RvpCC2pi, kXSecTwkDial_RvpNC1pi,
        kXSecTwkDial_RvpNC2pi, kXSecTwkDial_RvnCC1pi, kXSecTwkDial_RvnCC2pi,
        kXSecTwkDial_RvnNC1pi, kXSecTwkDial_RvnNC2pi, kXSecTwkDial_RvbarpCC1pi,
@@ -381,7 +382,7 @@ SystMetaData ConfigureDISParameterHeaders(fhicl::ParameterSet const &cfg,
   ExtendSystMetaData(DISmd, std::move(AGKYmd));
 
   SystMetaData FZmd = ConfigureSetOfIndependentParameters(
-      cfg, firstParamId, tool_options, {kHadrNuclTwkDial_FormZone});
+      cfg, firstParamId, {kHadrNuclTwkDial_FormZone});
   ExtendSystMetaData(DISmd, std::move(FZmd));
 
   return DISmd;
@@ -410,10 +411,9 @@ SystMetaData ConfigureFSIParameterHeaders(fhicl::ParameterSet const &cfg,
 }
 
 SystMetaData ConfigureOtherParameterHeaders(fhicl::ParameterSet const &cfg,
-                                            paramId_t firstParamId,
-                                            fhicl::ParameterSet &tool_options) {
+                                            paramId_t firstParamId) {
   return ConfigureSetOfIndependentParameters(
-      cfg, firstParamId, tool_options,
+      cfg, firstParamId,
       {kSystNucl_CCQEPauliSupViaKF, kSystNucl_CCQEMomDistroFGtoSF});
 }
 

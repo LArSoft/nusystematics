@@ -1,4 +1,19 @@
 
+SET(GENIE_EV_LIBS
+  ${GENIE_LIB_LIST}
+  ${LOG4CPP}
+  ${XML2}
+  ${LHAPDF}
+  ${ROOT_BASIC_LIB_LIST}
+  ${ROOT_EG}
+  ${ROOT_TREEPLAYER}
+  ${ROOT_FFTW}
+  ${ROOT_REFLEX}
+  ${ROOTSYS}/lib/libEGPythia6.so
+  ${ROOT_GUI}
+  ${PYTHIA6}
+)
+
 art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
   SOURCE
     GENIEReWeightParamConfig.cc
@@ -16,18 +31,7 @@ art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
     ${FHICLCPP}
     cetlib cetlib_except
     ${CLHEP}
-    ${LOG4CPP}
-    ${XML2}
-    ${PYTHIA6}
-    ${LHAPDF}
-    ${GENIE_LIB_LIST}
-    ${ROOT_BASIC_LIB_LIST}
-    ${ROOT_EG}
-    ${ROOT_TREEPLAYER}
-    ${ROOT_FFTW}
-    ${ROOT_REFLEX}
-    ${ROOTSYS}/lib/libEGPythia6.so
-    ${ROOT_GUI}
+    ${GENIE_EV_LIBS}
   )
 
 simple_plugin(GENIEReWeight tool
@@ -44,21 +48,10 @@ simple_plugin(GENIEReWeight tool
     ${FHICLCPP}
     cetlib cetlib_except
     ${CLHEP}
-    ${LOG4CPP}
-    ${XML2}
-    ${PYTHIA6}
-    ${LHAPDF}
-    ${GENIE_LIB_LIST}
-    ${ROOT_BASIC_LIB_LIST}
-    ${ROOT_EG}
-    ${ROOT_TREEPLAYER}
-    ${ROOT_FFTW}
-    ${ROOT_REFLEX}
-    ${ROOTSYS}/lib/libEGPythia6.so
-    ${ROOT_GUI}
+    ${GENIE_EV_LIBS}
  )
 
-simple_plugin(MKSinglePiEnuq0q3 tool
+simple_plugin(MKSinglePiTemplate tool
   systematicstools_utility
   systematicstools_interface
   nutools_EventGeneratorBase_GENIE
@@ -71,18 +64,7 @@ simple_plugin(MKSinglePiEnuq0q3 tool
     ${FHICLCPP}
     cetlib cetlib_except
     ${CLHEP}
-    ${LOG4CPP}
-    ${XML2}
-    ${PYTHIA6}
-    ${LHAPDF}
-    ${GENIE_LIB_LIST}
-    ${ROOT_BASIC_LIB_LIST}
-    ${ROOT_EG}
-    ${ROOT_TREEPLAYER}
-    ${ROOT_FFTW}
-    ${ROOT_REFLEX}
-    ${ROOTSYS}/lib/libEGPythia6.so
-    ${ROOT_GUI}
+    ${GENIE_EV_LIBS}
  )
 
 simple_plugin(MINERvAq0q3Weighting tool
@@ -98,16 +80,5 @@ simple_plugin(MINERvAq0q3Weighting tool
     ${FHICLCPP}
     cetlib cetlib_except
     ${CLHEP}
-    ${LOG4CPP}
-    ${XML2}
-    ${PYTHIA6}
-    ${LHAPDF}
-    ${GENIE_LIB_LIST}
-    ${ROOT_BASIC_LIB_LIST}
-    ${ROOT_EG}
-    ${ROOT_TREEPLAYER}
-    ${ROOT_FFTW}
-    ${ROOT_REFLEX}
-    ${ROOTSYS}/lib/libEGPythia6.so
-    ${ROOT_GUI}
+    ${GENIE_EV_LIBS}
  )

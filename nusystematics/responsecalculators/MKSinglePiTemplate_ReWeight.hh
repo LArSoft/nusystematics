@@ -1,5 +1,5 @@
-#ifndef nusystematics_RESPONSE_CALCULATORS_MKSINGLEPIENUQ0Q3_REWEIGHT_HH_SEEN
-#define nusystematics_RESPONSE_CALCULATORS_MKSINGLEPIENUQ0Q3_REWEIGHT_HH_SEEN
+#ifndef nusystematics_RESPONSE_CALCULATORS_MKSinglePiTemplate_REWEIGHT_HH_SEEN
+#define nusystematics_RESPONSE_CALCULATORS_MKSinglePiTemplate_REWEIGHT_HH_SEEN
 
 #include "nusystematics/responsecalculators/TemplateResponseCalculatorBase.hh"
 
@@ -9,18 +9,18 @@
 
 NEW_SYSTTOOLS_EXCEPT(is_flow_bin);
 
-// #define MKSinglePiEnuq0q3_ReWeight_DEBUG
+// #define MKSinglePiTemplate_ReWeight_DEBUG
 
 namespace nusyst {
-class MKSinglePiEnuq0q3_ReWeight
+class MKSinglePiTemplate_ReWeight
     : public nusyst::TemplateResponseCalculatorBase<3, false> {
 
-  enum bin_indices { kIndex_Enu = 0, kIndex_q0 = 1, kIndex_q3 = 2 };
+  enum bin_indices { kIndex_Enu = 0, kIndex_q0_or_Q2 = 1, kIndex_q3_or_W = 2 };
 
   std::map<std::string, systtools::paramId_t> ParamNames;
 
 public:
-  MKSinglePiEnuq0q3_ReWeight(std::map<std::string, systtools::paramId_t> params,
+  MKSinglePiTemplate_ReWeight(std::map<std::string, systtools::paramId_t> params,
                              fhicl::ParameterSet const &InputManifest)
       : ParamNames(params) {
 
@@ -39,10 +39,10 @@ public:
 
     TH3D *firstHist = BinnedResponses.at(pId).begin()->second.get();
 
-    Int_t XBin = firstHist->GetXaxis()->FindFixBin(kinematics[kIndex_q0]);
+    Int_t XBin = firstHist->GetXaxis()->FindFixBin(kinematics[kIndex_q0_or_Q2]);
     if (IsFlowBin(firstHist->GetXaxis(), XBin)) {
-#ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
-      std::cout << "[DEBUG]: q0: " << kinematics[kIndex_q0]
+#ifdef MKSinglePiTemplate_ReWeight_DEBUG
+      std::cout << "[DEBUG]: q0: " << kinematics[kIndex_q0_or_Q2]
                 << " outside normal bin range: "
                 << firstHist->GetXaxis()->GetBinLowEdge(1) << " -- "
                 << firstHist->GetXaxis()->GetBinUpEdge(
@@ -51,10 +51,10 @@ public:
 #endif
       return kBinOutsideRange;
     }
-    Int_t YBin = firstHist->GetYaxis()->FindFixBin(kinematics[kIndex_q3]);
+    Int_t YBin = firstHist->GetYaxis()->FindFixBin(kinematics[kIndex_q3_or_W]);
     if (IsFlowBin(firstHist->GetYaxis(), YBin)) {
-#ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
-      std::cout << "[DEBUG]: q3: " << kinematics[kIndex_q3]
+#ifdef MKSinglePiTemplate_ReWeight_DEBUG
+      std::cout << "[DEBUG]: q3: " << kinematics[kIndex_q3_or_W]
                 << " outside normal bin range: "
                 << firstHist->GetYaxis()->GetBinLowEdge(1) << " -- "
                 << firstHist->GetYaxis()->GetBinUpEdge(
@@ -65,7 +65,7 @@ public:
     }
     Int_t ZBin = firstHist->GetZaxis()->FindFixBin(kinematics[kIndex_Enu]);
     if (IsFlowBin(firstHist->GetZaxis(), ZBin)) {
-#ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
+#ifdef MKSinglePiTemplate_ReWeight_DEBUG
       std::cout << "[DEBUG]: Enu: " << kinematics[kIndex_Enu]
                 << " outside normal bin range: "
                 << firstHist->GetZaxis()->GetBinLowEdge(1) << " -- "
@@ -78,10 +78,10 @@ public:
 
     if (firstHist->GetBinContent(XBin, YBin, ZBin) <
         std::numeric_limits<double>::epsilon()) {
-#ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
+#ifdef MKSinglePiTemplate_ReWeight_DEBUG
       std::cout << "[DEBUG]: Bin Enu: " << kinematics[kIndex_Enu]
-                << ", q0: " << kinematics[kIndex_q0]
-                << ", q3: " << kinematics[kIndex_q3] << " = { " << XBin << ", "
+                << ", q0: " << kinematics[kIndex_q0_or_Q2]
+                << ", q3: " << kinematics[kIndex_q3_or_W] << " = { " << XBin << ", "
                 << YBin << ", " << ZBin
                 << " } = " << firstHist->GetBin(XBin, YBin, ZBin)
                 << ", had no content, returning default bin id." << std::endl;
@@ -89,10 +89,10 @@ public:
       return kBinOutsideRange;
     }
 
-#ifdef MKSinglePiEnuq0q3_ReWeight_DEBUG
+#ifdef MKSinglePiTemplate_ReWeight_DEBUG
     std::cout << "[INFO]: Getting bin Enu: " << kinematics[kIndex_Enu]
-              << ", q0: " << kinematics[kIndex_q0]
-              << ", q3: " << kinematics[kIndex_q3] << " = { " << XBin << ", "
+              << ", q0: " << kinematics[kIndex_q0_or_Q2]
+              << ", q3: " << kinematics[kIndex_q3_or_W] << " = { " << XBin << ", "
               << YBin << ", " << ZBin
               << " } = " << firstHist->GetBin(XBin, YBin, ZBin) << std::endl;
 #endif
@@ -100,7 +100,7 @@ public:
     return firstHist->GetBin(XBin, YBin, ZBin);
   }
 
-  std::string GetCalculatorName() { return "MKSinglePiEnuq0q3_ReWeight"; }
+  std::string GetCalculatorName() { return "MKSinglePiTemplate_ReWeight"; }
 };
 } // namespace nusyst
 

@@ -1,4 +1,4 @@
-#include "nusystematics/systproviders/MKSinglePiEnuq0q3_tool.hh"
+#include "nusystematics/systproviders/MKSinglePiTemplate_tool.hh"
 
 #include "nusystematics/utility/GENIEUtils.hh"
 #include "nusystematics/utility/exceptions.hh"
@@ -17,7 +17,7 @@ using namespace fhicl;
 
 // #define DEBUG_MKSINGLEPI
 
-MKSinglePiEnuq0q3::MKSinglePiEnuq0q3(ParameterSet const &params)
+MKSinglePiTemplate::MKSinglePiTemplate(ParameterSet const &params)
     : IGENIESystProvider_tool(params), templateReweighter(nullptr),
       valid_file(nullptr), valid_tree(nullptr) {}
 
@@ -29,28 +29,28 @@ struct channel_id {
 } // namespace
 
 #ifndef NO_ART
-DEFINE_ART_CLASS_TOOL(MKSinglePiEnuq0q3)
+DEFINE_ART_CLASS_TOOL(MKSinglePiTemplate)
 #endif
 
-SystMetaData MKSinglePiEnuq0q3::BuildSystMetaData(ParameterSet const &cfg,
+SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
                                                   paramId_t firstId) {
 
   SystMetaData smd;
 
   SystParamHeader resp;
-  resp.prettyName = "MKSPP_Enuq0q3_response";
+  resp.prettyName = "MKSPP_Template_response";
   resp.systParamId = firstId++;
 
   resp.centralParamValue = 1;
   resp.isCorrection = true;
   smd.push_back(resp);
 
-  if (!cfg.has_key("MKSPP_Enuq0q3_input_manifest") ||
-      !cfg.is_key_to_table("MKSPP_Enuq0q3_input_manifest")) {
+  if (!cfg.has_key("MKSPP_Template_input_manifest") ||
+      !cfg.is_key_to_table("MKSPP_Template_input_manifest")) {
     throw invalid_ToolConfigurationFHiCL()
         << "[ERROR]: When configuring calculated variations for "
-           "MKSPP_Enuq0q3, expected to find a FHiCL table keyed by "
-           "MKSPP_Enuq0q3_input_manifest describing the location of the "
+           "MKSPP_Template, expected to find a FHiCL table keyed by "
+           "MKSPP_Template_input_manifest describing the location of the "
            "histogram inputs. See "
            "nusystematics/responsecalculators/"
            "TemplateResponseCalculatorBase.hh "
@@ -58,14 +58,14 @@ SystMetaData MKSinglePiEnuq0q3::BuildSystMetaData(ParameterSet const &cfg,
   }
 
   fhicl::ParameterSet ps =
-      cfg.get<fhicl::ParameterSet>("MKSPP_Enuq0q3_input_manifest");
-  tool_options.put("MKSPP_Enuq0q3_input_manifest", ps);
+      cfg.get<fhicl::ParameterSet>("MKSPP_Template_input_manifest");
+  tool_options.put("MKSPP_Template_input_manifest", ps);
   size_t NChannels = 0;
   for (fhicl::ParameterSet const &ch_ps :
        ps.get<std::vector<fhicl::ParameterSet>>("InputTemplates")) {
 
     SystParamHeader channel;
-    channel.prettyName = std::string("MKSPP_Enuq0q3_") +
+    channel.prettyName = std::string("MKSPP_Template_") +
                          ch_ps.get<std::string>("parameter_name");
     channel.systParamId = firstId++;
 
@@ -80,9 +80,9 @@ SystMetaData MKSinglePiEnuq0q3::BuildSystMetaData(ParameterSet const &cfg,
 
   if (!NChannels) {
     throw invalid_ToolConfigurationFHiCL()
-        << "[ERROR]: When configuring a MKSPP_Enuq0q3 reweighting instance, "
+        << "[ERROR]: When configuring a MKSPP_Template reweighting instance, "
            "failed to find any configured channels. Input templates must be "
-           "described by in a table keyed MKSPP_Enuq0q3_input_manifest with "
+           "described by in a table keyed MKSPP_Template_input_manifest with "
            "the layout follows that consumed by "
            "nusystematics/responsecalculators/"
            "TemplateResponseCalculatorBase.hh";
@@ -91,22 +91,25 @@ SystMetaData MKSinglePiEnuq0q3::BuildSystMetaData(ParameterSet const &cfg,
   fill_valid_tree = cfg.get<bool>("fill_valid_tree", false);
   tool_options.put("fill_valid_tree", fill_valid_tree);
 
+  use_Q2W_templates = cfg.get<bool>("use_Q2W_templates", true);
+  tool_options.put("use_Q2W_templates", use_Q2W_templates);
+
   return smd;
 }
 
-bool MKSinglePiEnuq0q3::SetupResponseCalculator(
+bool MKSinglePiTemplate::SetupResponseCalculator(
     fhicl::ParameterSet const &tool_options) {
 
   genie::Messenger::Instance()->SetPrioritiesFromXmlFile(
       "Messenger_whisper.xml");
 
-  if (!HasParam(GetSystMetaData(), "MKSPP_Enuq0q3_response")) {
+  if (!HasParam(GetSystMetaData(), "MKSPP_Template_response")) {
     throw incorrectly_configured()
         << "[ERROR]: Expected to find parameter named "
-        << std::quoted("MKSPP_Enuq0q3_response");
+        << std::quoted("MKSPP_Template_response");
   }
 
-  ResponseParameterId = GetParamId(GetSystMetaData(), "MKSPP_Enuq0q3_response");
+  ResponseParameterId = GetParamId(GetSystMetaData(), "MKSPP_Template_response");
 
   SystParamHeader hdr = GetParam(GetSystMetaData(), ResponseParameterId);
 
@@ -120,31 +123,32 @@ bool MKSinglePiEnuq0q3::SetupResponseCalculator(
                                 {"NumuBNPi0", genie::kSpp_vbp_cc_01010},
                                 {"NumuBPPiMinus", genie::kSpp_vbp_cc_10001}}}) {
 
-    if (HasParam(GetSystMetaData(), std::string("MKSPP_Enuq0q3_") + ch.name)) {
+    if (HasParam(GetSystMetaData(), std::string("MKSPP_Template_") + ch.name)) {
       systtools::paramId_t pid = GetParamId(
-          GetSystMetaData(), std::string("MKSPP_Enuq0q3_") + ch.name);
+          GetSystMetaData(), std::string("MKSPP_Template_") + ch.name);
       ParamNames[ch.name] = pid;
       ChannelParameterMapping[ch.channel] = pid;
     }
   }
 
-  if (!tool_options.has_key("MKSPP_Enuq0q3_input_manifest")) {
+  if (!tool_options.has_key("MKSPP_Template_input_manifest")) {
     throw systtools::invalid_ToolOptions()
-        << "[ERROR]: MKSPP_Enuq0q3_response parameter exists in the "
+        << "[ERROR]: MKSPP_Template_response parameter exists in the "
            "SystMetaData, "
-           "but no MKSPP_Enuq0q3_input_manifest key can be found on the "
+           "but no MKSPP_Template_input_manifest key can be found on the "
            "tool_options table. This reweighting requires input histograms "
            "that must be specified. This should have been caught by  "
-           "MKSinglePiEnuq0q3::BuildSystMetaData, but wasn't, this is a "
+           "MKSinglePiTemplate::BuildSystMetaData, but wasn't, this is a "
            "bug, please report to the maintiner.";
   }
 
-  templateReweighter = std::make_unique<MKSinglePiEnuq0q3_ReWeight>(
+  templateReweighter = std::make_unique<MKSinglePiTemplate_ReWeight>(
       ParamNames,
-      tool_options.get<fhicl::ParameterSet>("MKSPP_Enuq0q3_input_manifest"));
+      tool_options.get<fhicl::ParameterSet>("MKSPP_Template_input_manifest"));
 
   fill_valid_tree = tool_options.get("fill_valid_tree", false);
-  std::cout << tool_options.to_indented_string() << std::endl;
+  use_Q2W_templates = tool_options.get("use_Q2W_templates", true);
+
   if (fill_valid_tree) {
     InitValidTree();
   }
@@ -153,7 +157,7 @@ bool MKSinglePiEnuq0q3::SetupResponseCalculator(
 }
 
 event_unit_response_t
-MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord const &ev) {
+MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
 
   event_unit_response_t resp{{{ResponseParameterId, std::vector<double>{1}}}};
 
@@ -278,7 +282,7 @@ MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord const &ev) {
     wght = templateReweighter->GetVariation(
         ChannelParameterMapping[chan], 1,
         std::array<double, 3>{
-            {ISLepP4.E(), emTransfer.E(), emTransfer.Vect().Mag()}});
+            {ISLepP4.E(), use_Q2W_templates ? -emTransfer.Mag2() : emTransfer.E(), use_Q2W_templates ? ev.Summary()->Kine().W(true) : emTransfer.Vect().Mag()}});
 
   } else { // GENIE non-resonant gets weighted to 0.
     wght = 0;
@@ -347,10 +351,10 @@ MKSinglePiEnuq0q3::GetEventResponse(genie::EventRecord const &ev) {
   return resp;
 }
 
-std::string MKSinglePiEnuq0q3::AsString() { return ""; }
+std::string MKSinglePiTemplate::AsString() { return ""; }
 
-void MKSinglePiEnuq0q3::InitValidTree() {
-  valid_file = new TFile("MKSPPEnuq0q3WeightValid.root", "RECREATE");
+void MKSinglePiTemplate::InitValidTree() {
+  valid_file = new TFile("MKSPPTemplateWeightValid.root", "RECREATE");
   valid_tree = new TTree("valid_tree", "");
 
   valid_tree->Branch("NEUTMode", &NEUTMode);
@@ -373,7 +377,7 @@ void MKSinglePiEnuq0q3::InitValidTree() {
   valid_tree->Branch("OutOfReWeightPS", &OutOfReWeightPS);
 }
 
-MKSinglePiEnuq0q3::~MKSinglePiEnuq0q3() {
+MKSinglePiTemplate::~MKSinglePiTemplate() {
   if (valid_file) {
     valid_tree->SetDirectory(valid_file);
     valid_file->Write();

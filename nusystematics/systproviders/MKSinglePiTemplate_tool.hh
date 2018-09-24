@@ -1,9 +1,9 @@
-#ifndef nusystematics_SYSTPROVIDERS_MKSINGLEPIENUQ0Q3_TOOL_SEEN
-#define nusystematics_SYSTPROVIDERS_MKSINGLEPIENUQ0Q3_TOOL_SEEN
+#ifndef nusystematics_SYSTPROVIDERS_MKSinglePiTemplate_TOOL_SEEN
+#define nusystematics_SYSTPROVIDERS_MKSinglePiTemplate_TOOL_SEEN
 
 #include "nusystematics/interface/IGENIESystProvider_tool.hh"
 
-#include "nusystematics/responsecalculators/MKSinglePiEnuq0q3_ReWeight.hh"
+#include "nusystematics/responsecalculators/MKSinglePiTemplate_ReWeight.hh"
 
 // GENIE
 #include "EVGCore/EventRecord.h"
@@ -15,15 +15,15 @@
 #include <memory>
 #include <string>
 
-class MKSinglePiEnuq0q3 : public nusyst::IGENIESystProvider_tool {
+class MKSinglePiTemplate : public nusyst::IGENIESystProvider_tool {
 
-  std::unique_ptr<nusyst::MKSinglePiEnuq0q3_ReWeight> templateReweighter;
+  std::unique_ptr<nusyst::MKSinglePiTemplate_ReWeight> templateReweighter;
 
   systtools::paramId_t ResponseParameterId;
   std::map<genie::SppChannel_t, systtools::paramId_t> ChannelParameterMapping;
 
 public:
-  explicit MKSinglePiEnuq0q3(fhicl::ParameterSet const &);
+  explicit MKSinglePiTemplate(fhicl::ParameterSet const &);
 
   bool SetupResponseCalculator(fhicl::ParameterSet const &);
   fhicl::ParameterSet GetExtraToolOptions() { return tool_options; }
@@ -35,9 +35,13 @@ public:
 
   std::string AsString();
 
-  ~MKSinglePiEnuq0q3();
+  ~MKSinglePiTemplate();
 
 private:
+
+  /// Whether input templates should be interpreted as in Enuq0q3 or EnuQ2W
+  bool use_Q2W_templates;
+
   fhicl::ParameterSet tool_options;
 
   void InitValidTree();

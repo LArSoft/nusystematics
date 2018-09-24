@@ -67,7 +67,7 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
   firstParamId += FSImd.size();
 
   SystMetaData Othermd =
-      ConfigureOtherParameterHeaders(params, firstParamId, tool_options);
+      ConfigureOtherParameterHeaders(params, firstParamId);
   firstParamId += Othermd.size();
 
   // Don't extend inline to make firstParamId incrementing more clear.

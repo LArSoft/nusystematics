@@ -1,5 +1,5 @@
 MKSPPEnuq0q3_Tool_Config: {
-    tool_type: "MKSinglePiEnuq0q3"
+    tool_type: "MKSinglePiTemplate"
     instance_name: "DUNE_TDR_FakeData"
 
     MKSPP_Enuq0q3_input_manifest: {

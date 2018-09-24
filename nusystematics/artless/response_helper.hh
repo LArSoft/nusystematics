@@ -5,7 +5,7 @@
 
 #include "nusystematics/systproviders/GENIEReWeight_tool.hh"
 #include "nusystematics/systproviders/MINERvAq0q3Weighting_tool.hh"
-#include "nusystematics/systproviders/MKSinglePiEnuq0q3_tool.hh"
+#include "nusystematics/systproviders/MKSinglePiTemplate_tool.hh"
 
 #include "systematicstools/interface/SystParamHeader.hh"
 
@@ -30,8 +30,8 @@ make_instance(fhicl::ParameterSet const &paramset) {
 
   if (tool_type == "GENIEReWeight") {
     return std::make_unique<GENIEReWeight>(paramset);
-  } else if (tool_type == "MKSinglePiEnuq0q3") {
-    return std::make_unique<MKSinglePiEnuq0q3>(paramset);
+  } else if (tool_type == "MKSinglePiTemplate") {
+    return std::make_unique<MKSinglePiTemplate>(paramset);
   } else if (tool_type == "MINERvAq0q3Weighting") {
     return std::make_unique<MINERvAq0q3Weighting>(paramset);
   } else {
