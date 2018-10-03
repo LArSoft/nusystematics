@@ -1,6 +1,8 @@
 #ifndef nusystematics_UTILITY_GENIEUTILS_SEEN
 #define nusystematics_UTILITY_GENIEUTILS_SEEN
 
+#include "EVGCore/EventRecord.h"
+
 #include "GHEP/GHepUtils.h"
 #include "Interaction/SppChannel.h"
 

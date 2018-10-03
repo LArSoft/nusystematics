@@ -220,6 +220,35 @@ target_link_libraries(TestPolyResponse5 ${ROOT_LIBS})
 
 INSTALL(TARGETS TestPolyResponse5 DESTINATION bin)
 
+####### FindISystProviderNuSyst app
+add_executable(FindISystProviderNuSyst ${CMAKE_SOURCE_DIR}/nusystematics/artless/FindISystProviderNuSyst.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(FindISystProviderNuSyst systematicstools)
+endif()
+set_target_properties(FindISystProviderNuSyst PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(FindISystProviderNuSyst nusystematics_systproviders)
+target_link_libraries(FindISystProviderNuSyst ${SYSTTOOLS_LIBS})
+target_link_libraries(FindISystProviderNuSyst ${GENIE_LIBS})
+target_link_libraries(FindISystProviderNuSyst ${ROOT_LIBS})
+
+INSTALL(TARGETS FindISystProviderNuSyst DESTINATION bin)
+
+####### DumpConfiguredTweaksNuSyst app
+add_executable(DumpConfiguredTweaksNuSyst ${CMAKE_SOURCE_DIR}/nusystematics/app/DumpConfiguredTweaksNuSyst.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(DumpConfiguredTweaksNuSyst systematicstools)
+endif()
+set_target_properties(DumpConfiguredTweaksNuSyst PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(DumpConfiguredTweaksNuSyst nusystematics_systproviders)
+target_link_libraries(DumpConfiguredTweaksNuSyst ${SYSTTOOLS_LIBS})
+target_link_libraries(DumpConfiguredTweaksNuSyst ${GENIE_LIBS})
+target_link_libraries(DumpConfiguredTweaksNuSyst ${ROOT_LIBS})
+
+INSTALL(TARGETS DumpConfiguredTweaksNuSyst DESTINATION bin)
+
+
 ####### interface
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/interface/IGENIESystProvider_tool.hh DESTINATION include/nusystematics/interface)
 

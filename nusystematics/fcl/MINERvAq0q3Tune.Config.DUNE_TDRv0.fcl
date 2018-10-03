@@ -2,8 +2,7 @@ MINERvAq0q3Tune_Tool_Config: {
     tool_type: "MINERvAq0q3Weighting"
     instance_name: "DUNE_TDR_FakeData"
 
-    #RPA CV tune
-    MINERvATune_RPA_variation_descriptor: "[0]"
+    use_MINERvA_RPA_tunes: false
     MINERvATune_RPA_input_manifest: {
       InputTemplates: [
         {
@@ -18,13 +17,8 @@ MINERvAq0q3Tune_Tool_Config: {
       ]
     }
 
-    #2p2h enhancement tunes
-    # The parameter value switches between enhancement fit results where the enhancement was assumed to only affect a given class of interactions.
-    # * 0: True QE and True 2p2h
-    # * 1: Only 2p2h events that target an NN pair (nn or pp)
-    # * 2: Only 2p2h events that target an np pair
-    # * 3: Only True QE events
-    MINERvATune_2p2hGaussEnhancement_variation_descriptor: "[0,1,2,3]"
+    use_MINERvA_2p2h_tunes: true
+    parameter_per_2p2h_universe: true
 
 }
 

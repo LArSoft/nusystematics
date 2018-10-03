@@ -33,7 +33,11 @@ class MINERvAq0q3Weighting : public nusyst::IGENIESystProvider_tool {
     kGaussCorrelation,
     kGaussResponse,
     kMINERvARPA,
-    kMINERvA2p2h
+    kMINERvA2p2h,
+    kMINERvA2p2h_CV,
+    kMINERvA2p2h_NN,
+    kMINERvA2p2h_np,
+    kMINERvA2p2h_QE,
   };
 
   struct param_t_name {
@@ -45,7 +49,7 @@ class MINERvAq0q3Weighting : public nusyst::IGENIESystProvider_tool {
 
   // unused std::array<double, 6> Gauss2DParams = nusyst::Gauss2DParams_CV;
   std::unique_ptr<nusyst::MINERvARPAq0q3_ReWeight> RPATemplateReweighter;
-  std::map<param_t, systtools::paramId_t> ConfiguredParameters;
+  std::map<param_t, size_t> ConfiguredParameters;
 
 public:
   explicit MINERvAq0q3Weighting(fhicl::ParameterSet const &);
@@ -61,7 +65,7 @@ public:
   double GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
                                   nusyst::QELikeTarget_t QELTarget);
 
-  systtools::event_unit_response_t GetEventResponse(genie::EventRecord const&);
+  systtools::event_unit_response_t GetEventResponse(genie::EventRecord const &);
 
   std::string AsString();
 
@@ -76,12 +80,11 @@ private:
   TFile *valid_file;
   TTree *valid_tree;
 
-  int NEUTMode, Pdgnu, pdgfslep, QELTarget;
+  bool parameter_per_2p2h_universe;
+  int NEUTMode, Pdgnu, pdgfslep, QELTarget, nRPA_weights, nMEC_weights;
   double Enu, momfslep, cthetafslep, Q2, q0, q3, W;
   std::vector<double> RPA_weights;
   std::vector<double> MEC_weights;
-  bool ApplyRPAToSPP;
-  bool ApplyRPAToRES;
 };
 
 #endif

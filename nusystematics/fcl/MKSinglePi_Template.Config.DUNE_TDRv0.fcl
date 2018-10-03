@@ -1,0 +1,31 @@
+MKSinglePi_Template_Tool_Config: {
+  tool_type: "MKSinglePiTemplate"
+  instance_name: "DUNE_TDR_FakeData"
+
+  weightGENIENonRes: false
+  fill_valid_tree: true
+  Q2_or_q0_is_x: true
+
+  MKSPP_Template_input_manifest: {
+    NumuPPiPlus: {
+      input_file_pattern: "MKInputs/Q2W/MKOverGENIERSRes_%EGeV.root"
+      input_hist_pattern: "CC_1pip_1p_WQ2_Minoo_RS"
+      e_uniform: [3,0.5,3.5]
+      param_values: [1]
+    }
+    NumuNPiPlus: {
+      input_file_pattern: "MKInputs/Q2W/MKOverGENIERSRes_%EGeV.root"
+      input_hist_pattern: "CC_1pip_1n_WQ2_Minoo_RS"
+      e_uniform: [3,0.5,3.5]
+      param_values: [1]
+    }
+    NumuPPi0: {
+      input_file_pattern: "MKInputs/Q2W/MKOverGENIERSRes_%EGeV.root"
+      input_hist_pattern: "CC_1pi0_WQ2_Minoo_RS"
+      e_uniform: [3,0.5,3.5]
+      param_values: [1]
+    }
+  }
+}
+
+syst_providers: [MKSinglePi_Template_Tool_Config]

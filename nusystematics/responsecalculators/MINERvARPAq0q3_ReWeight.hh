@@ -16,45 +16,25 @@
 NEW_SYSTTOOLS_EXCEPT(invalid_MINERvA_RPA_tweak);
 
 namespace nusyst {
+  
+constexpr static double const q0_offsetValenciaGENIE_GeV = 1E-2;
+
+constexpr static std::array<double, 2> const Q2Lims{{0, 9}};
+constexpr static std::array<double, 2> const WeightLims{{1E-3, 2}};
+
 class MINERvARPAq0q3_ReWeight
     : private nusyst::TemplateResponseCalculatorBase<2, false> {
 
   enum bin_indices { kIndex_q0 = 0, kIndex_q3 = 1 };
 
-  systtools::paramId_t ResponseParamId;
-
-  constexpr static double const q0_offsetValenciaGENIE_GeV = 1E-2;
-
-  std::array<double, 2> const Q2Lims{{0, 9}};
-  std::array<double, 2> const WeightLims{{1E-3, 2}};
-
 public:
   enum class RPATweak_t { kCV = 0, kPlus1 = 1, kMinus1 = -1 };
 
-  MINERvARPAq0q3_ReWeight(std::map<std::string, systtools::paramId_t> params,
-                          fhicl::ParameterSet const &InputManifest) {
-
-    if (!params.size()) {
-      throw incorrectly_generated()
-          << "[ERROR]: MINERvARPAq0q3_ReWeight expected to be passed the "
-             "paramId for its response.";
-    }
-
-    ResponseParamId = params.begin()->second;
-
-    LoadInputHistograms(InputManifest, params);
-    ValidateInputHistograms();
+  MINERvARPAq0q3_ReWeight(fhicl::ParameterSet const &InputManifest) {
+    LoadInputHistograms(InputManifest);
   }
 
-  virtual bin_it_t GetBin(systtools::paramId_t pId,
-                          std::array<double, 2> const &kinematics) {
-    if (pId != ResponseParamId) {
-      throw systtools::invalid_parameter_Id()
-          << "[ERROR]: Template reweight bin requested for parameter " << pId
-          << ", but " << GetCalculatorName()
-          << " does not handle this parameter, it handles: " << ResponseParamId
-          << ".";
-    }
+  virtual bin_it_t GetBin(std::array<double, 2> const &kinematics) const {
 
     std::array<double, 2> kinematics_var = kinematics;
 
@@ -64,7 +44,7 @@ public:
       kinematics_var[kIndex_q0] = 0.018 + q0_offsetValenciaGENIE_GeV;
     }
 
-    TH2D *firstHist = BinnedResponses.at(ResponseParamId).begin()->second.get();
+    TH2 *firstHist = BinnedResponses.begin()->second.get();
 
     Int_t XBin = firstHist->GetXaxis()->FindFixBin(kinematics[kIndex_q3]);
     // Hold events outside of the Valencia calculation phase space at the
@@ -143,12 +123,11 @@ public:
       if (Q2_GeV2 > 3.0) {
         weight = GetWeightQ2(Q2_GeV2, tweak);
       } else {
-        int bin2d =
-            GetBin(ResponseParamId, std::array<double, 2>{{q0_GeV, q3_GeV}});
+        int bin2d = GetBin(std::array<double, 2>{{q0_GeV, q3_GeV}});
 #ifdef MINERvARPAq0q3_ReWeight_DEBUG
         std::cout << "\t\tGot bin: " << bin2d << std::endl;
 #endif
-        weight = GetVariation(ResponseParamId, e2i(tweak), bin2d);
+        weight = GetVariation(e2i(tweak), bin2d);
 
         // now trap bogus entries.  Not sure why they happen, but set to 1.0 not
         // 0.0
@@ -159,12 +138,11 @@ public:
         // events in genie but not in valencia should get a weight
         // related to a similar q0 from the bulk distribution.
         if ((q0_GeV < 0.15) && (weight > 0.9)) {
-          bin2d = GetBin(ResponseParamId,
-                         std::array<double, 2>{{q0_GeV, q3_GeV + 0.15}});
+          bin2d = GetBin(std::array<double, 2>{{q0_GeV, q3_GeV + 0.15}});
 #ifdef MINERvARPAq0q3_ReWeight_DEBUG
           std::cout << "\t\t[INFO]: Moved to bulk bin: " << bin2d << std::endl;
 #endif
-          weight = GetVariation(ResponseParamId, e2i(tweak), bin2d);
+          weight = GetVariation(e2i(tweak), bin2d);
         }
       }
     }
@@ -180,7 +158,7 @@ public:
     return weight;
   }
 
-  std::string GetCalculatorName() { return "MINERvARPAq0q3_ReWeight"; }
+  std::string GetCalculatorName() const { return "MINERvARPAq0q3_ReWeight"; }
 };
 } // namespace nusyst
 

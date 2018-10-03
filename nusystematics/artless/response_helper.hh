@@ -3,16 +3,15 @@
 
 #include "nusystematics/interface/IGENIESystProvider_tool.hh"
 
-#include "nusystematics/systproviders/GENIEReWeight_tool.hh"
-#include "nusystematics/systproviders/MINERvAq0q3Weighting_tool.hh"
-#include "nusystematics/systproviders/MKSinglePiTemplate_tool.hh"
-
 #include "systematicstools/interface/SystParamHeader.hh"
 
 #include "systematicstools/interpreters/ParamHeaderHelper.hh"
 
 #include "systematicstools/utility/ParameterAndProviderConfigurationUtility.hh"
 
+#include "nusystematics/artless/make_instance.hh"
+
+#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/make_ParameterSet.h"
 
 #include "EVGCore/EventRecord.h"
@@ -23,23 +22,6 @@
 #include <string>
 
 namespace nusyst {
-
-inline std::unique_ptr<IGENIESystProvider_tool>
-make_instance(fhicl::ParameterSet const &paramset) {
-  std::string tool_type = paramset.get<std::string>("tool_type");
-
-  if (tool_type == "GENIEReWeight") {
-    return std::make_unique<GENIEReWeight>(paramset);
-  } else if (tool_type == "MKSinglePiTemplate") {
-    return std::make_unique<MKSinglePiTemplate>(paramset);
-  } else if (tool_type == "MINERvAq0q3Weighting") {
-    return std::make_unique<MINERvAq0q3Weighting>(paramset);
-  } else {
-    std::cout << "[ERROR]: Unknown tool type: " << std::quoted(tool_type)
-              << std::endl;
-    throw;
-  }
-}
 
 NEW_SYSTTOOLS_EXCEPT(response_helper_found_no_parameters);
 

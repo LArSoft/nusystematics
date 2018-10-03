@@ -20,8 +20,7 @@ using namespace fhicl;
 
 MINERvAq0q3Weighting::MINERvAq0q3Weighting(ParameterSet const &params)
     : IGENIESystProvider_tool(params), RPATemplateReweighter(nullptr),
-      valid_file(nullptr), valid_tree(nullptr), ApplyRPAToSPP(false),
-      ApplyRPAToRES(false) {}
+      valid_file(nullptr), valid_tree(nullptr) {}
 
 #ifndef NO_ART
 DEFINE_ART_CLASS_TOOL(MINERvAq0q3Weighting)
@@ -31,65 +30,72 @@ SystMetaData MINERvAq0q3Weighting::BuildSystMetaData(ParameterSet const &cfg,
                                                      paramId_t firstId) {
 
   SystMetaData smd;
-  { // RPA
+  if (cfg.get<bool>("use_MINERvA_RPA_tunes", false)) { // RPA
     systtools::SystParamHeader param;
-    if (ParseFHiCLSimpleToolConfigurationParameter(cfg, "MINERvATune_RPA",
-                                                   param)) {
-      param.systParamId = firstId++;
+    param.systParamId = firstId++;
 
-      if (param.isRandomlyThrown || param.isSplineable) {
-        throw invalid_ToolConfigurationFHiCL()
-            << "[ERROR]: When configuring calculated variations for "
-               "MINERvATune_RPA, found MINERvATune_RPA_variation_descriptor "
-               "that described a spline or a set of random throws. This "
-               "parameter can only be set to: -1, 0, 1 for three different "
-               "tunes of the RPA response.";
-      }
+    param.prettyName = "MINERvATune_RPA";
+    param.centralParamValue = 0;
+    param.paramVariations = std::vector<double>{-1, 0, 1};
 
-      if (!cfg.has_key("MINERvATune_RPA_input_manifest") ||
-          !cfg.is_key_to_table("MINERvATune_RPA_input_manifest")) {
-        throw invalid_ToolConfigurationFHiCL()
-            << "[ERROR]: When configuring calculated variations for "
-               "MINERvATune_RPA, expected to find a FHiCL table keyed by "
-               "MINERvATune_RPA_input_manifest describing the location of the "
-               "histogram inputs. See "
-               "nusystematics/responsecalculators/"
-               "TemplateResponseCalculatorBase.hh "
-               "for the layout.";
-      }
-
-      fhicl::ParameterSet ps =
-          cfg.get<fhicl::ParameterSet>("MINERvATune_RPA_input_manifest");
-      tool_options.put("MINERvATune_RPA_input_manifest", ps);
-
-      ApplyRPAToSPP = cfg.get("apply_RPA_to_SPP", false);
-      ApplyRPAToRES = cfg.get("apply_RPA_to_RES", false);
-      if (ApplyRPAToSPP) {
-        tool_options.put("apply_RPA_to_SPP", true);
-      }
-      if (ApplyRPAToRES) {
-        tool_options.put("apply_RPA_to_RES", true);
-      }
-
-      smd.push_back(param);
+    if (!cfg.has_key("MINERvATune_RPA_input_manifest") ||
+        !cfg.is_key_to_table("MINERvATune_RPA_input_manifest")) {
+      throw invalid_ToolConfigurationFHiCL()
+          << "[ERROR]: When configuring calculated variations for "
+             "MINERvATune_RPA, expected to find a FHiCL table keyed by "
+             "MINERvATune_RPA_input_manifest describing the location of the "
+             "histogram inputs. See "
+             "nusystematics/responsecalculators/"
+             "TemplateResponseCalculatorBase.hh "
+             "for the layout.";
     }
+
+    fhicl::ParameterSet ps =
+        cfg.get<fhicl::ParameterSet>("MINERvATune_RPA_input_manifest");
+    tool_options.put("MINERvATune_RPA_input_manifest", ps);
+
+    smd.push_back(param);
   }
-  { // 2p2h
-    systtools::SystParamHeader param;
-    if (ParseFHiCLSimpleToolConfigurationParameter(
-            cfg, "MINERvATune_2p2hGaussEnhancement", param)) {
+
+  if (cfg.get<bool>("use_MINERvA_2p2h_tunes", false)) { // 2p2h
+
+    parameter_per_2p2h_universe =
+        cfg.get<bool>("parameter_per_2p2h_universe", false);
+
+    tool_options.put("parameter_per_2p2h_universe",
+                     parameter_per_2p2h_universe);
+
+    if (parameter_per_2p2h_universe) {
+      systtools::SystParamHeader param_CV;
+      param_CV.systParamId = firstId++;
+      param_CV.isCorrection = true;
+      param_CV.centralParamValue = 1;
+      param_CV.prettyName = "MINERvATune_2p2hGaussEnhancement_CV";
+      smd.push_back(param_CV);
+      systtools::SystParamHeader param_NN;
+      param_NN.systParamId = firstId++;
+      param_NN.isCorrection = true;
+      param_NN.centralParamValue = 1;
+      param_NN.prettyName = "MINERvATune_2p2hGaussEnhancement_NN";
+      smd.push_back(param_NN);
+      systtools::SystParamHeader param_np;
+      param_np.systParamId = firstId++;
+      param_np.isCorrection = true;
+      param_np.centralParamValue = 1;
+      param_np.prettyName = "MINERvATune_2p2hGaussEnhancement_np";
+      smd.push_back(param_np);
+      systtools::SystParamHeader param_QE;
+      param_QE.systParamId = firstId++;
+      param_QE.isCorrection = true;
+      param_QE.centralParamValue = 1;
+      param_QE.prettyName = "MINERvATune_2p2hGaussEnhancement_QE";
+      smd.push_back(param_QE);
+    } else {
+      systtools::SystParamHeader param;
       param.systParamId = firstId++;
-
-      if (param.isRandomlyThrown || param.isSplineable) {
-        throw invalid_ToolConfigurationFHiCL()
-            << "[ERROR]: When configuring calculated variations for "
-               "MINERvATune_2p2hGaussEnhancement, found "
-               "MINERvATune_2p2hGaussEnhancement_variation_descriptor that "
-               "described a spline or a set of random throws. This parameter "
-               "can only be set to: 0, 1, 2, 3 for four different tunes of the "
-               "2p2h enhancement.";
-      }
-
+      param.centralParamValue = 1;
+      param.paramVariations = {1, 2, 3, 4};
+      param.prettyName = "MINERvATune_2p2hGaussEnhancement";
       smd.push_back(param);
     }
   }
@@ -105,7 +111,7 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
 
   if (HasParam(GetSystMetaData(), "MINERvATune_RPA")) {
     ConfiguredParameters[param_t::kMINERvARPA] =
-        GetParamId(GetSystMetaData(), "MINERvATune_RPA");
+        GetParamIndex(GetSystMetaData(), "MINERvATune_RPA");
 
     if (!tool_options.has_key("MINERvATune_RPA_input_manifest")) {
       throw systtools::invalid_ToolOptions()
@@ -118,18 +124,29 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
     }
 
     RPATemplateReweighter = std::make_unique<MINERvARPAq0q3_ReWeight>(
-        std::map<std::string, systtools::paramId_t>{
-            {{"MINERvATune_RPA", ConfiguredParameters[param_t::kMINERvARPA]}}},
         tool_options.get<fhicl::ParameterSet>(
             "MINERvATune_RPA_input_manifest"));
-
-    ApplyRPAToSPP = tool_options.get("apply_RPA_to_SPP", false);
-    ApplyRPAToRES = tool_options.get("apply_RPA_to_RES", false);
   }
 
   if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement")) {
     ConfiguredParameters[param_t::kMINERvA2p2h] =
-        GetParamId(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement");
+        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement");
+  }
+  if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_CV")) {
+    ConfiguredParameters[param_t::kMINERvA2p2h_CV] =
+        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_CV");
+  }
+  if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_NN")) {
+    ConfiguredParameters[param_t::kMINERvA2p2h_NN] =
+        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_NN");
+  }
+  if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_np")) {
+    ConfiguredParameters[param_t::kMINERvA2p2h_np] =
+        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_np");
+  }
+  if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_QE")) {
+    ConfiguredParameters[param_t::kMINERvA2p2h_QE] =
+        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_QE");
   }
 
   fill_valid_tree = tool_options.get("fill_valid_tree", false);
@@ -163,28 +180,28 @@ double
 MINERvAq0q3Weighting::GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
                                                QELikeTarget_t QELTarget) {
   std::array<double, 6> const *GaussParams;
-  if (val == 0) {
+  if (val == 1) {
     if (!((QELTarget == QELikeTarget_t::kNN) ||
           (QELTarget == QELikeTarget_t::knp))) {
       return 1;
     }
 
     GaussParams = &Gauss2DParams_CV;
-  } else if (val == 1) {
+  } else if (val == 2) {
 
     if (QELTarget != QELikeTarget_t::kNN) {
       return 1;
     }
 
     GaussParams = &Gauss2DParams_NNOnly;
-  } else if (val == 2) {
+  } else if (val == 3) {
 
     if (QELTarget != QELikeTarget_t::knp) {
       return 1;
     }
 
     GaussParams = &Gauss2DParams_npOnly;
-  } else if (val == 3) {
+  } else if (val == 4) {
 
     if (QELTarget != QELikeTarget_t::kQE) {
       return 1;
@@ -194,11 +211,11 @@ MINERvAq0q3Weighting::GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
   } else {
     throw invalid_parameter_value()
         << "[ERROR]: When applying MINERvA 2p2h tune expected to find "
-           "parameter values of [ 0 == CV, 1 == NN, 2 == np, 3 == 1p1h ], "
+           "parameter values of [ 1 == CV, 2 == NN, 3 == np, 4 == 1p1h ], "
            "but found "
         << val;
   }
-  return Gaussian2D(q0, q3, *GaussParams) + 1;
+  return 1 + Gaussian2D(q0, q3, *GaussParams);
 }
 
 event_unit_response_t
@@ -212,19 +229,8 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
   }
 
   if (!(ev.Summary()->ProcInfo().IsQuasiElastic() ||
-        ev.Summary()->ProcInfo().IsMEC()) &&
-      !(ApplyRPAToSPP || ApplyRPAToRES)) {
+        ev.Summary()->ProcInfo().IsMEC())) {
     return resp;
-  } else if (ApplyRPAToSPP || ApplyRPAToRES) {
-    bool GoodSPP = false;
-    if (ApplyRPAToSPP) {
-      genie::SppChannel_t sppch = nusyst::SPPChannelFromGHep(ev);
-      GoodSPP = (sppch != genie::kSppNull);
-    }
-    bool GoodRES = ApplyRPAToRES && !ev.Summary()->ProcInfo().IsResonant();
-    if (!(GoodRES || GoodSPP)) {
-      return resp;
-    }
   }
 
   genie::GHepParticle *FSLep = ev.FinalStatePrimaryLepton();
@@ -245,8 +251,8 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
   if (ConfiguredParameters.find(param_t::kMINERvARPA) !=
       ConfiguredParameters.end()) {
 
-    SystParamHeader hdr =
-        GetParam(GetSystMetaData(), ConfiguredParameters[param_t::kMINERvARPA]);
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvARPA]];
 
     resp.push_back({hdr.systParamId, {}});
     if (hdr.isCorrection) {
@@ -266,8 +272,8 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
       (ev.Summary()->ProcInfo().IsQuasiElastic() ||
        ev.Summary()->ProcInfo().IsMEC())) {
 
-    SystParamHeader hdr = GetParam(GetSystMetaData(),
-                                   ConfiguredParameters[param_t::kMINERvA2p2h]);
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h]];
 
     resp.push_back({hdr.systParamId, {}});
     if (hdr.isCorrection) {
@@ -279,6 +285,55 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
             var, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
       }
     }
+  }
+
+  // Only ever applies to 2p2h events
+  if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_CV) !=
+       ConfiguredParameters.end()) &&
+      ev.Summary()->ProcInfo().IsMEC()) {
+
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_CV]];
+
+    resp.push_back({hdr.systParamId, {}});
+    resp.back().responses.push_back(
+        GetMINERvA2p2hTuneWeight(1, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
+  }
+  // Only ever applies to 2p2h events
+  if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_NN) !=
+       ConfiguredParameters.end()) &&
+      ev.Summary()->ProcInfo().IsMEC()) {
+
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_NN]];
+
+    resp.push_back({hdr.systParamId, {}});
+    resp.back().responses.push_back(
+        GetMINERvA2p2hTuneWeight(2, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
+  }
+  // Only ever applies to 2p2h events
+  if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_np) !=
+       ConfiguredParameters.end()) &&
+      ev.Summary()->ProcInfo().IsMEC()) {
+
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_np]];
+
+    resp.push_back({hdr.systParamId, {}});
+    resp.back().responses.push_back(
+        GetMINERvA2p2hTuneWeight(3, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
+  }
+  // Only ever applies to qe events
+  if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_QE) !=
+       ConfiguredParameters.end()) &&
+      ev.Summary()->ProcInfo().IsQuasiElastic()) {
+
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_QE]];
+
+    resp.push_back({hdr.systParamId, {}});
+    resp.back().responses.push_back(
+        GetMINERvA2p2hTuneWeight(4, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
   }
 
   if (fill_valid_tree) {
@@ -305,17 +360,43 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     q3 = emTransfer.Vect().Mag();
 
     RPA_weights.clear();
-    paramId_t RPA_param = GetParamId(GetSystMetaData(), "MINERvATune_RPA");
-    if (RPA_param != kParamUnhandled<paramId_t>) {
+    MEC_weights.clear();
+
+    if (ConfiguredParameters.find(param_t::kMINERvARPA) !=
+        ConfiguredParameters.end()) {
+      paramId_t RPA_param =
+          GetSystMetaData()[ConfiguredParameters[param_t::kMINERvARPA]]
+              .systParamId;
       RPA_weights = GetParamElementFromContainer(resp, RPA_param).responses;
     }
-
-    MEC_weights.clear();
-    paramId_t MEC_param =
-        GetParamId(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement");
-    if (MEC_param != kParamUnhandled<paramId_t>) {
+    if ((ConfiguredParameters.find(param_t::kMINERvA2p2h) !=
+         ConfiguredParameters.end()) &&
+        (ev.Summary()->ProcInfo().IsQuasiElastic() ||
+         ev.Summary()->ProcInfo().IsMEC())) {
+      paramId_t MEC_param =
+          GetSystMetaData()[ConfiguredParameters[param_t::kMINERvARPA]]
+              .systParamId;
       MEC_weights = GetParamElementFromContainer(resp, MEC_param).responses;
     }
+    for (param_t tune_2p2h_universe :
+         {param_t::kMINERvA2p2h_CV, param_t::kMINERvA2p2h_NN,
+          param_t::kMINERvA2p2h_np, param_t::kMINERvA2p2h_QE}) {
+      if ((ConfiguredParameters.find(tune_2p2h_universe) !=
+           ConfiguredParameters.end()) &&
+          (ev.Summary()->ProcInfo().IsQuasiElastic() ||
+           ev.Summary()->ProcInfo().IsMEC())) {
+        paramId_t MEC_param =
+            GetSystMetaData()[ConfiguredParameters[tune_2p2h_universe]]
+                .systParamId;
+        size_t idx = GetParamContainerIndex(resp, MEC_param);
+        if (idx != kParamUnhandled<size_t>) {
+          MEC_weights.push_back(resp[idx].responses.front());
+        }
+      }
+    }
+
+    nRPA_weights = RPA_weights.size();
+    nMEC_weights = MEC_weights.size();
     valid_tree->Fill();
   }
 
@@ -340,6 +421,8 @@ void MINERvAq0q3Weighting::InitValidTree() {
   valid_tree->Branch("W", &W);
   valid_tree->Branch("q0", &q0);
   valid_tree->Branch("q3", &q3);
+  valid_tree->Branch("nRPA_weights", &nRPA_weights);
+  valid_tree->Branch("nMEC_weights", &nMEC_weights);
   valid_tree->Branch("RPA_weights", &RPA_weights);
   valid_tree->Branch("MEC_weights", &MEC_weights);
 }

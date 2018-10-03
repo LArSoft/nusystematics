@@ -18,8 +18,8 @@ using namespace fhicl;
 // #define DEBUG_MKSINGLEPI
 
 MKSinglePiTemplate::MKSinglePiTemplate(ParameterSet const &params)
-    : IGENIESystProvider_tool(params), templateReweighter(nullptr),
-      valid_file(nullptr), valid_tree(nullptr) {}
+    : IGENIESystProvider_tool(params), valid_file(nullptr),
+      valid_tree(nullptr) {}
 
 namespace {
 struct channel_id {
@@ -33,7 +33,7 @@ DEFINE_ART_CLASS_TOOL(MKSinglePiTemplate)
 #endif
 
 SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
-                                                  paramId_t firstId) {
+                                                   paramId_t firstId) {
 
   SystMetaData smd;
 
@@ -56,17 +56,21 @@ SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
            "TemplateResponseCalculatorBase.hh "
            "for the layout.";
   }
-
-  fhicl::ParameterSet ps =
+  fhicl::ParameterSet templateManifest =
       cfg.get<fhicl::ParameterSet>("MKSPP_Template_input_manifest");
-  tool_options.put("MKSPP_Template_input_manifest", ps);
+  tool_options.put("MKSPP_Template_input_manifest", templateManifest);
+
   size_t NChannels = 0;
-  for (fhicl::ParameterSet const &ch_ps :
-       ps.get<std::vector<fhicl::ParameterSet>>("InputTemplates")) {
+  for (std::string const &ch :
+       {"NumuPPiPlus", "NumuPPi0", "NumuNPiPlus", "NumuBNPiMinus", "NumuBNPi0",
+        "NumuBPPiMinus"}) {
+
+    if (!templateManifest.has_key(ch)) {
+      continue;
+    }
 
     SystParamHeader channel;
-    channel.prettyName = std::string("MKSPP_Template_") +
-                         ch_ps.get<std::string>("parameter_name");
+    channel.prettyName = std::string("MKSPP_Template_") + ch;
     channel.systParamId = firstId++;
 
     channel.centralParamValue = 1;
@@ -94,6 +98,12 @@ SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
   use_Q2W_templates = cfg.get<bool>("use_Q2W_templates", true);
   tool_options.put("use_Q2W_templates", use_Q2W_templates);
 
+  Q2_or_q0_is_x = cfg.get<bool>("Q2_or_q0_is_x", false);
+  tool_options.put("Q2_or_q0_is_x", Q2_or_q0_is_x);
+
+  weightGENIENonRes = cfg.get<bool>("weightGENIENonRes", true);
+  tool_options.put("weightGENIENonRes", weightGENIENonRes);
+
   return smd;
 }
 
@@ -109,11 +119,25 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
         << std::quoted("MKSPP_Template_response");
   }
 
-  ResponseParameterId = GetParamId(GetSystMetaData(), "MKSPP_Template_response");
+  if (!tool_options.has_key("MKSPP_Template_input_manifest")) {
+    throw systtools::invalid_ToolOptions()
+        << "[ERROR]: MKSPP_Template_response parameter exists in the "
+           "SystMetaData, "
+           "but no MKSPP_Template_input_manifest key can be found on the "
+           "tool_options table. This reweighting requires input histograms "
+           "that must be specified. This should have been caught by  "
+           "MKSinglePiTemplate::BuildSystMetaData, but wasn't, this is a "
+           "bug, please report to the maintiner.";
+  }
+
+  fhicl::ParameterSet const &templateManifest =
+      tool_options.get<fhicl::ParameterSet>("MKSPP_Template_input_manifest");
+
+  ResponseParameterId =
+      GetParamId(GetSystMetaData(), "MKSPP_Template_response");
 
   SystParamHeader hdr = GetParam(GetSystMetaData(), ResponseParameterId);
 
-  std::map<std::string, systtools::paramId_t> ParamNames;
   for (channel_id const &ch :
        std::vector<channel_id>{{{"NumuPPiPlus", genie::kSpp_vp_cc_10100},
                                 {"NumuPPi0", genie::kSpp_vn_cc_10010},
@@ -126,28 +150,18 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
     if (HasParam(GetSystMetaData(), std::string("MKSPP_Template_") + ch.name)) {
       systtools::paramId_t pid = GetParamId(
           GetSystMetaData(), std::string("MKSPP_Template_") + ch.name);
-      ParamNames[ch.name] = pid;
-      ChannelParameterMapping[ch.channel] = pid;
+      ChannelParameterMapping.emplace(
+          ch.channel,
+          paramTemplateReweighter{
+              pid, std::make_unique<MKSinglePiTemplate_ReWeight>(
+                       templateManifest.get<fhicl::ParameterSet>(ch.name))});
     }
   }
 
-  if (!tool_options.has_key("MKSPP_Template_input_manifest")) {
-    throw systtools::invalid_ToolOptions()
-        << "[ERROR]: MKSPP_Template_response parameter exists in the "
-           "SystMetaData, "
-           "but no MKSPP_Template_input_manifest key can be found on the "
-           "tool_options table. This reweighting requires input histograms "
-           "that must be specified. This should have been caught by  "
-           "MKSinglePiTemplate::BuildSystMetaData, but wasn't, this is a "
-           "bug, please report to the maintiner.";
-  }
-
-  templateReweighter = std::make_unique<MKSinglePiTemplate_ReWeight>(
-      ParamNames,
-      tool_options.get<fhicl::ParameterSet>("MKSPP_Template_input_manifest"));
-
   fill_valid_tree = tool_options.get("fill_valid_tree", false);
   use_Q2W_templates = tool_options.get("use_Q2W_templates", true);
+  Q2_or_q0_is_x = tool_options.get("Q2_or_q0_is_x", true);
+  weightGENIENonRes = tool_options.get("weightGENIENonRes", true);
 
   if (fill_valid_tree) {
     InitValidTree();
@@ -159,14 +173,15 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
 event_unit_response_t
 MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
 
-  event_unit_response_t resp{{{ResponseParameterId, std::vector<double>{1}}}};
+  event_unit_response_t resp;
 
-  if (!(ev.Summary()->ProcInfo().IsResonant() ||
-        ev.Summary()->ProcInfo().IsDeepInelastic()) ||
-      !ev.Summary()->ProcInfo().IsWeakCC()) {
+  if (!ev.Summary()->ProcInfo().IsWeakCC()) {
     return resp;
   }
-
+  if (!(ev.Summary()->ProcInfo().IsResonant() ||
+        ev.Summary()->ProcInfo().IsDeepInelastic())) {
+    return resp;
+  }
   if (ev.Summary()->Kine().W(true) > 1.7) {
     return resp;
   }
@@ -202,8 +217,8 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
 
   double wght = 1;
 
-  if (ev.Summary()->ProcInfo().IsResonant()) {
-    chan = SPPChannelFromGHep(ev);
+  chan = SPPChannelFromGHep(ev);
+  if (ev.Summary()->ProcInfo().IsResonant() || weightGENIENonRes) {
 
     if ((chan == genie::kSppNull) ||
         (ChannelParameterMapping.find(chan) == ChannelParameterMapping.end())) {
@@ -260,7 +275,7 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
     std::cout << "[INFO]: Event, NEUTChannel: " << NEUTCh
               << ", GENIE SPPChannel: " << chan
               << ", W = " << ev.Summary()->Kine().W(true)
-              << ", PID: " << ChannelParameterMapping[chan]
+              << ", PID: " << ChannelParameterMapping[chan].pid
               << ", NPi0 = " << NPi0 << ", NPip = " << NPip << ", NP = " << NP
               << ", NN = " << NN << std::endl;
 #endif
@@ -279,10 +294,17 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
               << std::endl;
 #endif
 
-    wght = templateReweighter->GetVariation(
-        ChannelParameterMapping[chan], 1,
-        std::array<double, 3>{
-            {ISLepP4.E(), use_Q2W_templates ? -emTransfer.Mag2() : emTransfer.E(), use_Q2W_templates ? ev.Summary()->Kine().W(true) : emTransfer.Vect().Mag()}});
+    std::array<double, 2> kinematics;
+    kinematics[0] = use_Q2W_templates ? -emTransfer.Mag2() : emTransfer.E();
+    kinematics[1] = use_Q2W_templates ? ev.Summary()->Kine().W(true)
+                                      : emTransfer.Vect().Mag();
+
+    if (Q2_or_q0_is_x) {
+      std::swap(kinematics[0], kinematics[1]);
+    }
+
+    wght = ChannelParameterMapping[chan].reweighter->GetVariation(
+        1, ISLepP4.E(), kinematics);
 
   } else { // GENIE non-resonant gets weighted to 0.
     wght = 0;
@@ -294,6 +316,7 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
 
     q0_nuc_rest_frame = emTransfer.E();
     q3_nuc_rest_frame = emTransfer.Vect().Mag();
+    Enu_nuc_rest_frame = ISLepP4.E();
 
     ISLepP4 = *ISLep->P4();
     FSLepP4 = *FSLep->P4();
@@ -311,6 +334,7 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
     } else {
       NEUTMode = genie::utils::ghep::NeutReactionCode(&ev);
     }
+    IsDIS = ev.Summary()->ProcInfo().IsDeepInelastic();
 
     SppChannel = chan;
 
@@ -339,11 +363,22 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
     q0 = emTransfer.E();
     q3 = emTransfer.Vect().Mag();
 
-    OutOfReWeightPS = (templateReweighter->GetBin(
-                           ChannelParameterMapping[chan],
-                           std::array<double, 3>{{ISLepP4.E(), emTransfer.E(),
-                                                  emTransfer.Vect().Mag()}}) ==
-                       templateReweighter->kBinOutsideRange);
+    std::array<double, 2> kinematics;
+    kinematics[0] = use_Q2W_templates ? -emTransfer.Mag2() : emTransfer.E();
+    kinematics[1] = use_Q2W_templates ? ev.Summary()->Kine().W(true)
+                                      : emTransfer.Vect().Mag();
+
+    if (Q2_or_q0_is_x) {
+      std::swap(kinematics[0], kinematics[1]);
+    }
+
+    if (chan == genie::kSppNull) {
+      OutOfReWeightPS = -1;
+    } else {
+      OutOfReWeightPS = (ChannelParameterMapping[chan]
+                             .reweighter->GetBin(ISLepP4.E(), kinematics)
+                             .second == TemplateResponseQ0Q3::kBinOutsideRange);
+    }
 
     valid_tree->Fill();
   }
@@ -354,7 +389,7 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
 std::string MKSinglePiTemplate::AsString() { return ""; }
 
 void MKSinglePiTemplate::InitValidTree() {
-  valid_file = new TFile("MKSPPTemplateWeightValid.root", "RECREATE");
+  valid_file = new TFile("MKSinglePiTemplate_valid.root", "RECREATE");
   valid_tree = new TTree("valid_tree", "");
 
   valid_tree->Branch("NEUTMode", &NEUTMode);
@@ -371,10 +406,12 @@ void MKSinglePiTemplate::InitValidTree() {
   valid_tree->Branch("W", &W);
   valid_tree->Branch("q0", &q0);
   valid_tree->Branch("q3", &q3);
+  valid_tree->Branch("Enu_nuc_rest_frame", &Enu_nuc_rest_frame);
   valid_tree->Branch("q0_nuc_rest_frame", &q0_nuc_rest_frame);
   valid_tree->Branch("q3_nuc_rest_frame", &q3_nuc_rest_frame);
   valid_tree->Branch("weight", &weight);
   valid_tree->Branch("OutOfReWeightPS", &OutOfReWeightPS);
+  valid_tree->Branch("IsDIS", &IsDIS);
 }
 
 MKSinglePiTemplate::~MKSinglePiTemplate() {
