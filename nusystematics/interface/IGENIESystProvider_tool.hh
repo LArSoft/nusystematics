@@ -16,6 +16,14 @@
 #include "EVGCore/EventRecord.h"
 
 namespace nusyst {
+
+struct ParamResponsesAndCVWeight {
+  systtools::paramId_t pid;
+  double CV_weight;
+  std::vector<double> responses;
+};
+typedef std::vector<ParamResponsesAndCVWeight> event_unit_response_cv_weight_t;
+
 class IGENIESystProvider_tool : public systtools::ISystProviderTool {
 public:
   IGENIESystProvider_tool(fhicl::ParameterSet const &ps)
@@ -55,6 +63,44 @@ public:
   /// Calculates configured response for a given GHep record
   virtual systtools::event_unit_response_t
   GetEventResponse(genie::EventRecord const &) = 0;
+
+  event_unit_response_cv_weight_t
+  GetEventResponseAndCVWeight(genie::EventRecord const &GenieGHep) {
+    event_unit_response_cv_weight_t responseandCVWeights;
+
+    systtools::event_unit_response_t prov_response =
+        GetEventResponse(GenieGHep);
+
+    // Foreach param
+    for (systtools::ParamResponses &pr : prov_response) {
+      // Get CV Weight
+      double CVWeight = 1;
+      systtools::SystParamHeader const &hdr =
+          GetParam(GetSystMetaData(), pr.pid);
+      size_t NVars = hdr.paramVariations.size();
+
+      double cv_param_val = 0;
+      if (hdr.centralParamValue != systtools::kDefaultDouble) {
+        cv_param_val = hdr.centralParamValue;
+      }
+      for (size_t idx = 0; idx < NVars; ++idx) {
+        if (fabs(cv_param_val - hdr.paramVariations[idx]) <=
+            std::numeric_limits<float>::epsilon()) {
+          CVWeight = pr.responses[idx];
+          break;
+        }
+      }
+      // if we didn't find it, the CVWeight stays as 1.
+
+      for (size_t idx = 0; idx < NVars; ++idx) {
+        pr.responses[idx] /= CVWeight;
+      }
+
+      responseandCVWeights.push_back({pr.pid, CVWeight, pr.responses});
+    } // end for parameter response
+
+    return responseandCVWeights;
+  }
 
   /// Calculates the response to a single parameter for a given GHep record
   virtual systtools::event_unit_response_t
