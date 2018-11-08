@@ -95,6 +95,19 @@ public:
     return response;
   }
 
+  event_unit_response_cv_weight_t
+  GetEventResponseAndCVWeight(genie::EventRecord &GenieGHep) {
+    event_unit_response_cv_weight_t response;
+    for (auto &sp : syst_providers) {
+      event_unit_response_cv_weight_t prov_response =
+          sp->GetEventResponseAndCVWeight(GenieGHep);
+      for (auto &&er : prov_response) {
+        response.push_back(std::move(er));
+      }
+    }
+    return response;
+  }
+
   double GetEventWeightResponse(genie::EventRecord &GenieGHep,
                                 systtools::param_value_list_t const &vals) {
     double weight = 1;
@@ -103,7 +116,7 @@ public:
     }
     return weight;
   }
-};
+}; // namespace nusyst
 } // namespace nusyst
 
 #endif
