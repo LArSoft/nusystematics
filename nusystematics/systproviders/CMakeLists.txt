@@ -51,34 +51,21 @@ simple_plugin(GENIEReWeight tool
     ${GENIE_EV_LIBS}
  )
 
-simple_plugin(MKSinglePiTemplate tool
-  systematicstools_utility
-  systematicstools_interface
-  nutools_EventGeneratorBase_GENIE
-    ${ART_FRAMEWORK_CORE}
-    ${ART_FRAMEWORK_PRINCIPAL}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
-    ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-    canvas
-    ${MF_MESSAGELOGGER}
-    ${FHICLCPP}
-    cetlib cetlib_except
-    ${CLHEP}
-    ${GENIE_EV_LIBS}
- )
-
-simple_plugin(MINERvAq0q3Weighting tool
-  systematicstools_utility
-  systematicstools_interface
-  nutools_EventGeneratorBase_GENIE
-    ${ART_FRAMEWORK_CORE}
-    ${ART_FRAMEWORK_PRINCIPAL}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
-    ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-    canvas
-    ${MF_MESSAGELOGGER}
-    ${FHICLCPP}
-    cetlib cetlib_except
-    ${CLHEP}
-    ${GENIE_EV_LIBS}
- )
+SET(TOOLS MKSinglePiTemplate BeRPAWeight MiscInteractionSysts NOvAStyleNonResPionNorm MINERvAE2p2h)
+foreach(tool ${TOOLS})
+  simple_plugin(${tool} tool
+    systematicstools_utility
+    systematicstools_interface
+    nutools_EventGeneratorBase_GENIE
+      ${ART_FRAMEWORK_CORE}
+      ${ART_FRAMEWORK_PRINCIPAL}
+      ${ART_FRAMEWORK_SERVICES_REGISTRY}
+      ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+      canvas
+      ${MF_MESSAGELOGGER}
+      ${FHICLCPP}
+      cetlib cetlib_except
+      ${CLHEP}
+      ${GENIE_EV_LIBS}
+   )
+endforeach()

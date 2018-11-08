@@ -2,20 +2,20 @@ MINERvAq0q3Tune_Tool_Config: {
     tool_type: "MINERvAq0q3Weighting"
     instance_name: "DUNE_TDR_FakeData"
 
-    use_MINERvA_RPA_tunes: false
-    MINERvATune_RPA_input_manifest: {
-      InputTemplates: [
-        {
-          parameter_name: MINERvATune_RPA
-          input_file: "MINERvAInputs/NievesRPAratio-nu12C-20GeV-2017-0202.root"
-          inputs: [
-            { value: 0
-              hist_name: "hrelratio"
-            }
-          ]
-        }
-      ]
-    }
+    # use_MINERvA_RPA_tunes: false
+    # MINERvATune_RPA_input_manifest: {
+    #   InputTemplates: [
+    #     {
+    #       parameter_name: MINERvATune_RPA
+    #       input_file: "MINERvAInputs/NievesRPAratio-nu12C-20GeV-2017-0202.root"
+    #       inputs: [
+    #         { value: 0
+    #           hist_name: "hrelratio"
+    #         }
+    #       ]
+    #     }
+    #   ]
+    # }
 
     use_MINERvA_2p2h_tunes: true
     parameter_per_2p2h_universe: true

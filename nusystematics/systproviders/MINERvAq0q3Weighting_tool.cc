@@ -65,31 +65,38 @@ SystMetaData MINERvAq0q3Weighting::BuildSystMetaData(ParameterSet const &cfg,
     tool_options.put("parameter_per_2p2h_universe",
                      parameter_per_2p2h_universe);
 
+    other_universes_relative_to_CV =
+        cfg.get<bool>("other_universes_relative_to_CV", false);
+
+    tool_options.put("other_universes_relative_to_CV",
+                     other_universes_relative_to_CV);
+
     if (parameter_per_2p2h_universe) {
-      systtools::SystParamHeader param_CV;
-      param_CV.systParamId = firstId++;
-      param_CV.isCorrection = true;
-      param_CV.centralParamValue = 1;
-      param_CV.prettyName = "MINERvATune_2p2hGaussEnhancement_CV";
-      smd.push_back(param_CV);
-      systtools::SystParamHeader param_NN;
-      param_NN.systParamId = firstId++;
-      param_NN.isCorrection = true;
-      param_NN.centralParamValue = 1;
-      param_NN.prettyName = "MINERvATune_2p2hGaussEnhancement_NN";
-      smd.push_back(param_NN);
-      systtools::SystParamHeader param_np;
-      param_np.systParamId = firstId++;
-      param_np.isCorrection = true;
-      param_np.centralParamValue = 1;
-      param_np.prettyName = "MINERvATune_2p2hGaussEnhancement_np";
-      smd.push_back(param_np);
-      systtools::SystParamHeader param_QE;
-      param_QE.systParamId = firstId++;
-      param_QE.isCorrection = true;
-      param_QE.centralParamValue = 1;
-      param_QE.prettyName = "MINERvATune_2p2hGaussEnhancement_QE";
-      smd.push_back(param_QE);
+      systtools::SystParamHeader param_CV, param_NN, param_np, param_QE;
+      if (!other_universes_relative_to_CV &&
+          ParseFHiCLSimpleToolConfigurationParameter(
+              cfg, "2p2hGaussEnhancement_CV", param_CV, firstId)) {
+        param_CV.systParamId = firstId++;
+        smd.push_back(param_CV);
+      }
+      if (ParseFHiCLSimpleToolConfigurationParameter(
+              cfg, "2p2hGaussEnhancement_NN", param_NN, firstId)) {
+        param_NN.systParamId = firstId++;
+        smd.push_back(param_NN);
+      }
+      if (!other_universes_relative_to_CV &&
+          ParseFHiCLSimpleToolConfigurationParameter(
+              cfg, "2p2hGaussEnhancement_np", param_np, firstId)) {
+        param_np.systParamId = firstId++;
+        smd.push_back(param_np);
+      }
+      if (!other_universes_relative_to_CV &&
+          ParseFHiCLSimpleToolConfigurationParameter(
+              cfg, "2p2hGaussEnhancement_QE", param_QE, firstId)) {
+        param_QE.systParamId = firstId++;
+        smd.push_back(param_QE);
+      }
+
     } else {
       systtools::SystParamHeader param;
       param.systParamId = firstId++;
@@ -128,28 +135,76 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
             "MINERvATune_RPA_input_manifest"));
   }
 
-  if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement")) {
+  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement")) {
     ConfiguredParameters[param_t::kMINERvA2p2h] =
-        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement");
+        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement");
+
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h]];
+
+    if (hdr.isCorrection) {
+      vals_2p2hTotal.push_back(hdr.centralParamValue);
+    } else {
+      vals_2p2hTotal = hdr.paramVariations;
+    }
   }
-  if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_CV")) {
+  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement_CV")) {
     ConfiguredParameters[param_t::kMINERvA2p2h_CV] =
-        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_CV");
+        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement_CV");
+
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_CV]];
+
+    if (hdr.isCorrection) {
+      vals_2p2hCV.push_back(hdr.centralParamValue);
+    } else {
+      vals_2p2hCV = hdr.paramVariations;
+    }
   }
-  if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_NN")) {
+  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement_NN")) {
     ConfiguredParameters[param_t::kMINERvA2p2h_NN] =
-        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_NN");
+        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement_NN");
+
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_NN]];
+
+    if (hdr.isCorrection) {
+      vals_2p2hNN.push_back(hdr.centralParamValue);
+    } else {
+      vals_2p2hNN = hdr.paramVariations;
+    }
   }
-  if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_np")) {
+  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement_np")) {
     ConfiguredParameters[param_t::kMINERvA2p2h_np] =
-        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_np");
+        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement_np");
+
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_np]];
+
+    if (hdr.isCorrection) {
+      vals_2p2hnp.push_back(hdr.centralParamValue);
+    } else {
+      vals_2p2hnp = hdr.paramVariations;
+    }
   }
-  if (HasParam(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_QE")) {
+  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement_QE")) {
     ConfiguredParameters[param_t::kMINERvA2p2h_QE] =
-        GetParamIndex(GetSystMetaData(), "MINERvATune_2p2hGaussEnhancement_QE");
+        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement_QE");
+
+    SystParamHeader const &hdr =
+        GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_QE]];
+
+    if (hdr.isCorrection) {
+      vals_2p2hQE.push_back(hdr.centralParamValue);
+    } else {
+      vals_2p2hQE = hdr.paramVariations;
+    }
   }
 
-  fill_valid_tree = tool_options.get("fill_valid_tree", false);
+  other_universes_relative_to_CV =
+      tool_options.get<bool>("other_universes_relative_to_CV", false);
+
+  fill_valid_tree = tool_options.get<bool>("fill_valid_tree", false);
   if (fill_valid_tree) {
     InitValidTree();
   }
@@ -176,9 +231,8 @@ double MINERvAq0q3Weighting::GetMINERvARPATuneWeight(double val, double q0,
   return RPATemplateReweighter->GetWeight(q0, q3, tval);
 }
 
-double
-MINERvAq0q3Weighting::GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
-                                               QELikeTarget_t QELTarget) {
+double MINERvAq0q3Weighting::GetMINERvA2p2hTuneEnhancement(
+    int val, double q0, double q3, QELikeTarget_t QELTarget) {
   std::array<double, 6> const *GaussParams;
   if (val == 1) {
     if (!((QELTarget == QELikeTarget_t::kNN) ||
@@ -247,7 +301,6 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
   TLorentzVector emTransfer = (ISLepP4 - FSLepP4);
   std::array<double, 2> q0q3{{emTransfer.E(), emTransfer.Vect().Mag()}};
 
-  // Can apply to RES/SPP events
   if (ConfiguredParameters.find(param_t::kMINERvARPA) !=
       ConfiguredParameters.end()) {
 
@@ -276,14 +329,9 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h]];
 
     resp.push_back({hdr.systParamId, {}});
-    if (hdr.isCorrection) {
-      resp.back().responses.push_back(GetMINERvA2p2hTuneWeight(
-          hdr.centralParamValue, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
-    } else {
-      for (double var : hdr.paramVariations) {
-        resp.back().responses.push_back(GetMINERvA2p2hTuneWeight(
-            var, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
-      }
+    for (double var : vals_2p2hTotal) {
+      resp.back().responses.push_back(GetMINERvA2p2hTuneEnhancement(
+          var, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
     }
   }
 
@@ -296,8 +344,11 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_CV]];
 
     resp.push_back({hdr.systParamId, {}});
-    resp.back().responses.push_back(
-        GetMINERvA2p2hTuneWeight(1, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
+    for (double v : vals_2p2hCV) {
+      double cv_weight = 1 + v * GetMINERvA2p2hTuneEnhancement(
+                                     1, q0q3[0], q0q3[1], GetQELikeTarget(ev));
+      resp.back().responses.push_back(cv_weight);
+    }
   }
   // Only ever applies to 2p2h events
   if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_NN) !=
@@ -308,8 +359,21 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_NN]];
 
     resp.push_back({hdr.systParamId, {}});
-    resp.back().responses.push_back(
-        GetMINERvA2p2hTuneWeight(2, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
+    for (double v : vals_2p2hNN) {
+      double tune_ench = v * GetMINERvA2p2hTuneEnhancement(2, q0q3[0], q0q3[1],
+                                                           GetQELikeTarget(ev));
+
+      // At val = 0, you get 1/3 of the CV enhancement, at val = 1, you get full
+      // NN enhancement
+      if (other_universes_relative_to_CV) {
+        double cv_ench = (1 - v) *
+                         GetMINERvA2p2hTuneEnhancement(1, q0q3[0], q0q3[1],
+                                                       GetQELikeTarget(ev)) /
+                         3.0;
+        tune_ench += cv_ench;
+      }
+      resp.back().responses.push_back(tune_ench);
+    }
   }
   // Only ever applies to 2p2h events
   if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_np) !=
@@ -320,8 +384,22 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_np]];
 
     resp.push_back({hdr.systParamId, {}});
-    resp.back().responses.push_back(
-        GetMINERvA2p2hTuneWeight(3, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
+    resp.push_back({hdr.systParamId, {}});
+    for (double v : vals_2p2hnp) {
+      double tune_ench = v * GetMINERvA2p2hTuneEnhancement(3, q0q3[0], q0q3[1],
+                                                           GetQELikeTarget(ev));
+
+      // At val = 0, you get 1/3 of the CV enhancement, at val = 1, you get full
+      // NN enhancement
+      if (other_universes_relative_to_CV) {
+        double cv_ench = (1 - v) *
+                         GetMINERvA2p2hTuneEnhancement(1, q0q3[0], q0q3[1],
+                                                       GetQELikeTarget(ev)) /
+                         3.0;
+        tune_ench += cv_ench;
+      }
+      resp.back().responses.push_back(tune_ench);
+    }
   }
   // Only ever applies to qe events
   if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_QE) !=
@@ -332,8 +410,22 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_QE]];
 
     resp.push_back({hdr.systParamId, {}});
-    resp.back().responses.push_back(
-        GetMINERvA2p2hTuneWeight(4, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
+    resp.push_back({hdr.systParamId, {}});
+    for (double v : vals_2p2hQE) {
+      double tune_ench = v * GetMINERvA2p2hTuneEnhancement(4, q0q3[0], q0q3[1],
+                                                           GetQELikeTarget(ev));
+
+      // At val = 0, you get 1/3 of the CV enhancement, at val = 1, you get full
+      // NN enhancement
+      if (other_universes_relative_to_CV) {
+        double cv_ench = (1 - v) *
+                         GetMINERvA2p2hTuneEnhancement(1, q0q3[0], q0q3[1],
+                                                       GetQELikeTarget(ev)) /
+                         3.0;
+        tune_ench += cv_ench;
+      }
+      resp.back().responses.push_back(tune_ench);
+    }
   }
 
   if (fill_valid_tree) {

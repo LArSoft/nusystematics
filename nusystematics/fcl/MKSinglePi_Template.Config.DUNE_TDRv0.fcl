@@ -2,7 +2,8 @@ MKSinglePi_Template_Tool_Config: {
   tool_type: "MKSinglePiTemplate"
   instance_name: "DUNE_TDR_FakeData"
 
-  weightGENIENonRes: false
+  MKSPP_ReWeight_variation_descriptor: "[1,1,1,0,1,1,1]"
+
   fill_valid_tree: true
   Q2_or_q0_is_x: true
 

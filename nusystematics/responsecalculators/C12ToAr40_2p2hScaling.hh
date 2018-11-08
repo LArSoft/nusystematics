@@ -5,22 +5,10 @@
 
 namespace nusyst {
 
-inline double GetC_Ar2p2hScalingWeight(QELikeTarget_t mec_topology,
-                                       double parameter_value = 0) {
-
-  switch (mec_topology) {
-  case kNN: {
-    static double const central_value = 1.33;
-    static double const uncertainty = 0.13;
-    return (central_value + parameter_value * uncertainty);
-  }
-  case knp: {
-    static double const central_value = 0.9;
-    static double const uncertainty = 0.4;
-    return (central_value + parameter_value * uncertainty);
-  }
-  default: { return 1; }
-  }
+inline double GetC_Ar2p2hScalingWeight(double parameter_value = 0) {
+  static double const central_value = 1;
+  static double const uncertainty = 0.2;
+  return (central_value + parameter_value * uncertainty);
 }
 
 } // namespace nusyst

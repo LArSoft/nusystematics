@@ -19,12 +19,8 @@ class MKSinglePiTemplate : public nusyst::IGENIESystProvider_tool {
 
   systtools::paramId_t ResponseParameterId;
 
-  struct paramTemplateReweighter {
-    systtools::paramId_t pid;
-    std::unique_ptr<nusyst::MKSinglePiTemplate_ReWeight> reweighter;
-  };
-
-  std::map<genie::SppChannel_t, paramTemplateReweighter>
+  std::map<genie::SppChannel_t,
+           std::unique_ptr<nusyst::MKSinglePiTemplate_ReWeight>>
       ChannelParameterMapping;
 
 public:
@@ -46,7 +42,6 @@ private:
   /// Whether input templates should be interpreted as in Enuq0q3 or EnuQ2W
   bool use_Q2W_templates;
   bool Q2_or_q0_is_x;
-  bool weightGENIENonRes;
 
   fhicl::ParameterSet tool_options;
 
@@ -56,7 +51,7 @@ private:
   TFile *valid_file;
   TTree *valid_tree;
 
-  int NEUTMode, Pdgnu, pdgfslep, pdghmfspi, SppChannel, OutOfReWeightPS, IsDIS;
+  int NEUTMode, Pdgnu, pdgfslep, pdghmfspi, SppChannel, IsDIS;
   double Enu, momfslep, cthetafslep, momhmfspi, cthetahmfspi, Q2, q0, q3,
       Enu_nuc_rest_frame, q0_nuc_rest_frame, q3_nuc_rest_frame, W, weight;
 };

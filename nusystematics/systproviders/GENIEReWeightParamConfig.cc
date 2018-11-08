@@ -77,7 +77,7 @@ SystMetaData ConfigureSetOfDependentShapeableParameters(
                "random "
                "throw mode or set \"ignore_parameter_dependence\" "
                "in the "
-               "GENIEReWeight_tool configuration.";
+               "GENIEReWeight configuration.";
       }
     }
     MD.push_back(std::move(param));
@@ -137,7 +137,7 @@ SystMetaData ConfigureSetOfDependentParameters(
                "random "
                "throw mode or set \"ignore_parameter_dependence\" "
                "in the "
-               "GENIEReWeight_tool configuration.";
+               "GENIEReWeight configuration.";
       }
     }
     MD.push_back(std::move(param));
@@ -236,28 +236,17 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
     ExtendSystMetaData(QEmd, std::move(ZExpmd));
   }
 
-  bool VecFFCCQEIsBBA = cfg.get<bool>("VecFFCCQEIsBBA", true);
-
-  if (!VecFFCCQEIsBBA) {
-    SystParamHeader vecFFQE;
-    vecFFQE.prettyName = GSyst::AsString(kXSecTwkDial_VecFFCCQEshape);
-    vecFFQE.systParamId = firstParamId++;
-    vecFFQE.isCorrection = true;
-    vecFFQE.centralParamValue = 1;
-    QEmd.push_back(std::move(vecFFQE));
-  }
+  // These are all independent and based upon the channel that was generated
+  SystMetaData VecFFCCQEmd = ConfigureSetOfIndependentParameters(
+      cfg, firstParamId,
+      {kXSecTwkDial_VecFFCCQEshape});
+  ExtendSystMetaData(QEmd, std::move(VecFFCCQEmd));
 
   bool AxFFCCQEDipoleToZExp =
       cfg.get<bool>("AxFFCCQEDipoleToZExp", false) || IsZExpReWeight;
 
-  if (AxFFCCQEDipoleToZExp) {
-    SystParamHeader axFFQE;
-    axFFQE.prettyName = GSyst::AsString(kXSecTwkDial_AxFFCCQEshape);
-    axFFQE.systParamId = firstParamId++;
-    axFFQE.isCorrection = true;
-    axFFQE.centralParamValue = 1;
-    QEmd.push_back(std::move(axFFQE));
-  }
+  tool_options.put<bool>("AxFFCCQEDipoleToZExp",AxFFCCQEDipoleToZExp);
+
 
   return QEmd;
 } // namespace nusyst

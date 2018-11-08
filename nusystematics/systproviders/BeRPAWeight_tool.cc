@@ -1,185 +1,289 @@
-#include "systematicstools/interface/ISystProviderTool.hh"
+#include "nusystematics/systproviders/BeRPAWeight_tool.hh"
 
+#include "systematicstools/utility/FHiCLSystParamHeaderUtility.hh"
+#include "systematicstools/utility/ResponselessParamUtility.hh"
+
+#include "nusystematics/utility/enumclass2int.hh"
+
+#include "nusystematics/responsecalculators/BeRPA.hh"
+
+#ifndef NO_ART
+#include "art/Utilities/ToolMacros.h"
+#endif
+
+#ifndef NO_ART
+DEFINE_ART_CLASS_TOOL(BeRPAWeight)
+#endif
+
+using namespace nusyst;
 using namespace systtools;
-using namespace fhicl;
 
-class BeRPAWeightProvider : public ISystProviderTool {
-public:
-  explicit BeRPAWeightProvider(ParameterSet const &);
+BeRPAWeight::BeRPAWeight(fhicl::ParameterSet const &params)
+    : IGENIESystProvider_tool(params),
+      pidx_BeRPA_Response(kParamUnhandled<size_t>),
+      pidx_BeRPA_A(kParamUnhandled<size_t>),
+      pidx_BeRPA_B(kParamUnhandled<size_t>),
+      pidx_BeRPA_D(kParamUnhandled<size_t>),
+      pidx_BeRPA_E(kParamUnhandled<size_t>), valid_file(nullptr),
+      valid_tree(nullptr) {}
 
-  SystMetaData ConfigureFromFHICL(ParameterSet const &, paramId_t);
-
-  bool Configure();
-  std::unique_ptr<EventResponse> GetEventResponse(art::Event const &);
-  std::string AsString();
-
-private:
-  enum Coeffs { kA = 0, kB, kD, kE, kU, kNCoeffs };
-  std::map<Coeffs, std::pair<double, double>> DefaultValues;
-  std::map<Coeffs, paramId_t> VariedParameters;
-  size_t responseParam_idx;
-};
-
-BeRPAWeightProvider::BeRPAWeightProvider(ParameterSet const &params)
-    : ISystProviderTool(params) {
-  DefaultValues[kA] = {0.59, 0.59 * 0.20};
-  DefaultValues[kB] = {1.05, 1.05 * 0.20};
-  DefaultValues[kD] = {1.13, 1.13 * 0.15};
-  DefaultValues[kE] = {0.88, 0.88 * 0.40};
-  DefaultValues[kE] = {1.2, 0};
-
-  responseParam_idx = kParamUnhandled<size_t>;
-}
-
-SystMetaData BeRPAWeightProvider::ConfigureFromFHICL(ParameterSet const &ps,
-                                                     paramId_t firstId) {
+SystMetaData BeRPAWeight::BuildSystMetaData(fhicl::ParameterSet const &ps,
+                                            paramId_t firstId) {
 
   SystMetaData smd;
 
-  SystParamHeader resp;
-  resp.prettyName = "BeRPA_Response";
-  // Don't increment this, if we use it, increment all the others.
-  resp.systParamId = firstId;
+  ignore_parameter_dependence =
+      ps.get<bool>("ignore_parameter_dependence", false);
+  ApplyCV = ps.get<bool>("ApplyCV", false);
 
-  if (ps.has_key("ATweakDefinition")) {
-    double ACV = kDefaultDouble;
-    if (ps.has_key("ACentralValue")) {
-      ACV = ps.get<double>("ACentralValue");
-    }
-    SystParamHeader A = init_header_from_tweak_definition_string(
-        ACV, ps.get<std::string>("ATweakDefinition"));
-    A.prettyName = "BeRPA_A";
-    A.systParamId = firstId++;
-    smd.push_back(std::move(A));
-  }
-  if (ps.has_key("BTweakDefinition")) {
-    double BCV = kDefaultDouble;
-    if (ps.has_key("BCentralValue")) {
-      BCV = ps.get<double>("BCentralValue");
-    }
-    SystParamHeader B = init_header_from_tweak_definition_string(
-        BCV, ps.get<std::string>("BTweakDefinition"));
-    B.prettyName = "BeRPA_B";
-    B.systParamId = firstId++;
-    smd.push_back(std::move(B));
-  }
-  if (ps.has_key("DTweakDefinition")) {
-    double DCV = kDefaultDouble;
-    if (ps.has_key("DCentralValue")) {
-      DCV = ps.get<double>("DCentralValue");
-    }
-    SystParamHeader D = init_header_from_tweak_definition_string(
-        DCV, ps.get<std::string>("DTweakDefinition"));
-    D.prettyName = "BeRPA_D";
-    D.systParamId = firstId++;
-    smd.push_back(std::move(D));
-  }
-  if (ps.has_key("ETweakDefinition")) {
-    double ECV = kDefaultDouble;
-    if (ps.has_key("ECentralValue")) {
-      ECV = ps.get<double>("ECentralValue");
-    }
-    SystParamHeader E = init_header_from_tweak_definition_string(
-        ECV, ps.get<std::string>("ETweakDefinition"));
-    E.prettyName = "BeRPA_E";
-    E.systParamId = firstId++;
-    smd.push_back(std::move(E));
+  SystParamHeader responseParam;
+  std::vector<std::string> dependentParamNames;
+  if (!ignore_parameter_dependence) {
+    responseParam.prettyName = "BeRPA_Response";
+    responseParam.systParamId = firstId++;
   }
 
-  // If multiple parameters were used then add the response parameter and
-  // increment the id of all of the other parameters.
-  if (smd.size() > 1) {
-    for (auto &h : smd) {
-      h.systParamId++;
-      h.isResponselessParam = true;
-      h.responseParamId = resp.systParamId;
+  for (std::string const &pname :
+       {"BeRPA_A", "BeRPA_B", "BeRPA_D", "BeRPA_E"}) {
+    SystParamHeader phdr;
+    if (ParseFHiCLSimpleToolConfigurationParameter(ps, pname, phdr, firstId)) {
+      phdr.systParamId = firstId++;
+      if (!ignore_parameter_dependence) {
+        dependentParamNames.push_back(phdr.prettyName);
+        phdr.isResponselessParam = true;
+        phdr.responseParamId = responseParam.systParamId;
+        if (phdr.isSplineable) {
+          throw invalid_ToolConfigurationFHiCL()
+              << "[ERROR]: Attempted to build spline from "
+                 "parameter "
+              << phdr.prettyName
+              << ", which enters into an intrinsically "
+                 "multi-parameter response calculation. Either run in "
+                 "random "
+                 "throw mode or set \"ignore_parameter_dependence\" "
+                 "in the "
+                 "BeRPAWeight configuration.";
+        }
+      }
+      smd.push_back(phdr);
     }
-
-    smd.insert(0, std::move(resp));
   }
+
+  if (!ignore_parameter_dependence) {
+    smd.push_back(responseParam);
+    FinalizeAndValidateDependentParameters(smd, smd.back().prettyName,
+                                           dependentParamNames);
+  }
+
+  tool_options.put("fill_valid_tree", ps.get<bool>("fill_valid_tree", false));
+  tool_options.put("ignore_parameter_dependence", ignore_parameter_dependence);
+  tool_options.put("ApplyCV", ApplyCV);
 
   return smd;
 }
 
-bool BeRPAWeightProvider::Configure() {
+bool BeRPAWeight::SetupResponseCalculator(
+    fhicl::ParameterSet const &tool_options) {
 
-  paramId_t AId = GetParamId(fMetaData, "BeRPA_A");
-  paramId_t BId = GetParamId(fMetaData, "BeRPA_B");
-  paramId_t DId = GetParamId(fMetaData, "BeRPA_D");
-  paramId_t EId = GetParamId(fMetaData, "BeRPA_E");
-  paramId_t RespId = GetParamId(fMetaData, "BeRPA_Response");
+  SystMetaData const &md = GetSystMetaData();
 
-  if (AId != kParamUnhandled<paramId_t>) {
-    VariedParameters[kA] = GetParamIndex(fMetaData, "BeRPA_A");
-    responseParam_idx = VariedParameters[kA];
+  if (HasParam(md, "BeRPA_Response")) {
+    pidx_BeRPA_Response = GetParamIndex(md, "BeRPA_Response");
   }
-  if (BId != kParamUnhandled<paramId_t>) {
-    VariedParameters[kB] = GetParamIndex(fMetaData, "BeRPA_B");
-    responseParam_idx = VariedParameters[kB];
-  }
-  if (DId != kParamUnhandled<paramId_t>) {
-    VariedParameters[kD] = GetParamIndex(fMetaData, "BeRPA_D");
-    responseParam_idx = VariedParameters[kD];
-  }
-  if (EId != kParamUnhandled<paramId_t>) {
-    VariedParameters[kE] = GetParamIndex(fMetaData, "BeRPA_E");
-    responseParam_idx = VariedParameters[kE];
-  }
-  if (RespId != kParamUnhandled<paramId_t>) {
-    VariedParameters[kNCoeffs] = GetParamIndex(fMetaData, "BeRPA_Response");
-    responseParam_idx = VariedParameters[kNCoeffs];
-  }
-}
 
-std::unique_ptr<EventResponse>
-BeRPAWeightProvider::GetEventResponse(art::Event const &e) {
-
-  art::Handle<std::vector<simb::GTruth>> gTruthHandle;
-  e.getByLabel(fGENIEModuleLabel, gTruthHandle);
-
-  std::unique_ptr<EventResponse> er = std::make_unique<EventResponse>();
-
-  size_t NEventUnits = gTruthHandle->size();
-  er->responses.resize(NEventUnits);
-  size_t NParamVars =
-      fMetaData[responseParam_idx].paramVariations.size();
-
-  std::map<Coeffs, double> pVals;
-  for (size_t ev_it = 0; ev_it < NEventUnits; ++ev_it) {
-    std::vector<double> RPAWeights;
-    for (size_t v_it = 0; v_it < NParamVars; ++v_it) {
-      if (VariedParameters.find(kA) != VariedParameters.end()) {
-        pVals[kA] =
-            fMetaData[VariedParameters[kA]].paramVariations[v_it];
-      } else {
-        pVals[kA] = DefaultValues[kA].first;
-      }
-      if (VariedParameters.find(kB) != VariedParameters.end()) {
-        pVals[kB] =
-            fMetaData[VariedParameters[kB]].paramVariations[v_it];
-      } else {
-        pVals[kB] = DefaultValues[kB].first;
-      }
-      if (VariedParameters.find(kD) != VariedParameters.end()) {
-        pVals[kD] =
-            fMetaData[VariedParameters[kD]].paramVariations[v_it];
-      } else {
-        pVals[kD] = DefaultValues[kD].first;
-      }
-      if (VariedParameters.find(kE) != VariedParameters.end()) {
-        pVals[kE] =
-            fMetaData[VariedParameters[kE]].paramVariations[v_it];
-      } else {
-        pVals[kE] = DefaultValues[kE].first;
-      }
-      RPAWeights.push_back(nusyst::BeRPA(gTruthHandle->at(ev_it).fgQ2,
-                                         pVals[kA], pVals[kB], pVals[kD],
-                                         pVals[kE]));
+  ACV = 0;
+  if (HasParam(md, "BeRPA_A")) {
+    pidx_BeRPA_A = GetParamIndex(md, "BeRPA_A");
+    ACV = md[pidx_BeRPA_A].centralParamValue;
+    if (ACV == kDefaultDouble) {
+      ACV = 0;
     }
-    er->responses[ev_it].push_back(
-        {fMetaData[responseParam_idx].systParamId,
-         std::move(RPAWeights)});
+    std::copy(md[pidx_BeRPA_A].paramVariations.begin(),
+              md[pidx_BeRPA_A].paramVariations.end(),
+              std::back_inserter(AVariations));
   }
-  return er;
+
+  BCV = 0;
+  if (HasParam(md, "BeRPA_B")) {
+    pidx_BeRPA_B = GetParamIndex(md, "BeRPA_B");
+    BCV = md[pidx_BeRPA_B].centralParamValue;
+    if (BCV == kDefaultDouble) {
+      BCV = 0;
+    }
+    std::copy(md[pidx_BeRPA_B].paramVariations.begin(),
+              md[pidx_BeRPA_B].paramVariations.end(),
+              std::back_inserter(BVariations));
+  }
+
+  DCV = 0;
+  if (HasParam(md, "BeRPA_D")) {
+    pidx_BeRPA_D = GetParamIndex(md, "BeRPA_D");
+    DCV = md[pidx_BeRPA_D].centralParamValue;
+    if (DCV == kDefaultDouble) {
+      DCV = 0;
+    }
+    std::copy(md[pidx_BeRPA_D].paramVariations.begin(),
+              md[pidx_BeRPA_D].paramVariations.end(),
+              std::back_inserter(DVariations));
+  }
+
+  ECV = 0;
+  if (HasParam(md, "BeRPA_E")) {
+    pidx_BeRPA_E = GetParamIndex(md, "BeRPA_E");
+    ECV = md[pidx_BeRPA_E].centralParamValue;
+    if (ECV == kDefaultDouble) {
+      ECV = 0;
+    }
+    std::copy(md[pidx_BeRPA_E].paramVariations.begin(),
+              md[pidx_BeRPA_E].paramVariations.end(),
+              std::back_inserter(EVariations));
+  }
+
+  fill_valid_tree = tool_options.get<bool>("fill_valid_tree", false);
+  ApplyCV = tool_options.get<bool>("ApplyCV", false);
+
+  if (fill_valid_tree) {
+    InitValidTree();
+  }
+
+  return true;
 }
-std::string BeRPAWeightProvider::AsString() { return ""; }
+
+event_unit_response_t
+BeRPAWeight::GetEventResponse(genie::EventRecord const &ev) {
+
+  event_unit_response_t resp;
+  SystMetaData const &md = GetSystMetaData();
+
+  if (!ev.Summary()->ProcInfo().IsQuasiElastic() ||
+      !ev.Summary()->ProcInfo().IsWeakCC()) {
+    return resp;
+  }
+
+  genie::GHepParticle *FSLep = ev.FinalStatePrimaryLepton();
+  genie::GHepParticle *ISLep = ev.Probe();
+  TLorentzVector FSLepP4 = *FSLep->P4();
+  TLorentzVector ISLepP4 = *ISLep->P4();
+  TLorentzVector emTransfer = (ISLepP4 - FSLepP4);
+  Q2 = -emTransfer.Mag2();
+
+  // Only want the CV response to be used in one of the dials, after the first
+  // dial is found, all other dial responses should be /= CVResponse.
+  double CVResponse =
+      GetBeRPAWeight(e2i(simb_mode_copy::kQE), true, Q2, ACV, BCV, DCV, ECV);
+
+  if (!ignore_parameter_dependence) {
+    resp.push_back({md[pidx_BeRPA_Response].systParamId, {}});
+
+    for (size_t univ = 0; univ < md[pidx_BeRPA_Response].paramVariations.size();
+         ++univ) {
+
+      double Aval = AVariations[univ];
+      double Bval = BVariations[univ];
+      double Dval = DVariations[univ];
+      double Eval = EVariations[univ];
+
+      double weight = GetBeRPAWeight(e2i(simb_mode_copy::kQE), true, Q2, Aval,
+                                     Bval, Dval, Eval);
+      if (!ApplyCV) {
+        weight /= CVResponse;
+      }
+
+      resp.back().responses.push_back(weight);
+    }
+  } else {
+
+    bool UsedADial = false;
+    if (pidx_BeRPA_A != kParamUnhandled<size_t>) {
+      resp.push_back({md[pidx_BeRPA_A].systParamId, {}});
+      for (double av : AVariations) {
+        double weight =
+            GetBeRPAWeight(e2i(simb_mode_copy::kQE), Q2, av, BCV, DCV, ECV);
+        if (!ApplyCV) {
+          weight /= CVResponse;
+        }
+        resp.back().responses.push_back(weight);
+      }
+      UsedADial = true;
+    }
+    if (pidx_BeRPA_B != kParamUnhandled<size_t>) {
+      resp.push_back({md[pidx_BeRPA_B].systParamId, {}});
+      for (double bv : BVariations) {
+        double weight =
+            GetBeRPAWeight(e2i(simb_mode_copy::kQE), Q2, ACV, bv, DCV, ECV);
+        if (!ApplyCV || UsedADial) {
+          weight /= CVResponse;
+        }
+        resp.back().responses.push_back(weight);
+      }
+      UsedADial = true;
+    }
+    if (pidx_BeRPA_D != kParamUnhandled<size_t>) {
+      resp.push_back({md[pidx_BeRPA_D].systParamId, {}});
+      for (double dv : DVariations) {
+        double weight =
+            GetBeRPAWeight(e2i(simb_mode_copy::kQE), Q2, ACV, BCV, dv, ECV);
+        if (!ApplyCV || UsedADial) {
+          weight /= CVResponse;
+        }
+        resp.back().responses.push_back(weight);
+      }
+      UsedADial = true;
+    }
+    if (pidx_BeRPA_E != kParamUnhandled<size_t>) {
+      resp.push_back({md[pidx_BeRPA_E].systParamId, {}});
+      for (double eval : EVariations) {
+        double weight =
+            GetBeRPAWeight(e2i(simb_mode_copy::kQE), Q2, ACV, BCV, DCV, eval);
+        if (!ApplyCV || UsedADial) {
+          weight /= CVResponse;
+        }
+        resp.back().responses.push_back(weight);
+      }
+    }
+  }
+
+  if (fill_valid_tree) {
+
+    int Pdgnu = ISLep->Pdg();
+
+    NEUTMode = 0;
+    if (ev.Summary()->ProcInfo().IsMEC() &&
+        ev.Summary()->ProcInfo().IsWeakCC()) {
+      NEUTMode = (Pdgnu > 0) ? 2 : -2;
+    } else {
+      NEUTMode = genie::utils::ghep::NeutReactionCode(&ev);
+    }
+
+    Enu = ISLepP4.E();
+    weight = 1;
+
+    for (auto const &eur : resp) {
+      weight *= eur.responses[3];
+    }
+
+    valid_tree->Fill();
+  }
+
+  return resp;
+}
+std::string BeRPAWeight::AsString() { return "BeRPAWeight"; }
+
+void BeRPAWeight::InitValidTree() {
+  valid_file = new TFile("BeRPAWeight_valid.root", "RECREATE");
+  valid_tree = new TTree("valid_tree", "");
+
+  valid_tree->Branch("NEUTMode", &NEUTMode);
+  valid_tree->Branch("Enu", &Enu);
+  valid_tree->Branch("Q2", &Q2);
+  valid_tree->Branch("weight", &weight);
+}
+
+BeRPAWeight::~BeRPAWeight() {
+  if (valid_file) {
+    valid_tree->SetDirectory(valid_file);
+    valid_file->Write();
+    valid_file->Close();
+    delete valid_file;
+  }
+}

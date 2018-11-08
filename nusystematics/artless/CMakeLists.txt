@@ -141,6 +141,10 @@ SET(SP_IMPLFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeightParamConfig.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiTemplate_tool.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAq0q3Weighting_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/NOvAStyleNonResPionNorm_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/BeRPAWeight_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MiscInteractionSysts_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAE2p2h_tool.cc
 )
 
 SET(SP_HDRFILES
@@ -148,6 +152,10 @@ SET(SP_HDRFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiTemplate_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAq0q3Weighting_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEResponseParameterAssociation.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/NOvAStyleNonResPionNorm_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/BeRPAWeight_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MiscInteractionSysts_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAE2p2h_tool.hh
 )
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
@@ -248,6 +256,19 @@ target_link_libraries(DumpConfiguredTweaksNuSyst ${ROOT_LIBS})
 
 INSTALL(TARGETS DumpConfiguredTweaksNuSyst DESTINATION bin)
 
+####### DumpConfiguredTweaksNuSyst app
+add_executable(BindingEnergyFlatTreeMaker ${CMAKE_SOURCE_DIR}/nusystematics/inputgenerationtools/BindingEnergyFlatTreeMaker.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(BindingEnergyFlatTreeMaker systematicstools)
+endif()
+set_target_properties(BindingEnergyFlatTreeMaker PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(BindingEnergyFlatTreeMaker nusystematics_systproviders)
+target_link_libraries(BindingEnergyFlatTreeMaker ${SYSTTOOLS_LIBS})
+target_link_libraries(BindingEnergyFlatTreeMaker ${GENIE_LIBS})
+target_link_libraries(BindingEnergyFlatTreeMaker ${ROOT_LIBS})
+
+INSTALL(TARGETS BindingEnergyFlatTreeMaker DESTINATION bin)
 
 ####### interface
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/interface/IGENIESystProvider_tool.hh DESTINATION include/nusystematics/interface)

@@ -1,7 +1,7 @@
 #ifndef nusystematics_RESPONSE_CALCULATORS_BERPA_HH_SEEN
 #define nusystematics_RESPONSE_CALCULATORS_BERPA_HH_SEEN
 
-#include "nusystematics/utility/enumclas2int.hxx"
+#include "nusystematics/utility/enumclass2int.hh"
 #include "nusystematics/utility/simbUtility.hh"
 
 #include <cmath>
@@ -30,14 +30,38 @@ static double const U_central[] = {1.2, 0};
 
 } // namespace BeRPA_consts
 
+inline double
+EvalBeRPA(double Q2_GeV2,
+          double A = BeRPA_consts::A_central[BeRPA_consts::kC12],
+          double B = BeRPA_consts::B_central[BeRPA_consts::kC12],
+          double D = BeRPA_consts::D_central[BeRPA_consts::kC12],
+          double E = BeRPA_consts::E_central[BeRPA_consts::kC12],
+          double U = BeRPA_consts::U_central[BeRPA_consts::kC12]) {
+
+  // Q2 transition; if Q2 less than U -> polynominal, otherwise exponential
+  // decay
+  if (Q2_GeV2 < U) {
+    // xprime as prescribed by C. Wilkinson
+    const double xprime = Q2_GeV2 / U;
+    const double one_minus_xprime = 1. - xprime;
+    const double C = D + U * E * (D - 1) / 3.;
+    return A * one_minus_xprime * one_minus_xprime * one_minus_xprime +
+           3 * B * one_minus_xprime * one_minus_xprime * xprime +
+           3 * C * one_minus_xprime * xprime * xprime +
+           D * xprime * xprime * xprime;
+  } else {
+    return 1 + (D - 1) * std::exp(-E * (Q2_GeV2 - U));
+  }
+}
+
 ///\brief An interface to BeRPA that accepts dial 'tweaks' away from nominal
 /// instead of absolute values.
 ///
 /// For the nominal parameter value, X_tweak = 0, for +1 sigma X_tweak = 1,
 /// etc...
-inline double GetBeRPAWeight(int mode_simb, double Q2_GeV2, double A_tweak = 0,
-                             double B_tweak = 0, double D_tweak = 0,
-                             double E_tweak = 0,
+inline double GetBeRPAWeight(int mode_simb, bool is_CC, double Q2_GeV2,
+                             double A_tweak = 0, double B_tweak = 0,
+                             double D_tweak = 0, double E_tweak = 0,
                              size_t tgtidx = BeRPA_consts::kC12) {
 
   if ((mode_simb != e2i(simb_mode_copy::kQE)) || !is_CC) {
@@ -51,38 +75,15 @@ inline double GetBeRPAWeight(int mode_simb, double Q2_GeV2, double A_tweak = 0,
                    BeRPA_consts::B_central[tgtidx] +
                        B_tweak * BeRPA_consts::B_central[tgtidx] *
                            BeRPA_consts::B_frac_uncert[tgtidx],
-                   BeRPA_consts::C_central[tgtidx] +
-                       C_tweak * BeRPA_consts::C_central[tgtidx] *
-                           BeRPA_consts::C_frac_uncert[tgtidx],
                    BeRPA_consts::D_central[tgtidx] +
                        D_tweak * BeRPA_consts::D_central[tgtidx] *
                            BeRPA_consts::D_frac_uncert[tgtidx],
+                   BeRPA_consts::E_central[tgtidx] +
+                       E_tweak * BeRPA_consts::E_central[tgtidx] *
+                           BeRPA_consts::E_frac_uncert[tgtidx],
                    BeRPA_consts::U_central[tgtidx]);
 }
 
-inline double
-EvalBeRPA(double Q2_GeV2,
-          double A = BeRPA_consts::A_central[BeRPA_consts::kC12],
-          double B = BeRPA_consts::B_central[BeRPA_consts::kC12],
-          double D = BeRPA_consts::D_central[BeRPA_consts::kC12],
-          double E = BeRPA_consts::E_central[BeRPA_consts::kC12],
-          double U = BeRPA_consts::U_central[BeRPA_consts::kC12]) {
-
-  // Q2 transition; if Q2 less than U -> polynominal, otherwise exponential
-  // decay
-  if (Q2_GeV2 < U) {
-    // xprime as prescribed by C. Wilkinson
-    const double xprime = Q2 / U;
-    const double one_minus_xprime = 1. - xprime;
-    const double C = D + U * E * (D - 1) / 3.;
-    return A * one_minus_xprime * one_minus_xprime * one_minus_xprime +
-           3 * B * one_minus_xprime * one_minus_xprime * xprime +
-           3 * C * one_minus_xprime * xprime * xprime +
-           D * xprime * xprime * xprime;
-  } else {
-    return 1 + (D - 1) * std::exp(-E * (Q2 - U));
-  }
-}
 } // namespace nusyst
 
 #endif

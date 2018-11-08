@@ -62,8 +62,8 @@ public:
                                             systtools::paramId_t);
 
   double GetMINERvARPATuneWeight(double val, double q0, double q3);
-  double GetMINERvA2p2hTuneWeight(double val, double q0, double q3,
-                                  nusyst::QELikeTarget_t QELTarget);
+  double GetMINERvA2p2hTuneEnhancement(int val, double q0, double q3,
+                                       nusyst::QELikeTarget_t QELTarget);
 
   systtools::event_unit_response_t GetEventResponse(genie::EventRecord const &);
 
@@ -76,11 +76,15 @@ private:
 
   void InitValidTree();
 
+  std::vector<double> vals_2p2hTotal, vals_2p2hCV, vals_2p2hNN, vals_2p2hnp,
+      vals_2p2hQE;
+
   bool fill_valid_tree;
   TFile *valid_file;
   TTree *valid_tree;
 
   bool parameter_per_2p2h_universe;
+  bool other_universes_relative_to_CV;
   int NEUTMode, Pdgnu, pdgfslep, QELTarget, nRPA_weights, nMEC_weights;
   double Enu, momfslep, cthetafslep, Q2, q0, q3, W;
   std::vector<double> RPA_weights;

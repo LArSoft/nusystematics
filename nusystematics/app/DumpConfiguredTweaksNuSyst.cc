@@ -22,8 +22,8 @@
 #endif
 
 #include "EVGCore/EventRecord.h"
-#include "GHEP/GHepUtils.h"
 #include "GHEP/GHepParticle.h"
+#include "GHEP/GHepUtils.h"
 #include "Messenger/Messenger.h"
 #include "Ntuple/NtpMCEventRecord.h"
 
@@ -78,6 +78,7 @@ struct TweakSummaryTree {
 
   std::vector<int> ntweaks;
   std::vector<std::vector<double>> tweak_branches;
+  std::vector<double> paramCVResponses;
   std::map<paramId_t, size_t> tweak_indices;
 
   TObjString *meta_name;
@@ -124,6 +125,7 @@ struct TweakSummaryTree {
       }
       vector_idx++;
     }
+    std::fill_n(std::back_inserter(paramCVResponses), ntweaks.size(), 1);
 
     meta_name = nullptr;
     m->Branch("name", &meta_name);
@@ -148,15 +150,24 @@ struct TweakSummaryTree {
       t->Branch(ss_twkr.str().c_str(), tweak_branches[idx].data(),
                 (ss_twkr.str() + "[" + ss_ntwk.str() + "]/D").c_str());
 
+      std::stringstream ss_twkcv("");
+      ss_twkcv << "paramCVWeight_" << hdr.prettyName;
+      t->Branch(ss_twkcv.str().c_str(), &paramCVResponses[idx],
+                (ss_twkcv.str() + "/D").c_str());
+
       *meta_name = hdr.prettyName.c_str();
       meta_n = ntweaks[idx];
-      std::copy_n(tweak_branches[idx].begin(), meta_n,
+      std::copy_n(hdr.paramVariations.begin(), meta_n,
                   meta_tweak_values.begin());
+
       m->Fill();
     }
   }
 
-  void Clear() { std::fill_n(ntweaks.begin(), ntweaks.size(), 0); }
+  void Clear() {
+    std::fill_n(ntweaks.begin(), ntweaks.size(), 0);
+    std::fill_n(paramCVResponses.begin(), ntweaks.size(), 1);
+  }
   void Add(event_unit_response_t const &eu) {
     for (ParamResponses const &resp : eu) {
       if (!tweak_indices.count(resp.pid)) {
@@ -172,6 +183,19 @@ struct TweakSummaryTree {
       ntweaks[idx] = resp.responses.size();
       std::copy_n(resp.responses.begin(), ntweaks[idx],
                   tweak_branches[idx].begin());
+    }
+  }
+  void Add(event_unit_response_cv_weight_t const &eu) {
+
+    for (ParamResponsesAndCVWeight prcw : eu) {
+      Add({{prcw.pid, prcw.responses}});
+
+      if (!tweak_indices.count(prcw.pid)) {
+        continue;
+      }
+      size_t idx = tweak_indices[prcw.pid];
+
+      paramCVResponses[idx] = prcw.CV_weight;
     }
   }
 
@@ -436,7 +460,7 @@ int main(int argc, char const *argv[]) {
 
     tst.Clear();
     for (auto &sp : syst_providers) {
-      tst.Add(sp->GetEventResponse(GenieGHep));
+      tst.Add(sp->GetEventResponseAndCVWeight(GenieGHep));
     }
     tst.Fill();
   }

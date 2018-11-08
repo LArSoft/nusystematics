@@ -18,12 +18,12 @@ inline bool IsInSharedq3q0PhaseSpace(double nu_Energy_GeV, double q0_GeV,
                                      double q3_GeV) {
 
   std::pair<double, double> q3b = Getq3Boundary(nu_Energy_GeV, q0_GeV);
-  return ((q3_GeV > q3.first) && (q3_GeV < q3.second));
+  return ((q3_GeV > q3b.first) && (q3_GeV < q3b.second));
 }
 
 inline double GetNueNumuRatioWeight(int nu_pdg, int is_CC, double nu_Energy_GeV,
                                     double q0_GeV, double q3_GeV,
-                                    double parameter_value=1) {
+                                    double parameter_value = 1) {
 
   static double const central_value = 0;
   static double const uncertainty = 1;

@@ -1,0 +1,8 @@
+#include "GENIEReWeight.Config.DUNE_TDRv0.fcl"
+#include "MINERvAq0q3Tune.Config.DUNE_TDRv0.fcl"
+#include "MKSinglePi_Template.Config.DUNE_TDRv0.fcl"
+#include "BeRPA.Config.DUNE_TDRv0.fcl"
+#include "NOvAStyleNonResPion.Config.DUNE_TDRv0.fcl"
+#include "MINERvA_E2p2h.Config.DUNE_TDRv0.fcl"
+
+syst_providers: [GENIEReWeight_Tool_Config, MINERvAq0q3Tune_Tool_Config, MKSinglePi_Template_Tool_Config, MINERvA_E2p2h_Config, NOvAStyleNonResPionNormConfig, BeRPA_Config]

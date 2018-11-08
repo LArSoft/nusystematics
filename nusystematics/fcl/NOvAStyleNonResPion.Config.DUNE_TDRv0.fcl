@@ -1,0 +1,65 @@
+NOvAStyleNonResPionNormConfig: {
+  tool_type: "NOvAStyleNonResPionNorm"
+  instance_name: "DUNE_TDR_FakeData"
+
+  # Tie NR_nu_p_CC_1Pi_central_value and NR_nu_n_CC_1Pi_central_value together as in arxiv:1601.01888
+  NR_nu_np_CC_1Pi_central_value: -1.14
+  NR_nu_np_CC_1Pi_variation_descriptor: "(-1.2,-1.08,0.02)"
+
+  NR_nu_p_NC_1Pi_central_value: 0
+  NR_nu_p_NC_1Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_NC_1Pi_central_value: 0
+  NR_nu_n_NC_1Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nubar_p_CC_1Pi_central_value: 0
+  NR_nubar_p_CC_1Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_CC_1Pi_central_value: 0
+  NR_nubar_n_CC_1Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nubar_p_NC_1Pi_central_value: 0
+  NR_nubar_p_NC_1Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_NC_1Pi_central_value: 0
+  NR_nubar_n_NC_1Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nu_p_CC_2Pi_central_value: 0
+  NR_nu_p_CC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_CC_2Pi_central_value: 0
+  NR_nu_n_CC_2Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nu_p_NC_2Pi_central_value: 0
+  NR_nu_p_NC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_NC_2Pi_central_value: 0
+  NR_nu_n_NC_2Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nubar_p_CC_2Pi_central_value: 0
+  NR_nubar_p_CC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_CC_2Pi_central_value: 0
+  NR_nubar_n_CC_2Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nubar_p_NC_2Pi_central_value: 0
+  NR_nubar_p_NC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_NC_2Pi_central_value: 0
+  NR_nubar_n_NC_2Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nu_p_CC_3Pi_central_value: 0
+  NR_nu_p_CC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_CC_3Pi_central_value: 0
+  NR_nu_n_CC_3Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nu_p_NC_3Pi_central_value: 0
+  NR_nu_p_NC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_NC_3Pi_central_value: 0
+  NR_nu_n_NC_3Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nubar_p_CC_3Pi_central_value: 0
+  NR_nubar_p_CC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_CC_3Pi_central_value: 0
+  NR_nubar_n_CC_3Pi_variation_descriptor: "(-3,3,1)"
+
+  NR_nubar_p_NC_3Pi_central_value: 0
+  NR_nubar_p_NC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_NC_3Pi_central_value: 0
+  NR_nubar_n_NC_3Pi_variation_descriptor: "(-3,3,1)"
+
+}
+syst_providers: [NOvAStyleNonResPionNormConfig]

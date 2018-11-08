@@ -1,5 +1,7 @@
 #include "nusystematics/systproviders/MKSinglePiTemplate_tool.hh"
 
+#include "systematicstools/utility/FHiCLSystParamHeaderUtility.hh"
+
 #include "nusystematics/utility/GENIEUtils.hh"
 #include "nusystematics/utility/exceptions.hh"
 
@@ -37,13 +39,12 @@ SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
 
   SystMetaData smd;
 
-  SystParamHeader resp;
-  resp.prettyName = "MKSPP_Template_response";
-  resp.systParamId = firstId++;
-
-  resp.centralParamValue = 1;
-  resp.isCorrection = true;
-  smd.push_back(resp);
+  systtools::SystParamHeader phdr;
+  if (ParseFHiCLSimpleToolConfigurationParameter(cfg, "MKSPP_ReWeight", phdr,
+                                                 firstId)) {
+    phdr.systParamId = firstId++;
+    smd.push_back(phdr);
+  }
 
   if (!cfg.has_key("MKSPP_Template_input_manifest") ||
       !cfg.is_key_to_table("MKSPP_Template_input_manifest")) {
@@ -69,16 +70,6 @@ SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
       continue;
     }
 
-    SystParamHeader channel;
-    channel.prettyName = std::string("MKSPP_Template_") + ch;
-    channel.systParamId = firstId++;
-
-    channel.centralParamValue = 1;
-    channel.isCorrection = true;
-
-    channel.isResponselessParam = true;
-    channel.responseParamId = resp.systParamId;
-    smd.push_back(channel);
     NChannels++;
   }
 
@@ -101,9 +92,6 @@ SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
   Q2_or_q0_is_x = cfg.get<bool>("Q2_or_q0_is_x", false);
   tool_options.put("Q2_or_q0_is_x", Q2_or_q0_is_x);
 
-  weightGENIENonRes = cfg.get<bool>("weightGENIENonRes", true);
-  tool_options.put("weightGENIENonRes", weightGENIENonRes);
-
   return smd;
 }
 
@@ -113,10 +101,10 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
   genie::Messenger::Instance()->SetPrioritiesFromXmlFile(
       "Messenger_whisper.xml");
 
-  if (!HasParam(GetSystMetaData(), "MKSPP_Template_response")) {
+  if (!HasParam(GetSystMetaData(), "MKSPP_ReWeight")) {
     throw incorrectly_configured()
         << "[ERROR]: Expected to find parameter named "
-        << std::quoted("MKSPP_Template_response");
+        << std::quoted("MKSPP_ReWeight");
   }
 
   if (!tool_options.has_key("MKSPP_Template_input_manifest")) {
@@ -133,10 +121,7 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
   fhicl::ParameterSet const &templateManifest =
       tool_options.get<fhicl::ParameterSet>("MKSPP_Template_input_manifest");
 
-  ResponseParameterId =
-      GetParamId(GetSystMetaData(), "MKSPP_Template_response");
-
-  SystParamHeader hdr = GetParam(GetSystMetaData(), ResponseParameterId);
+  ResponseParameterId = GetParamId(GetSystMetaData(), "MKSPP_ReWeight");
 
   for (channel_id const &ch :
        std::vector<channel_id>{{{"NumuPPiPlus", genie::kSpp_vp_cc_10100},
@@ -147,21 +132,18 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
                                 {"NumuBNPi0", genie::kSpp_vbp_cc_01010},
                                 {"NumuBPPiMinus", genie::kSpp_vbp_cc_10001}}}) {
 
-    if (HasParam(GetSystMetaData(), std::string("MKSPP_Template_") + ch.name)) {
-      systtools::paramId_t pid = GetParamId(
-          GetSystMetaData(), std::string("MKSPP_Template_") + ch.name);
-      ChannelParameterMapping.emplace(
-          ch.channel,
-          paramTemplateReweighter{
-              pid, std::make_unique<MKSinglePiTemplate_ReWeight>(
-                       templateManifest.get<fhicl::ParameterSet>(ch.name))});
+    if (!templateManifest.has_key(ch.name)) {
+      continue;
     }
+
+    ChannelParameterMapping.emplace(
+        ch.channel, std::make_unique<MKSinglePiTemplate_ReWeight>(
+                        templateManifest.get<fhicl::ParameterSet>(ch.name)));
   }
 
   fill_valid_tree = tool_options.get("fill_valid_tree", false);
   use_Q2W_templates = tool_options.get("use_Q2W_templates", true);
   Q2_or_q0_is_x = tool_options.get("Q2_or_q0_is_x", true);
-  weightGENIENonRes = tool_options.get("weightGENIENonRes", true);
 
   if (fill_valid_tree) {
     InitValidTree();
@@ -178,13 +160,17 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
   if (!ev.Summary()->ProcInfo().IsWeakCC()) {
     return resp;
   }
+
   if (!(ev.Summary()->ProcInfo().IsResonant() ||
         ev.Summary()->ProcInfo().IsDeepInelastic())) {
     return resp;
   }
+
   if (ev.Summary()->Kine().W(true) > 1.7) {
     return resp;
   }
+
+  SystParamHeader const &hdr = GetParam(GetSystMetaData(), ResponseParameterId);
 
   genie::SppChannel_t chan = genie::kSppNull;
 
@@ -215,84 +201,14 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
 
   TLorentzVector emTransfer = (ISLepP4 - FSLepP4);
 
-  double wght = 1;
+  if (ev.Summary()->ProcInfo().IsResonant()) {
 
-  chan = SPPChannelFromGHep(ev);
-  if (ev.Summary()->ProcInfo().IsResonant() || weightGENIENonRes) {
+    chan = SPPChannelFromGHep(ev);
 
     if ((chan == genie::kSppNull) ||
         (ChannelParameterMapping.find(chan) == ChannelParameterMapping.end())) {
       return resp;
     }
-
-#ifdef DEBUG_MKSINGLEPI
-    int NEUTCh = genie::utils::ghep::NeutReactionCode(&ev);
-
-    int NPi0 = 0, NPip = 0, NP = 0, NN = 0;
-
-    bool nuclear_target = ev.Summary()->InitState().Tgt().IsNucleus();
-
-    TIter event_iter(&ev);
-    genie::GHepParticle *p = 0;
-
-    while ((p = dynamic_cast<genie::GHepParticle *>(event_iter.Next()))) {
-      genie::GHepStatus_t ghep_ist = (genie::GHepStatus_t)p->Status();
-      int ghep_pdgc = p->Pdg();
-      int ghep_fm = p->FirstMother();
-      int ghep_fmpdgc = (ghep_fm == -1) ? 0 : ev.Particle(ghep_fm)->Pdg();
-
-      // For nuclear targets use hadrons marked as 'hadron in the nucleus'
-      // which are the ones passed in the intranuclear rescattering
-      // For free nucleon targets use particles marked as 'final state'
-      // but make an exception for decayed pi0's,eta's (count them and not their
-      // daughters)
-
-      bool decayed =
-          (ghep_ist == genie::kIStDecayedState &&
-           (ghep_pdgc == genie::kPdgPi0 || ghep_pdgc == genie::kPdgEta));
-      bool parent_included =
-          (ghep_fmpdgc == genie::kPdgPi0 || ghep_fmpdgc == genie::kPdgEta);
-
-      bool count_it =
-          (nuclear_target && ghep_ist == genie::kIStHadronInTheNucleus) ||
-          (!nuclear_target && decayed) ||
-          (!nuclear_target && ghep_ist == genie::kIStStableFinalState &&
-           !parent_included);
-
-      if (!count_it)
-        continue;
-      if (ghep_pdgc == genie::kPdgPiP) {
-        NPip++; // pi+
-      } else if (ghep_pdgc == genie::kPdgPi0) {
-        NPi0++; // pi0NPim = 0
-      } else if (ghep_pdgc == genie::kPdgProton) {
-        NP++; // pi0NPim = 0
-      } else if (ghep_pdgc == genie::kPdgNeutron) {
-        NN++; // pi0NPim = 0
-      }
-    }
-
-    std::cout << "[INFO]: Event, NEUTChannel: " << NEUTCh
-              << ", GENIE SPPChannel: " << chan
-              << ", W = " << ev.Summary()->Kine().W(true)
-              << ", PID: " << ChannelParameterMapping[chan].pid
-              << ", NPi0 = " << NPi0 << ", NPip = " << NPip << ", NP = " << NP
-              << ", NN = " << NN << std::endl;
-#endif
-
-#ifdef DEBUG_MKSINGLEPI
-    std::cout << "[INFO]: Lab frame ENu: " << ISLepP4.E()
-              << ", q0: " << (ISLepP4 - FSLepP4).E()
-              << ", q3: " << (ISLepP4 - FSLepP4).Vect().Mag()
-              << ", Target Nucleon: [ " << NucP4[0] << ", " << NucP4[1] << ", "
-              << NucP4[2] << ", M: " << NucP4.M() << "]" << std::endl;
-#endif
-
-#ifdef DEBUG_MKSINGLEPI
-    std::cout << "[INFO]: Post-boost: Target Nucleon: [ " << NucP4[0] << ", "
-              << NucP4[1] << ", " << NucP4[2] << ", M: " << NucP4.M() << "]"
-              << std::endl;
-#endif
 
     std::array<double, 2> kinematics;
     kinematics[0] = use_Q2W_templates ? -emTransfer.Mag2() : emTransfer.E();
@@ -303,14 +219,20 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
       std::swap(kinematics[0], kinematics[1]);
     }
 
-    wght = ChannelParameterMapping[chan].reweighter->GetVariation(
-        1, ISLepP4.E(), kinematics);
-
-  } else { // GENIE non-resonant gets weighted to 0.
-    wght = 0;
+    resp.push_back({ResponseParameterId, {}});
+    for (double val : hdr.paramVariations) {
+      resp.back().responses.push_back(
+          ChannelParameterMapping[chan]->GetVariation(val, ISLepP4.E(),
+                                                      kinematics));
+    }
+  } else { // Non-resonant background has to die off as MK is turned on, as the
+           // MK prediction includes the coupled background channels
+    resp.push_back({ResponseParameterId, {}});
+    for (double val : hdr.paramVariations) {
+      val = std::min(fabs(val), 1.0);
+      resp.back().responses.push_back(1 - val);
+    }
   }
-
-  resp.push_back({ResponseParameterId, std::vector<double>{wght}});
 
   if (fill_valid_tree) {
 
@@ -355,7 +277,7 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
       }
     }
 
-    weight = wght;
+    weight = resp.back().responses.back();
 
     Enu = ISLepP4.E();
     Q2 = -emTransfer.Mag2();
@@ -367,18 +289,6 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
     kinematics[0] = use_Q2W_templates ? -emTransfer.Mag2() : emTransfer.E();
     kinematics[1] = use_Q2W_templates ? ev.Summary()->Kine().W(true)
                                       : emTransfer.Vect().Mag();
-
-    if (Q2_or_q0_is_x) {
-      std::swap(kinematics[0], kinematics[1]);
-    }
-
-    if (chan == genie::kSppNull) {
-      OutOfReWeightPS = -1;
-    } else {
-      OutOfReWeightPS = (ChannelParameterMapping[chan]
-                             .reweighter->GetBin(ISLepP4.E(), kinematics)
-                             .second == TemplateResponseQ0Q3::kBinOutsideRange);
-    }
 
     valid_tree->Fill();
   }
@@ -410,7 +320,6 @@ void MKSinglePiTemplate::InitValidTree() {
   valid_tree->Branch("q0_nuc_rest_frame", &q0_nuc_rest_frame);
   valid_tree->Branch("q3_nuc_rest_frame", &q3_nuc_rest_frame);
   valid_tree->Branch("weight", &weight);
-  valid_tree->Branch("OutOfReWeightPS", &OutOfReWeightPS);
   valid_tree->Branch("IsDIS", &IsDIS);
 }
 
