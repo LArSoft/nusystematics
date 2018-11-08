@@ -40,6 +40,25 @@ inline double GetMINERvASPPLowQ2SuppressionWeight(int mode_simb, int is_CC,
                                                   double Q2_GeV,
                                                   double parameter_value = 1) {
 
+  // Fit parameters for FrInel+Low-Q2 tune were
+  // MA_RES = 0.93 +/- 0.05
+  // NormRes = 116 +/- 7
+  // NonRes1pi = 46 +/- 4
+  // NonRes2pi = 120 +/- 32
+  // ThetaPi = 1.0 (at limit)
+  // FrInel = 132 +/- 27
+  // R1 = 0.37 +/- 0.09
+  // R2 = 0.60 +/- 0.16
+  //
+  // Fit parameters for FrAbs+Low-Q2 tune
+  // MA_RES = 0.92 +/- 0.02
+  // NormRes = 116 +/- 3
+  // NonRes1pi = 46 +/- 4
+  // NonRes2pi = 99 +/- 31
+  // ThetaPi = 1.0 (at limit)
+  // FrAbs = 48 +/- 21
+  // R1 = 0.32 +/- 0.06
+  // R2 = 0.5 (limit)
   static double const Q2_Max = 0.7;
   static double const Q2_t1 = 0;
   static double const Q2_t2 = 0.35;
