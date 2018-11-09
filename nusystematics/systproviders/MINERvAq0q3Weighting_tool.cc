@@ -362,7 +362,6 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_np]];
 
     resp.push_back({hdr.systParamId, {}});
-    resp.push_back({hdr.systParamId, {}});
     for (double v : vals_2p2hnp) {
       double tune_ench = v * GetMINERvA2p2hTuneEnhancement(3, q0q3[0], q0q3[1],
                                                            GetQELikeTarget(ev));
@@ -377,7 +376,6 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_QE]];
 
-    resp.push_back({hdr.systParamId, {}});
     resp.push_back({hdr.systParamId, {}});
     for (double v : vals_2p2hQE) {
       double tune_ench = v * GetMINERvA2p2hTuneEnhancement(4, q0q3[0], q0q3[1],

@@ -5,15 +5,10 @@ EbLepMomShift_Tool_Config: {
   EbFSLepMomShift_variation_descriptor: "[0,0,0,1,0,0,0]"
 
   EbLepMomShift_Template_input_manifest: {
-    InputTemplates: [
-      {
-        parameter_name: MINERvATune_RPA
-        input_file: "nusyst_inputs/V00_02/EbLepMomShift/EbInputs.root"
-        inputs: [
-          { value: 1
-            hist_name: "22.1MeVEnu_ctheta_p_pyx_difffromnom"
-          }
-        ]
+    input_file: "nusyst_inputs/V00_02/EbLepMomShift/EbInputs.root"
+    inputs: [
+      { value: 1
+        input_hist: "22.1MeVEnu_ctheta_p_pyx_difffromnom"
       }
     ]
   }

@@ -10,6 +10,7 @@
 #include "nusystematics/systproviders/BeRPAWeight_tool.hh"
 #include "nusystematics/systproviders/MINERvAE2p2h_tool.hh"
 #include "nusystematics/systproviders/EbLepMomShift_tool.hh"
+#include "nusystematics/systproviders/MiscInteractionSysts_tool.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 
@@ -31,6 +32,8 @@ make_instance(fhicl::ParameterSet const &paramset) {
     return std::make_unique<MINERvAq0q3Weighting>(paramset);
   } else if (tool_type == "NOvAStyleNonResPionNorm") {
     return std::make_unique<NOvAStyleNonResPionNorm>(paramset);
+  } else if (tool_type == "MiscInteractionSysts") {
+    return std::make_unique<MiscInteractionSysts>(paramset);
   } else if (tool_type == "BeRPAWeight") {
     return std::make_unique<BeRPAWeight>(paramset);
   } else if (tool_type == "MINERvAE2p2h") {

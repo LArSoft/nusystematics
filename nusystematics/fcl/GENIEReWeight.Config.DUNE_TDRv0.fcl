@@ -52,15 +52,23 @@
     ################################## RES Parameters
     ################# CCRES
 
-    CCRESIsShapeOnly: true
+    ## SHAPE-ONLY + RESNORM
+    ## Ideal for TDR, but throwing GSL errors at the moment
+    # CCRESIsShapeOnly: true
+    #
+    # NormCCRES_central_value: 0.75
+    # NormCCRES_variation_descriptor: "[-0.7,0.05,0.4,0.75,1.1,1.45,1.8]"
+    #
+    # # Genie v2.12.10 default CV is 1.12 GeV with 10% uncert on MaCCRESShape
+    # # Want to set to 0.94+/-0.05, as in arxiv:1601.01888
+    # MaCCRES_central_value: -1.61
+    # MaCCRES_variation_descriptor: "[-2.95,-2.5,-2.05,-1.61,-1.16,-0.71,-0.27]"
 
-    NormCCRES_central_value: 0.75
-    NormCCRES_variation_descriptor: "[-0.7,0.05,0.4,0.75,1.1,1.45,1.8]"
-
-    #Genie v2.12.10 default CV is 1.12 GeV with 10% uncert on MaCCRESShape
-    # Want to set to 0.94+/-0.05, as in arxiv:1601.01888
-    MaCCRES_central_value: -1.61
-    MaCCRES_variation_descriptor: "[-2.95,-2.5,-2.05,-1.61,-1.16,-0.71,-0.27]"
+    ## MARES full
+    # # Genie v2.12.10 default CV is 1.12 GeV with 20% uncert on MaCCRES
+    # # Want to set to 1.04+/-0.02, as in arxiv:1601.01888
+    MaCCRES_central_value: -0.36
+    MaCCRES_variation_descriptor: "[-0.62,-0.54,-0.45,-0.36,-0.27,-0.18,-0.09]"
 
     # MvCCRES_central_value: 0
     MvCCRES_variation_descriptor: "(-3,3,1)"
@@ -172,8 +180,9 @@
 
     ################################## FZone Parameters
 
+    # Disabled because it cannot keep itself with decorum.
     # FormZone_central_value: 0
-    FormZone_variation_descriptor: "(-3,3,1)"
+    # FormZone_variation_descriptor: "(-3,3,1)"
 }
 
 syst_providers: [GENIEReWeight_Tool_Config]

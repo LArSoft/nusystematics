@@ -88,6 +88,9 @@ SystMetaData BeRPAWeight::BuildSystMetaData(fhicl::ParameterSet const &ps,
 bool BeRPAWeight::SetupResponseCalculator(
     fhicl::ParameterSet const &tool_options) {
 
+  ignore_parameter_dependence =
+      tool_options.get<bool>("ignore_parameter_dependence", false);
+
   SystMetaData const &md = GetSystMetaData();
 
   if (HasParam(md, "BeRPA_Response")) {

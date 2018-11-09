@@ -30,6 +30,8 @@ public:
       : ISystProviderTool(ps), fGENIEModuleLabel(ps.get<std::string>(
                                    "genie_module_label", "generator")) {}
 
+NEW_SYSTTOOLS_EXCEPT(invalid_response);
+
 #ifndef NO_ART
   std::unique_ptr<systtools::EventResponse>
   GetEventResponse(art::Event const &ev) {
@@ -76,6 +78,14 @@ public:
       // Get CV resp
       systtools::SystParamHeader const &hdr =
           GetParam(GetSystMetaData(), pr.pid);
+
+      if (pr.responses.size() != hdr.paramVariations.size()) {
+        throw invalid_response()
+            << "[ERROR]: Parameter: " << hdr.prettyName << ", with "
+            << hdr.paramVariations.size() << " parameter variations, returned "
+            << pr.responses.size() << " responses.";
+      }
+
       double CVResp = hdr.isWeightSystematicVariation ? 1 : 0;
       size_t NVars = hdr.paramVariations.size();
 

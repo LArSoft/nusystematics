@@ -89,13 +89,16 @@ bool MINERvAE2p2h::SetupResponseCalculator(
 
   SystMetaData const &md = GetSystMetaData();
 
+  ignore_parameter_dependence =
+      tool_options.get<bool>("ignore_parameter_dependence", false);
+
   if (HasParam(md, "E2p2hResponse_nu")) {
     pidx_E2p2hResponse_nu = GetParamIndex(md, "E2p2hResponse_nu");
   }
 
   A_nu_CV = 0;
-  if (HasParam(md, "E2p2hA_nu")) {
-    pidx_E2p2hA_nu = GetParamIndex(md, "E2p2hA_nu");
+  if (HasParam(md, "E2p2h_A_nu")) {
+    pidx_E2p2hA_nu = GetParamIndex(md, "E2p2h_A_nu");
     A_nu_CV = md[pidx_E2p2hA_nu].centralParamValue;
     if (A_nu_CV == kDefaultDouble) {
       A_nu_CV = 0;
@@ -105,8 +108,8 @@ bool MINERvAE2p2h::SetupResponseCalculator(
               std::back_inserter(A_nu_Variations));
   }
   B_nu_CV = 0;
-  if (HasParam(md, "E2p2hB_nu")) {
-    pidx_E2p2hB_nu = GetParamIndex(md, "E2p2hB_nu");
+  if (HasParam(md, "E2p2h_B_nu")) {
+    pidx_E2p2hB_nu = GetParamIndex(md, "E2p2h_B_nu");
     B_nu_CV = md[pidx_E2p2hB_nu].centralParamValue;
     if (B_nu_CV == kDefaultDouble) {
       B_nu_CV = 0;
@@ -120,8 +123,8 @@ bool MINERvAE2p2h::SetupResponseCalculator(
     pidx_E2p2hResponse_nubar = GetParamIndex(md, "E2p2hResponse_nubar");
   }
   A_nubar_CV = 0;
-  if (HasParam(md, "E2p2hA_nubar")) {
-    pidx_E2p2hA_nubar = GetParamIndex(md, "E2p2hA_nubar");
+  if (HasParam(md, "E2p2h_A_nubar")) {
+    pidx_E2p2hA_nubar = GetParamIndex(md, "E2p2h_A_nubar");
     A_nubar_CV = md[pidx_E2p2hA_nubar].centralParamValue;
     if (A_nubar_CV == kDefaultDouble) {
       A_nubar_CV = 0;
@@ -131,8 +134,8 @@ bool MINERvAE2p2h::SetupResponseCalculator(
               std::back_inserter(A_nubar_Variations));
   }
   B_nubar_CV = 0;
-  if (HasParam(md, "E2p2hB_nubar")) {
-    pidx_E2p2hB_nubar = GetParamIndex(md, "E2p2hB_nubar");
+  if (HasParam(md, "E2p2h_B_nubar")) {
+    pidx_E2p2hB_nubar = GetParamIndex(md, "E2p2h_B_nubar");
     B_nubar_CV = md[pidx_E2p2hB_nubar].centralParamValue;
     if (B_nubar_CV == kDefaultDouble) {
       B_nubar_CV = 0;

@@ -19,8 +19,12 @@ class MKSinglePiTemplate : public nusyst::IGENIESystProvider_tool {
 
   systtools::paramId_t ResponseParameterId;
 
-  std::map<genie::SppChannel_t,
-           std::unique_ptr<nusyst::MKSinglePiTemplate_ReWeight>>
+  struct TemplateHelper {
+    std::unique_ptr<nusyst::MKSinglePiTemplate_ReWeight> Template;
+    bool ZeroIsValid;
+  };
+
+  std::map<genie::SppChannel_t, TemplateHelper>
       ChannelParameterMapping;
 
 public:

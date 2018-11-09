@@ -135,9 +135,12 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
       continue;
     }
 
-    ChannelParameterMapping.emplace(
-        ch.channel, std::make_unique<MKSinglePiTemplate_ReWeight>(
-                        templateManifest.get<fhicl::ParameterSet>(ch.name)));
+    TemplateHelper th;
+    th.Template = std::make_unique<MKSinglePiTemplate_ReWeight>(
+        templateManifest.get<fhicl::ParameterSet>(ch.name));
+    th.ZeroIsValid = th.Template->IsValidVariation(0);
+
+    ChannelParameterMapping.emplace(ch.channel, std::move(th));
   }
 
   fill_valid_tree = tool_options.get("fill_valid_tree", false);
@@ -221,13 +224,13 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
     resp.push_back({ResponseParameterId, {}});
     for (double val : hdr.paramVariations) {
 
-      if ((val == 0) && !ChannelParameterMapping[chan]->IsValidVariation(0)) {
+      if ((val == 0) && !ChannelParameterMapping[chan].ZeroIsValid) {
         resp.back().responses.push_back(1);
+      } else {
+        resp.back().responses.push_back(
+            ChannelParameterMapping[chan].Template->GetVariation(
+                val, ISLepP4.E(), kinematics));
       }
-
-      resp.back().responses.push_back(
-          ChannelParameterMapping[chan]->GetVariation(val, ISLepP4.E(),
-                                                      kinematics));
     }
   } else { // Non-resonant background has to die off as MK is turned on, as the
            // MK prediction includes the coupled background channels

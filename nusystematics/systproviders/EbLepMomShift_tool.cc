@@ -116,9 +116,10 @@ EbLepMomShift::GetEventResponse(genie::EventRecord const &ev) {
     for (double v : md[ResponseParameterIdx].paramVariations) {
       if ((v == 0) && !EbTemplate.IsValidVariation(0)) {
         resp.back().responses.push_back(0);
+      } else {
+        resp.back().responses.push_back(
+            EbTemplate.GetVariation(1, {Enu, FSLep_ctheta}));
       }
-      resp.back().responses.push_back(
-          EbTemplate.GetVariation(1, {Enu, FSLep_ctheta}));
     }
   }
 
@@ -135,7 +136,7 @@ EbLepMomShift::GetEventResponse(genie::EventRecord const &ev) {
     }
 
     FSLep_pmu = FSLepP4.Vect().Mag();
-    shift = resp.front().responses[1];
+    shift = resp.front().responses[3];
 
     BinOutsideRange = (bin == kBinOutsideRange);
 
