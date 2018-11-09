@@ -51,7 +51,7 @@ simple_plugin(GENIEReWeight tool
     ${GENIE_EV_LIBS}
  )
 
-SET(TOOLS MKSinglePiTemplate BeRPAWeight MiscInteractionSysts NOvAStyleNonResPionNorm MINERvAE2p2h)
+SET(TOOLS MKSinglePiTemplate BeRPAWeight MiscInteractionSysts NOvAStyleNonResPionNorm MINERvAE2p2h EbLepMomShift)
 foreach(tool ${TOOLS})
   simple_plugin(${tool} tool
     systematicstools_utility

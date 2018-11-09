@@ -109,13 +109,12 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
 
   if (!tool_options.has_key("MKSPP_Template_input_manifest")) {
     throw systtools::invalid_ToolOptions()
-        << "[ERROR]: MKSPP_Template_response parameter exists in the "
-           "SystMetaData, "
-           "but no MKSPP_Template_input_manifest key can be found on the "
+        << "[ERROR]: MKSPP_ReWeight parameter exists in the SystMetaData, but "
+           "no MKSPP_Template_input_manifest key can be found on the "
            "tool_options table. This reweighting requires input histograms "
            "that must be specified. This should have been caught by  "
-           "MKSinglePiTemplate::BuildSystMetaData, but wasn't, this is a "
-           "bug, please report to the maintiner.";
+           "MKSinglePiTemplate::BuildSystMetaData, but wasn't, this is a bug, "
+           "please report to the maintiner.";
   }
 
   fhicl::ParameterSet const &templateManifest =
@@ -221,6 +220,11 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
 
     resp.push_back({ResponseParameterId, {}});
     for (double val : hdr.paramVariations) {
+
+      if ((val == 0) && !ChannelParameterMapping[chan]->IsValidVariation(0)) {
+        resp.back().responses.push_back(1);
+      }
+
       resp.back().responses.push_back(
           ChannelParameterMapping[chan]->GetVariation(val, ISLepP4.E(),
                                                       kinematics));

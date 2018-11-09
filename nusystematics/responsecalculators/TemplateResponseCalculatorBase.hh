@@ -23,65 +23,6 @@
 // #define TemplateResponseCalculatorBase_DEBUG
 
 namespace nusyst {
-template <size_t N> struct THType {};
-template <> struct THType<1> {
-  typedef TH1 type;
-  static size_t GetNbins(type const *H, bool inc_flow = false) {
-    return inc_flow ? (H->GetNbinsX() + 2) : H->GetNbinsX();
-  }
-  static size_t GetNbins(std::unique_ptr<type> const &H,
-                         bool inc_flow = false) {
-    return GetNbins(H.get(), inc_flow);
-  }
-  static bool IsFlowBin(type const *H, Int_t bin) {
-    return (!bin || (bin > H->GetXaxis()->GetNbins()));
-  }
-  static bool IsFlowBin(std::unique_ptr<type> const &H, Int_t bin) {
-    return IsFlowBin(H.get(), bin);
-  }
-};
-template <> struct THType<2> {
-  typedef TH2 type;
-  static size_t GetNbins(type const *H, bool inc_flow = false) {
-    return inc_flow ? ((H->GetNbinsX() + 2) * (H->GetNbinsY() + 2))
-                    : (H->GetNbinsX() * H->GetNbinsY());
-  }
-  static size_t GetNbins(std::unique_ptr<type> const &H,
-                         bool inc_flow = false) {
-    return GetNbins(H.get(), inc_flow);
-  }
-  static bool IsFlowBin(type const *H, Int_t bin) {
-    Int_t xbin, ybin, zbin;
-    H->GetBinXYZ(bin, xbin, ybin, zbin);
-    return (!xbin || (xbin > H->GetXaxis()->GetNbins())) ||
-           (!ybin || (ybin > H->GetYaxis()->GetNbins()));
-  }
-  static bool IsFlowBin(std::unique_ptr<type> const &H, Int_t bin) {
-    return IsFlowBin(H.get(), bin);
-  }
-};
-template <> struct THType<3> {
-  typedef TH3 type;
-  static size_t GetNbins(type const *H, bool inc_flow = false) {
-    return inc_flow ? ((H->GetNbinsX() + 2) * (H->GetNbinsY() + 2) *
-                       (H->GetNbinsZ() + 2))
-                    : (H->GetNbinsX() * H->GetNbinsY() * H->GetNbinsZ());
-  }
-  static size_t GetNbins(std::unique_ptr<type> const &H,
-                         bool inc_flow = false) {
-    return GetNbins(H.get(), inc_flow);
-  }
-  static bool IsFlowBin(type const *H, Int_t bin) {
-    Int_t xbin, ybin, zbin;
-    H->GetBinXYZ(bin, xbin, ybin, zbin);
-    return (!xbin || (xbin > H->GetXaxis()->GetNbins())) ||
-           (!ybin || (ybin > H->GetYaxis()->GetNbins())) ||
-           (!zbin || (zbin > H->GetZaxis()->GetNbins()));
-  }
-  static bool IsFlowBin(std::unique_ptr<type> const &H, Int_t bin) {
-    return IsFlowBin(H.get(), bin);
-  }
-};
 
 NEW_SYSTTOOLS_EXCEPT(no_responses_loaded);
 NEW_SYSTTOOLS_EXCEPT(incompatible_number_of_bins);
@@ -118,11 +59,9 @@ public:
   ///  }
   void LoadInputHistograms(fhicl::ParameterSet const &ps);
 
-  typedef size_t bin_it_t;
+  typedef Int_t bin_it_t;
 
-  static bin_it_t const kBinOutsideRange;
-
-  virtual bin_it_t GetBin(std::array<double, NDims> const &) const = 0;
+  virtual bin_it_t GetBin(std::array<double, NDims> const &) const;
 
   virtual std::string GetCalculatorName() const = 0;
 
@@ -139,14 +78,8 @@ public:
                       std::array<double, NDims> const &kinematics) const;
 
   std::vector<double> GetValidVariations() const;
+  bool IsValidVariation(double val) const;
 };
-
-template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
-typename TemplateResponseCalculatorBase<NDims, Continuous,
-                               PolyResponseOrder>::bin_it_t const
-    TemplateResponseCalculatorBase<NDims, Continuous,
-                                   PolyResponseOrder>::kBinOutsideRange =
-        std::numeric_limits<bin_it_t>::max();
 
 //*********************** Implementations
 
@@ -196,6 +129,13 @@ void TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::
   if (Continuous) {
     BuildInterpolatedResponses();
   }
+}
+
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+typename TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::bin_it_t
+TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::GetBin(
+    std::array<double, NDims> const &vals) const {
+  return THType<NDims>::GetBin(BinnedResponses.begin()->second.get(), vals);
 }
 
 template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
@@ -309,23 +249,23 @@ TemplateResponseCalculatorBase<NDims, Continuous,
   return vals;
 }
 
-class TemplateResponse2DDiscrete
-    : public TemplateResponseCalculatorBase<2, false> {
-public:
-  bin_it_t GetBin(std::array<double, 2> const &kinematics) const {
-    THType<2>::type *firstHist = BinnedResponses.begin()->second.get();
-
-    Int_t XBin = firstHist->GetXaxis()->FindFixBin(kinematics[0]);
-    if (IsFlowBin(firstHist->GetXaxis(), XBin)) {
-      return kBinOutsideRange;
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+bool TemplateResponseCalculatorBase<
+    NDims, Continuous, PolyResponseOrder>::IsValidVariation(double val) const {
+  std::vector<double> const &valvar = GetValidVariations();
+  if (Continuous) {
+    return (val > valvar[0]) && (val < valvar[1]);
+  } else {
+    for (double v : valvar) {
+      if (fabs(v - val) < (std::numeric_limits<double>::epsilon() * 1E4)) {
+        return true;
+      }
     }
-    Int_t YBin = firstHist->GetYaxis()->FindFixBin(kinematics[1]);
-    if (IsFlowBin(firstHist->GetYaxis(), YBin)) {
-      return kBinOutsideRange;
-    }
-    return firstHist->GetBin(XBin, YBin);
+    return false;
   }
-};
+}
+
+typedef TemplateResponseCalculatorBase<2, false> TemplateResponse2DDiscrete;
 
 } // namespace nusyst
 

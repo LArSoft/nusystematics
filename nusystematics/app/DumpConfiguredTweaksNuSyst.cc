@@ -185,9 +185,9 @@ struct TweakSummaryTree {
                   tweak_branches[idx].begin());
     }
   }
-  void Add(event_unit_response_cv_weight_t const &eu) {
+  void Add(event_unit_response_w_cv_t const &eu) {
 
-    for (ParamResponsesAndCVWeight prcw : eu) {
+    for (VarAndCVResponse prcw : eu) {
       Add({{prcw.pid, prcw.responses}});
 
       if (!tweak_indices.count(prcw.pid)) {
@@ -195,7 +195,7 @@ struct TweakSummaryTree {
       }
       size_t idx = tweak_indices[prcw.pid];
 
-      paramCVResponses[idx] = prcw.CV_weight;
+      paramCVResponses[idx] = prcw.CV_response;
     }
   }
 
@@ -460,7 +460,7 @@ int main(int argc, char const *argv[]) {
 
     tst.Clear();
     for (auto &sp : syst_providers) {
-      tst.Add(sp->GetEventResponseAndCVWeight(GenieGHep));
+      tst.Add(sp->GetEventVariationResponseAndCVResponse(GenieGHep));
     }
     tst.Fill();
   }

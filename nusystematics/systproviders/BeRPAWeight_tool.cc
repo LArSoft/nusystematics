@@ -7,6 +7,9 @@
 
 #include "nusystematics/responsecalculators/BeRPA.hh"
 
+#include "GHEP/GHepParticle.h"
+#include "GHEP/GHepUtils.h"
+
 #ifndef NO_ART
 #include "art/Utilities/ToolMacros.h"
 #endif

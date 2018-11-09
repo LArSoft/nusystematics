@@ -1,6 +1,8 @@
 #ifndef nusystematics_RESPONSE_CALCULATORS_ENUBINNED_TEMPLATE_RESPONSE_BASE_HH_SEEN
 #define nusystematics_RESPONSE_CALCULATORS_ENUBINNED_TEMPLATE_RESPONSE_BASE_HH_SEEN
 
+#include "systematicstools/utility/ROOTUtility.hh"
+
 #include "nusystematics/responsecalculators/TemplateResponseCalculatorBase.hh"
 
 #include "systematicstools/utility/string_parsers.hh"
@@ -16,8 +18,7 @@ NEW_SYSTTOOLS_EXCEPT(non_contiguous_enu_range);
 /// how to search for bins, see MKSinglePiTemplate_ReWeight.hh for an example
 template <class TRC> class EnuBinnedTemplateResponseCalculator {
 public:
-  typedef size_t enu_bin_it_t;
-  static enu_bin_it_t const kBinOutsideRange;
+  typedef Int_t enu_bin_it_t;
 
 private:
   static std::string StringifyNumberToOneDP(double number) {
@@ -217,7 +218,8 @@ private:
     if ((enu_GeV < EnuBinning.front()) || (enu_GeV >= EnuBinning.back())) {
       return kBinOutsideRange;
     }
-    for (enu_bin_it_t bi_it = 0; bi_it < (EnuBinning.size() - 1); ++bi_it) {
+    for (enu_bin_it_t bi_it = 0; bi_it < enu_bin_it_t(EnuBinning.size() - 1);
+         ++bi_it) {
       if ((enu_GeV >= EnuBinning[bi_it]) && (enu_GeV < EnuBinning[bi_it + 1])) {
         return bi_it;
       }
@@ -235,8 +237,8 @@ public:
          std::array<double, TRC::NDimensions> const &kinematics) const {
     enu_bin_it_t ebi_it = GetEnuBin(enu_GeV);
     if (ebi_it == kBinOutsideRange) {
-      return std::pair<enu_bin_it_t, typename TRC::bin_it_t>{
-          kBinOutsideRange, TRC::kBinOutsideRange};
+      return std::pair<enu_bin_it_t, typename TRC::bin_it_t>{kBinOutsideRange,
+                                                             kBinOutsideRange};
     }
     return {ebi_it, EnuResponses[ebi_it].GetBin(kinematics)};
   }
@@ -252,12 +254,11 @@ public:
                std::array<double, TRC::NDimensions> const &kinematics) const {
     return GetVariation(val, GetBin(enu_GeV, kinematics));
   }
-};
 
-template <class TRC>
-typename EnuBinnedTemplateResponseCalculator<TRC>::enu_bin_it_t const
-    EnuBinnedTemplateResponseCalculator<TRC>::kBinOutsideRange =
-        std::numeric_limits<enu_bin_it_t>::max();
+  bool IsValidVariation(double val) {
+    return EnuResponses.front().IsValidVariation(val);
+  }
+};
 
 } // namespace nusyst
 

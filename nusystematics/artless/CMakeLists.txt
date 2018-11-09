@@ -145,6 +145,7 @@ SET(SP_IMPLFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/BeRPAWeight_tool.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MiscInteractionSysts_tool.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAE2p2h_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/EbLepMomShift_tool.cc
 )
 
 SET(SP_HDRFILES
@@ -156,6 +157,7 @@ SET(SP_HDRFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/BeRPAWeight_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MiscInteractionSysts_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAE2p2h_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/EbLepMomShift_tool.hh
 )
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)

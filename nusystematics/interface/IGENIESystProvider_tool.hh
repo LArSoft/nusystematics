@@ -17,12 +17,12 @@
 
 namespace nusyst {
 
-struct ParamResponsesAndCVWeight {
+struct VarAndCVResponse {
   systtools::paramId_t pid;
-  double CV_weight;
+  double CV_response;
   std::vector<double> responses;
 };
-typedef std::vector<ParamResponsesAndCVWeight> event_unit_response_cv_weight_t;
+typedef std::vector<VarAndCVResponse> event_unit_response_w_cv_t;
 
 class IGENIESystProvider_tool : public systtools::ISystProviderTool {
 public:
@@ -64,19 +64,19 @@ public:
   virtual systtools::event_unit_response_t
   GetEventResponse(genie::EventRecord const &) = 0;
 
-  event_unit_response_cv_weight_t
-  GetEventResponseAndCVWeight(genie::EventRecord const &GenieGHep) {
-    event_unit_response_cv_weight_t responseandCVWeights;
+  event_unit_response_w_cv_t
+  GetEventVariationResponseAndCVResponse(genie::EventRecord const &GenieGHep) {
+    event_unit_response_w_cv_t responseandCV;
 
     systtools::event_unit_response_t prov_response =
         GetEventResponse(GenieGHep);
 
     // Foreach param
     for (systtools::ParamResponses &pr : prov_response) {
-      // Get CV Weight
-      double CVWeight = 1;
+      // Get CV resp
       systtools::SystParamHeader const &hdr =
           GetParam(GetSystMetaData(), pr.pid);
+      double CVResp = hdr.isWeightSystematicVariation ? 1 : 0;
       size_t NVars = hdr.paramVariations.size();
 
       double cv_param_val = 0;
@@ -86,20 +86,24 @@ public:
       for (size_t idx = 0; idx < NVars; ++idx) {
         if (fabs(cv_param_val - hdr.paramVariations[idx]) <=
             std::numeric_limits<float>::epsilon()) {
-          CVWeight = pr.responses[idx];
+          CVResp = pr.responses[idx];
           break;
         }
       }
-      // if we didn't find it, the CVWeight stays as 1.
-
+      // if we didn't find it, the CVResp stays as 1/0 depending on whether it
+      // is a weight or not.
       for (size_t idx = 0; idx < NVars; ++idx) {
-        pr.responses[idx] /= CVWeight;
+        if (hdr.isWeightSystematicVariation) {
+          pr.responses[idx] /= CVResp;
+        } else {
+          pr.responses[idx] -= CVResp;
+        }
       }
 
-      responseandCVWeights.push_back({pr.pid, CVWeight, pr.responses});
+      responseandCV.push_back({pr.pid, CVResp, pr.responses});
     } // end for parameter response
 
-    return responseandCVWeights;
+    return responseandCV;
   }
 
   /// Calculates the response to a single parameter for a given GHep record

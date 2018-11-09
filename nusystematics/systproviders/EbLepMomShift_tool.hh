@@ -1,7 +1,9 @@
-#ifndef nusystematics_SYSTPROVIDERS_BeRPAWeight_TOOL_SEEN
-#define nusystematics_SYSTPROVIDERS_BeRPAWeight_TOOL_SEEN
+#ifndef nusystematics_SYSTPROVIDERS_EbLepMomShift_TOOL_SEEN
+#define nusystematics_SYSTPROVIDERS_EbLepMomShift_TOOL_SEEN
 
 #include "nusystematics/interface/IGENIESystProvider_tool.hh"
+
+#include "nusystematics/responsecalculators/TemplateResponseCalculatorBase.hh"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -9,10 +11,18 @@
 #include <memory>
 #include <string>
 
-class BeRPAWeight : public nusyst::IGENIESystProvider_tool {
+class EbLepMomShift : public nusyst::IGENIESystProvider_tool {
+
+  class EbTemplateResponseEnuFSLepctheta
+      : public nusyst::TemplateResponse2DDiscrete {
+  public:
+    std::string GetCalculatorName() const {
+      return "EbTemplateResponseEnuFSLepctheta";
+    }
+  };
 
 public:
-  explicit BeRPAWeight(fhicl::ParameterSet const &);
+  explicit EbLepMomShift(fhicl::ParameterSet const &);
 
   bool SetupResponseCalculator(fhicl::ParameterSet const &);
   fhicl::ParameterSet GetExtraToolOptions() { return tool_options; }
@@ -24,20 +34,14 @@ public:
 
   std::string AsString();
 
-  ~BeRPAWeight();
+  ~EbLepMomShift();
 
 private:
   fhicl::ParameterSet tool_options;
 
-  bool ApplyCV;
+  size_t ResponseParameterIdx;
 
-  bool ignore_parameter_dependence;
-
-  size_t pidx_BeRPA_Response, pidx_BeRPA_A, pidx_BeRPA_B, pidx_BeRPA_D,
-      pidx_BeRPA_E;
-  double ACV, BCV, DCV, ECV;
-
-  std::vector<double> AVariations, BVariations, DVariations, EVariations;
+  EbTemplateResponseEnuFSLepctheta EbTemplate;
 
   void InitValidTree();
 
@@ -46,7 +50,8 @@ private:
   TTree *valid_tree;
 
   int NEUTMode;
-  double Enu, Q2, weight;
+  double Enu, FSLep_pmu, FSLep_ctheta, shift;
+  bool BinOutsideRange;
 };
 
 #endif
