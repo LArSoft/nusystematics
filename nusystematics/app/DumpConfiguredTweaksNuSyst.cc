@@ -460,7 +460,7 @@ int main(int argc, char const *argv[]) {
 
     tst.Clear();
     for (auto &sp : syst_providers) {
-      tst.Add(sp->GetEventVariationResponseAndCVResponse(GenieGHep));
+      tst.Add(sp->GetEventVariationAndCVResponse(GenieGHep));
     }
     tst.Fill();
   }

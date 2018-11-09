@@ -17,20 +17,13 @@
 
 namespace nusyst {
 
-struct VarAndCVResponse {
-  systtools::paramId_t pid;
-  double CV_response;
-  std::vector<double> responses;
-};
-typedef std::vector<VarAndCVResponse> event_unit_response_w_cv_t;
-
 class IGENIESystProvider_tool : public systtools::ISystProviderTool {
 public:
   IGENIESystProvider_tool(fhicl::ParameterSet const &ps)
       : ISystProviderTool(ps), fGENIEModuleLabel(ps.get<std::string>(
                                    "genie_module_label", "generator")) {}
 
-NEW_SYSTTOOLS_EXCEPT(invalid_response);
+  NEW_SYSTTOOLS_EXCEPT(invalid_response);
 
 #ifndef NO_ART
   std::unique_ptr<systtools::EventResponse>
@@ -66,9 +59,9 @@ NEW_SYSTTOOLS_EXCEPT(invalid_response);
   virtual systtools::event_unit_response_t
   GetEventResponse(genie::EventRecord const &) = 0;
 
-  event_unit_response_w_cv_t
-  GetEventVariationResponseAndCVResponse(genie::EventRecord const &GenieGHep) {
-    event_unit_response_w_cv_t responseandCV;
+  systtools::event_unit_response_w_cv_t
+  GetEventVariationAndCVResponse(genie::EventRecord const &GenieGHep) {
+    systtools::event_unit_response_w_cv_t responseandCV;
 
     systtools::event_unit_response_t prov_response =
         GetEventResponse(GenieGHep);

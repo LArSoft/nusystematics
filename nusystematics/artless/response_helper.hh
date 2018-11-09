@@ -95,12 +95,12 @@ public:
     return response;
   }
 
-  event_unit_response_w_cv_t
-  GetEventVariationResponseAndCVResponse(genie::EventRecord &GenieGHep) {
-    event_unit_response_w_cv_t response;
+  systtools::event_unit_response_w_cv_t
+  GetEventVariationAndCVResponse(genie::EventRecord &GenieGHep) {
+    systtools::event_unit_response_w_cv_t response;
     for (auto &sp : syst_providers) {
-      event_unit_response_w_cv_t prov_response =
-          sp->GetEventVariationResponseAndCVResponse(GenieGHep);
+      systtools::event_unit_response_w_cv_t prov_response =
+          sp->GetEventVariationAndCVResponse(GenieGHep);
       for (auto &&er : prov_response) {
         response.push_back(std::move(er));
       }
