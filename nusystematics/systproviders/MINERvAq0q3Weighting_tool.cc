@@ -65,34 +65,25 @@ SystMetaData MINERvAq0q3Weighting::BuildSystMetaData(ParameterSet const &cfg,
     tool_options.put("parameter_per_2p2h_universe",
                      parameter_per_2p2h_universe);
 
-    other_universes_relative_to_CV =
-        cfg.get<bool>("other_universes_relative_to_CV", false);
-
-    tool_options.put("other_universes_relative_to_CV",
-                     other_universes_relative_to_CV);
-
     if (parameter_per_2p2h_universe) {
       systtools::SystParamHeader param_CV, param_NN, param_np, param_QE;
-      if (!other_universes_relative_to_CV &&
-          ParseFHiCLSimpleToolConfigurationParameter(
-              cfg, "2p2hGaussEnhancement_CV", param_CV, firstId)) {
+      if (ParseFHiCLSimpleToolConfigurationParameter(
+              cfg, "Mnv2p2hGaussEnhancement_CV", param_CV, firstId)) {
         param_CV.systParamId = firstId++;
         smd.push_back(param_CV);
       }
       if (ParseFHiCLSimpleToolConfigurationParameter(
-              cfg, "2p2hGaussEnhancement_NN", param_NN, firstId)) {
+              cfg, "Mnv2p2hGaussEnhancement_NN", param_NN, firstId)) {
         param_NN.systParamId = firstId++;
         smd.push_back(param_NN);
       }
-      if (!other_universes_relative_to_CV &&
-          ParseFHiCLSimpleToolConfigurationParameter(
-              cfg, "2p2hGaussEnhancement_np", param_np, firstId)) {
+      if (ParseFHiCLSimpleToolConfigurationParameter(
+              cfg, "Mnv2p2hGaussEnhancement_np", param_np, firstId)) {
         param_np.systParamId = firstId++;
         smd.push_back(param_np);
       }
-      if (!other_universes_relative_to_CV &&
-          ParseFHiCLSimpleToolConfigurationParameter(
-              cfg, "2p2hGaussEnhancement_QE", param_QE, firstId)) {
+      if (ParseFHiCLSimpleToolConfigurationParameter(
+              cfg, "Mnv2p2hGaussEnhancement_QE", param_QE, firstId)) {
         param_QE.systParamId = firstId++;
         smd.push_back(param_QE);
       }
@@ -148,9 +139,9 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
       vals_2p2hTotal = hdr.paramVariations;
     }
   }
-  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement_CV")) {
+  if (HasParam(GetSystMetaData(), "Mnv2p2hGaussEnhancement_CV")) {
     ConfiguredParameters[param_t::kMINERvA2p2h_CV] =
-        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement_CV");
+        GetParamIndex(GetSystMetaData(), "Mnv2p2hGaussEnhancement_CV");
 
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_CV]];
@@ -161,9 +152,9 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
       vals_2p2hCV = hdr.paramVariations;
     }
   }
-  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement_NN")) {
+  if (HasParam(GetSystMetaData(), "Mnv2p2hGaussEnhancement_NN")) {
     ConfiguredParameters[param_t::kMINERvA2p2h_NN] =
-        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement_NN");
+        GetParamIndex(GetSystMetaData(), "Mnv2p2hGaussEnhancement_NN");
 
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_NN]];
@@ -174,9 +165,9 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
       vals_2p2hNN = hdr.paramVariations;
     }
   }
-  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement_np")) {
+  if (HasParam(GetSystMetaData(), "Mnv2p2hGaussEnhancement_np")) {
     ConfiguredParameters[param_t::kMINERvA2p2h_np] =
-        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement_np");
+        GetParamIndex(GetSystMetaData(), "Mnv2p2hGaussEnhancement_np");
 
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_np]];
@@ -187,9 +178,9 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
       vals_2p2hnp = hdr.paramVariations;
     }
   }
-  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement_QE")) {
+  if (HasParam(GetSystMetaData(), "Mnv2p2hGaussEnhancement_QE")) {
     ConfiguredParameters[param_t::kMINERvA2p2h_QE] =
-        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement_QE");
+        GetParamIndex(GetSystMetaData(), "Mnv2p2hGaussEnhancement_QE");
 
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_QE]];
@@ -200,9 +191,6 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
       vals_2p2hQE = hdr.paramVariations;
     }
   }
-
-  other_universes_relative_to_CV =
-      tool_options.get<bool>("other_universes_relative_to_CV", false);
 
   fill_valid_tree = tool_options.get<bool>("fill_valid_tree", false);
   if (fill_valid_tree) {
@@ -362,16 +350,6 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     for (double v : vals_2p2hNN) {
       double tune_ench = v * GetMINERvA2p2hTuneEnhancement(2, q0q3[0], q0q3[1],
                                                            GetQELikeTarget(ev));
-
-      // At val = 0, you get 1/3 of the CV enhancement, at val = 1, you get full
-      // NN enhancement
-      if (other_universes_relative_to_CV) {
-        double cv_ench = (1 - v) *
-                         GetMINERvA2p2hTuneEnhancement(1, q0q3[0], q0q3[1],
-                                                       GetQELikeTarget(ev)) /
-                         3.0;
-        tune_ench += cv_ench;
-      }
       resp.back().responses.push_back(tune_ench);
     }
   }
@@ -388,16 +366,6 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     for (double v : vals_2p2hnp) {
       double tune_ench = v * GetMINERvA2p2hTuneEnhancement(3, q0q3[0], q0q3[1],
                                                            GetQELikeTarget(ev));
-
-      // At val = 0, you get 1/3 of the CV enhancement, at val = 1, you get full
-      // NN enhancement
-      if (other_universes_relative_to_CV) {
-        double cv_ench = (1 - v) *
-                         GetMINERvA2p2hTuneEnhancement(1, q0q3[0], q0q3[1],
-                                                       GetQELikeTarget(ev)) /
-                         3.0;
-        tune_ench += cv_ench;
-      }
       resp.back().responses.push_back(tune_ench);
     }
   }
@@ -414,16 +382,6 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     for (double v : vals_2p2hQE) {
       double tune_ench = v * GetMINERvA2p2hTuneEnhancement(4, q0q3[0], q0q3[1],
                                                            GetQELikeTarget(ev));
-
-      // At val = 0, you get 1/3 of the CV enhancement, at val = 1, you get full
-      // NN enhancement
-      if (other_universes_relative_to_CV) {
-        double cv_ench = (1 - v) *
-                         GetMINERvA2p2hTuneEnhancement(1, q0q3[0], q0q3[1],
-                                                       GetQELikeTarget(ev)) /
-                         3.0;
-        tune_ench += cv_ench;
-      }
       resp.back().responses.push_back(tune_ench);
     }
   }

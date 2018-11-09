@@ -1,4 +1,4 @@
-MINERvA_E2p2h_Config: {
+MINERvA_E2p2h_Tool_Config: {
   tool_type: "MINERvAE2p2h"
   instance_name: "DUNE_TDR_FakeData"
 
@@ -20,4 +20,4 @@ MINERvA_E2p2h_Config: {
 
 }
 
-syst_providers: [MINERvA_E2p2h_Config]
+syst_providers: [MINERvA_E2p2h_Tool_Config]

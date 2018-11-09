@@ -1,4 +1,4 @@
-BeRPA_Config: {
+BeRPA_Tool_Config: {
   tool_type: "BeRPAWeight"
   instance_name: "DUNE_TDR_FakeData"
 
@@ -22,4 +22,4 @@ BeRPA_Config: {
 
 }
 
-syst_providers: [BeRPA_Config]
+syst_providers: [BeRPA_Tool_Config]

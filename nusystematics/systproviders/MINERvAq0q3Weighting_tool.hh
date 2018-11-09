@@ -84,7 +84,7 @@ private:
   TTree *valid_tree;
 
   bool parameter_per_2p2h_universe;
-  bool other_universes_relative_to_CV;
+
   int NEUTMode, Pdgnu, pdgfslep, QELTarget, nRPA_weights, nMEC_weights;
   double Enu, momfslep, cthetafslep, Q2, q0, q3, W;
   std::vector<double> RPA_weights;

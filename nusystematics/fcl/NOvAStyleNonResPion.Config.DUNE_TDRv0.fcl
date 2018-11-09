@@ -1,4 +1,4 @@
-NOvAStyleNonResPionNormConfig: {
+NOvAStyleNonResPionNorm_Tool_Config: {
   tool_type: "NOvAStyleNonResPionNorm"
   instance_name: "DUNE_TDR_FakeData"
 
@@ -62,4 +62,4 @@ NOvAStyleNonResPionNormConfig: {
   NR_nubar_n_NC_3Pi_variation_descriptor: "(-3,3,1)"
 
 }
-syst_providers: [NOvAStyleNonResPionNormConfig]
+syst_providers: [NOvAStyleNonResPionNorm_Tool_Config]

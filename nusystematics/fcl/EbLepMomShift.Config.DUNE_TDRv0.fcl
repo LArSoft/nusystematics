@@ -1,0 +1,22 @@
+EbLepMomShift_Tool_Config: {
+  tool_type: "EbLepMomShift"
+  instance_name: "DUNE_TDR_FakeData"
+
+  EbFSLepMomShift_variation_descriptor: "[0,0,0,1,0,0,0]"
+
+  EbLepMomShift_Template_input_manifest: {
+    InputTemplates: [
+      {
+        parameter_name: MINERvATune_RPA
+        input_file: "nusyst_inputs/V00_02/EbLepMomShift/EbInputs.root"
+        inputs: [
+          { value: 1
+            hist_name: "22.1MeVEnu_ctheta_p_pyx_difffromnom"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+syst_providers: [EbLepMomShift_Tool_Config]

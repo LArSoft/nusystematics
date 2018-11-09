@@ -9,6 +9,7 @@
 #include "nusystematics/systproviders/NOvAStyleNonResPionNorm_tool.hh"
 #include "nusystematics/systproviders/BeRPAWeight_tool.hh"
 #include "nusystematics/systproviders/MINERvAE2p2h_tool.hh"
+#include "nusystematics/systproviders/EbLepMomShift_tool.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 
@@ -34,6 +35,8 @@ make_instance(fhicl::ParameterSet const &paramset) {
     return std::make_unique<BeRPAWeight>(paramset);
   } else if (tool_type == "MINERvAE2p2h") {
     return std::make_unique<MINERvAE2p2h>(paramset);
+  } else if (tool_type == "EbLepMomShift") {
+    return std::make_unique<EbLepMomShift>(paramset);
   } else {
     throw unknown_nusyst_systprovider()
         << "[ERROR]: Unknown tool type: " << std::quoted(tool_type);

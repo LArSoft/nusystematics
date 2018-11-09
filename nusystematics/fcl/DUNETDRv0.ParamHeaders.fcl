@@ -74,6 +74,44 @@ generated_systematic_provider_configuration: {
         }
         tool_type: BeRPAWeight
     }
+    EbLepMomShift_DUNE_TDR_FakeData: {
+        EbFSLepMomShift: {
+            isWeightSystematicVariation: false
+            paramVariations: [
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0
+            ]
+            prettyName: EbFSLepMomShift
+            systParamId: 58
+        }
+        instance_name: DUNE_TDR_FakeData
+        parameter_headers: [
+            EbFSLepMomShift
+        ]
+        tool_options: {
+            EbLepMomShift_Template_input_manifest: {
+                InputTemplates: [
+                    { 
+                      input_file: "nusyst_inputs/V00_02/EbLepMomShift/EbInputs.root"
+                      inputs: [
+                          { 
+                            hist_name: 22.1MeVEnu_ctheta_p_pyx_difffromnom
+                            value: 1
+                          }
+                      ]
+                      parameter_name: MINERvATune_RPA
+                    }
+                ]
+            }
+            fill_valid_tree: false
+        }
+        tool_type: EbLepMomShift
+    }
     GENIEReWeight_DUNE_TDR_Splines: {
         AGKYpT1pi: {
             isSplineable: true
@@ -496,36 +534,64 @@ generated_systematic_provider_configuration: {
         tool_type: MINERvAE2p2h
     }
     MINERvAq0q3Weighting_DUNE_TDR_FakeData: {
-        MINERvATune_2p2hGaussEnhancement_CV: {
-            centralParamValue: 1
-            isCorrection: true
-            prettyName: MINERvATune_2p2hGaussEnhancement_CV
+        Mnv2p2hGaussEnhancement_CV: {
+            paramVariations: [
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0
+            ]
+            prettyName: Mnv2p2hGaussEnhancement_CV
             systParamId: 22
         }
-        MINERvATune_2p2hGaussEnhancement_NN: {
-            centralParamValue: 1
-            isCorrection: true
-            prettyName: MINERvATune_2p2hGaussEnhancement_NN
+        Mnv2p2hGaussEnhancement_NN: {
+            paramVariations: [
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                1
+            ]
+            prettyName: Mnv2p2hGaussEnhancement_NN
             systParamId: 23
         }
-        MINERvATune_2p2hGaussEnhancement_QE: {
-            centralParamValue: 1
-            isCorrection: true
-            prettyName: MINERvATune_2p2hGaussEnhancement_QE
+        Mnv2p2hGaussEnhancement_QE: {
+            paramVariations: [
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                1
+            ]
+            prettyName: Mnv2p2hGaussEnhancement_QE
             systParamId: 25
         }
-        MINERvATune_2p2hGaussEnhancement_np: {
-            centralParamValue: 1
-            isCorrection: true
-            prettyName: MINERvATune_2p2hGaussEnhancement_np
+        Mnv2p2hGaussEnhancement_np: {
+            paramVariations: [
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                1
+            ]
+            prettyName: Mnv2p2hGaussEnhancement_np
             systParamId: 24
         }
         instance_name: DUNE_TDR_FakeData
         parameter_headers: [
-            MINERvATune_2p2hGaussEnhancement_CV,
-            MINERvATune_2p2hGaussEnhancement_NN,
-            MINERvATune_2p2hGaussEnhancement_np,
-            MINERvATune_2p2hGaussEnhancement_QE
+            Mnv2p2hGaussEnhancement_CV,
+            Mnv2p2hGaussEnhancement_NN,
+            Mnv2p2hGaussEnhancement_np,
+            Mnv2p2hGaussEnhancement_QE
         ]
         tool_options: {
             fill_valid_tree: false
@@ -559,7 +625,7 @@ generated_systematic_provider_configuration: {
                         0.5,
                         3.5
                     ]
-                    input_file_pattern: MKInputs/Q2W/MKOverGENIERSRes_%EGeV.root
+                    input_file_pattern: "nusyst_inputs/V00_02/MKInputs/Q2W/MKOverGENIERSRes_%EGeV.root"
                     input_hist_pattern: CC_1pip_1n_WQ2_Minoo_RS
                     param_values: [
                         1
@@ -571,7 +637,7 @@ generated_systematic_provider_configuration: {
                         0.5,
                         3.5
                     ]
-                    input_file_pattern: MKInputs/Q2W/MKOverGENIERSRes_%EGeV.root
+                    input_file_pattern: "nusyst_inputs/V00_02/MKInputs/Q2W/MKOverGENIERSRes_%EGeV.root"
                     input_hist_pattern: CC_1pi0_WQ2_Minoo_RS
                     param_values: [
                         1
@@ -583,7 +649,7 @@ generated_systematic_provider_configuration: {
                         0.5,
                         3.5
                     ]
-                    input_file_pattern: MKInputs/Q2W/MKOverGENIERSRes_%EGeV.root
+                    input_file_pattern: "nusyst_inputs/V00_02/MKInputs/Q2W/MKOverGENIERSRes_%EGeV.root"
                     input_hist_pattern: CC_1pip_1p_WQ2_Minoo_RS
                     param_values: [
                         1
@@ -984,6 +1050,7 @@ generated_systematic_provider_configuration: {
         MKSinglePiTemplate_DUNE_TDR_FakeData,
         MINERvAE2p2h_DUNE_TDR_FakeData,
         NOvAStyleNonResPionNorm_DUNE_TDR_FakeData,
-        BeRPAWeight_DUNE_TDR_FakeData
+        BeRPAWeight_DUNE_TDR_FakeData,
+        EbLepMomShift_DUNE_TDR_FakeData
     ]
 }
