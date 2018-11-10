@@ -11,10 +11,13 @@
     # NormCCQE_central_value: 0
     # NormCCQE_variation_descriptor: "(-3,3,1)"
 
+    ## Will not use for TDR
     MaCCQE_central_value: 0
     MaCCQE_variation_descriptor: "(-3,3,1)"
 
 
+    ## Ideal for TDR, but requires UserPhysicsOptions.xml changes that we
+    ## cannot reasonably do for the hack days
     # ZNormCCQE_central_value: 0
     # ZNormCCQE_variation_descriptor: "(-3,3,1)"
 
@@ -33,9 +36,6 @@
     # ReWeight to dipole vector form factor when VecFFCCQE = 1
     VecFFCCQE_central_value: 0
     VecFFCCQE_variation_descriptor: "[1,1,1,0,1,1,1]"
-
-    # ReWeight dipole to zexpansion
-    AxFFCCQEDipoleToZExp: true
 
     #Mirrored responses for CAFana
     CCQEPauliSupViaKF_central_value: 1
@@ -75,10 +75,10 @@
 
     ################# NCRES
 
-    NCRESIsShapeOnly: false
+    NCRESIsShapeOnly: true
 
     # NormNCRES_central_value: 0
-    # NormNCRES_variation_descriptor: "(-3,3,1)"
+    NormNCRES_variation_descriptor: "(-3,3,1)"
 
     # MaNCRES_central_value: 0
     MaNCRES_variation_descriptor: "(-3,3,1)"
@@ -158,25 +158,29 @@
 
     ################################## DIS BY Parameters
 
+    ## Disabled for hackdays as they make lhapdf make too much noise.
+    ## Will try and re-enable for TDR analysis.
     # AhtBY_central_value: 0
-    AhtBY_variation_descriptor: "(-3,3,1)"
+    # AhtBY_variation_descriptor: "(-3,3,1)"
 
     # BhtBY_central_value: 0
-    BhtBY_variation_descriptor: "(-3,3,1)"
+    # BhtBY_variation_descriptor: "(-3,3,1)"
 
     # CV1uBY_central_value: 0
-    CV1uBY_variation_descriptor: "(-3,3,1)"
+    # CV1uBY_variation_descriptor: "(-3,3,1)"
 
     # CV2uBY_central_value: 0
-    CV2uBY_variation_descriptor: "(-3,3,1)"
+    # CV2uBY_variation_descriptor: "(-3,3,1)"
 
     ################################## AGKY Hadronization Parameters
 
+    ## Disabled for hackdays as they make lhapdf make too much noise.
+    ## Will try and re-enable for TDR analysis.
     # AGKYxF1pi_central_value: 0
-    AGKYxF1pi_variation_descriptor: "(-3,3,1)"
+    # AGKYxF1pi_variation_descriptor: "(-3,3,1)"
 
     # AGKYpT1pi_central_value: 0
-    AGKYpT1pi_variation_descriptor: "(-3,3,1)"
+    # AGKYpT1pi_variation_descriptor: "(-3,3,1)"
 
     ################################## FZone Parameters
 

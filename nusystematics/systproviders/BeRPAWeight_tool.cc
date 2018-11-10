@@ -21,7 +21,7 @@ DEFINE_ART_CLASS_TOOL(BeRPAWeight)
 using namespace nusyst;
 using namespace systtools;
 
-#define BERPAWEIGHT_DEBUG
+// #define BERPAWEIGHT_DEBUG
 
 BeRPAWeight::BeRPAWeight(fhicl::ParameterSet const &params)
     : IGENIESystProvider_tool(params),
