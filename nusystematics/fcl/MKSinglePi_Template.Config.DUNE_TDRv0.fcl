@@ -4,7 +4,6 @@ MKSinglePi_Template_Tool_Config: {
 
   MKSPP_ReWeight_variation_descriptor: "[1,1,1,0,1,1,1]"
 
-  fill_valid_tree: true
   Q2_or_q0_is_x: true
 
   MKSPP_Template_input_manifest: {

@@ -21,6 +21,8 @@ DEFINE_ART_CLASS_TOOL(BeRPAWeight)
 using namespace nusyst;
 using namespace systtools;
 
+#define BERPAWEIGHT_DEBUG
+
 BeRPAWeight::BeRPAWeight(fhicl::ParameterSet const &params)
     : IGENIESystProvider_tool(params),
       pidx_BeRPA_Response(kParamUnhandled<size_t>),
@@ -178,6 +180,11 @@ BeRPAWeight::GetEventResponse(genie::EventRecord const &ev) {
   double CVResponse =
       GetBeRPAWeight(e2i(simb_mode_copy::kQE), true, Q2, ACV, BCV, DCV, ECV);
 
+#ifdef BERPAWEIGHT_DEBUG
+  std::cout << "[CV Response @ " << ACV << ", " << BCV << ", " << DCV << ", "
+            << ECV << "] = " << CVResponse << std::endl;
+#endif
+
   if (!ignore_parameter_dependence) {
     resp.push_back({md[pidx_BeRPA_Response].systParamId, {}});
 
@@ -203,8 +210,12 @@ BeRPAWeight::GetEventResponse(genie::EventRecord const &ev) {
     if (pidx_BeRPA_A != kParamUnhandled<size_t>) {
       resp.push_back({md[pidx_BeRPA_A].systParamId, {}});
       for (double av : AVariations) {
-        double weight =
-            GetBeRPAWeight(e2i(simb_mode_copy::kQE), Q2, av, BCV, DCV, ECV);
+        double weight = GetBeRPAWeight(e2i(simb_mode_copy::kQE), true, Q2, av,
+                                       BCV, DCV, ECV);
+#ifdef BERPAWEIGHT_DEBUG
+        std::cout << "[ weight @ " << av << ", " << BCV << ", " << DCV << ", "
+                  << ECV << "] = " << weight << std::endl;
+#endif
         if (!ApplyCV) {
           weight /= CVResponse;
         }
@@ -215,8 +226,12 @@ BeRPAWeight::GetEventResponse(genie::EventRecord const &ev) {
     if (pidx_BeRPA_B != kParamUnhandled<size_t>) {
       resp.push_back({md[pidx_BeRPA_B].systParamId, {}});
       for (double bv : BVariations) {
-        double weight =
-            GetBeRPAWeight(e2i(simb_mode_copy::kQE), Q2, ACV, bv, DCV, ECV);
+        double weight = GetBeRPAWeight(e2i(simb_mode_copy::kQE), true, Q2, ACV,
+                                       bv, DCV, ECV);
+#ifdef BERPAWEIGHT_DEBUG
+        std::cout << "[ weight @ " << ACV << ", " << bv << ", " << DCV << ", "
+                  << ECV << "] = " << weight << std::endl;
+#endif
         if (!ApplyCV || UsedADial) {
           weight /= CVResponse;
         }
@@ -227,8 +242,12 @@ BeRPAWeight::GetEventResponse(genie::EventRecord const &ev) {
     if (pidx_BeRPA_D != kParamUnhandled<size_t>) {
       resp.push_back({md[pidx_BeRPA_D].systParamId, {}});
       for (double dv : DVariations) {
-        double weight =
-            GetBeRPAWeight(e2i(simb_mode_copy::kQE), Q2, ACV, BCV, dv, ECV);
+        double weight = GetBeRPAWeight(e2i(simb_mode_copy::kQE), true, Q2, ACV,
+                                       BCV, dv, ECV);
+#ifdef BERPAWEIGHT_DEBUG
+        std::cout << "[ weight @ " << ACV << ", " << BCV << ", " << dv << ", "
+                  << ECV << "] = " << weight << std::endl;
+#endif
         if (!ApplyCV || UsedADial) {
           weight /= CVResponse;
         }
@@ -239,8 +258,12 @@ BeRPAWeight::GetEventResponse(genie::EventRecord const &ev) {
     if (pidx_BeRPA_E != kParamUnhandled<size_t>) {
       resp.push_back({md[pidx_BeRPA_E].systParamId, {}});
       for (double eval : EVariations) {
-        double weight =
-            GetBeRPAWeight(e2i(simb_mode_copy::kQE), Q2, ACV, BCV, DCV, eval);
+        double weight = GetBeRPAWeight(e2i(simb_mode_copy::kQE), true, Q2, ACV,
+                                       BCV, DCV, eval);
+#ifdef BERPAWEIGHT_DEBUG
+        std::cout << "[ weight @ " << ACV << ", " << BCV << ", " << DCV << ", "
+                  << eval << "] = " << weight << std::endl;
+#endif
         if (!ApplyCV || UsedADial) {
           weight /= CVResponse;
         }

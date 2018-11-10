@@ -118,7 +118,7 @@ EbLepMomShift::GetEventResponse(genie::EventRecord const &ev) {
         resp.back().responses.push_back(0);
       } else {
         resp.back().responses.push_back(
-            EbTemplate.GetVariation(1, {Enu, FSLep_ctheta}));
+            EbTemplate.GetVariation(v, {Enu, FSLep_ctheta}));
       }
     }
   }

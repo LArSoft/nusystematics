@@ -132,7 +132,8 @@ void TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::
 }
 
 template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
-typename TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::bin_it_t
+typename TemplateResponseCalculatorBase<NDims, Continuous,
+                                        PolyResponseOrder>::bin_it_t
 TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::GetBin(
     std::array<double, NDims> const &vals) const {
   return THType<NDims>::GetBin(BinnedResponses.begin()->second.get(), vals);
@@ -199,7 +200,7 @@ TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::
         (std::numeric_limits<double>::epsilon() * 1E4)) {
 #ifdef TemplateResponseCalculatorBase_DEBUG
       std::cout << "[INFO]: Getting bin content for bin: " << bin
-                << " for parameter: " << param << " at value: " << val << " = "
+                << " at value: " << val << " = "
                 << resp.second->GetBinContent(bin)
                 << " from hist: " << resp.second->GetName() << std::endl;
 #endif

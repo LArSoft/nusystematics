@@ -14,8 +14,6 @@ BeRPA_Tool_Config: {
   BeRPA_E_central_value: 0
   BeRPA_E_variation_descriptor: "(-3,3,1)"
 
-  fill_valid_tree: true
-
   #Nominal GENIE uses bare LS CCQE, need to add RPA CV suppression
   ApplyCV: true
   ignore_parameter_dependence: true

@@ -11,24 +11,24 @@
     # NormCCQE_central_value: 0
     # NormCCQE_variation_descriptor: "(-3,3,1)"
 
-    # MaCCQE_central_value: 0
-    # MaCCQE_variation_descriptor: "(-3,3,1)"
+    MaCCQE_central_value: 0
+    MaCCQE_variation_descriptor: "(-3,3,1)"
 
 
     # ZNormCCQE_central_value: 0
     # ZNormCCQE_variation_descriptor: "(-3,3,1)"
 
-    ZExpA1CCQE_central_value: 0
-    ZExpA1CCQE_variation_descriptor: "(-3,3,1)"
+    # ZExpA1CCQE_central_value: 0
+    # ZExpA1CCQE_variation_descriptor: "(-3,3,1)"
 
-    ZExpA2CCQE_central_value: 0
-    ZExpA2CCQE_variation_descriptor: "(-3,3,1)"
+    # ZExpA2CCQE_central_value: 0
+    # ZExpA2CCQE_variation_descriptor: "(-3,3,1)"
 
-    ZExpA3CCQE_central_value: 0
-    ZExpA3CCQE_variation_descriptor: "(-3,3,1)"
+    # ZExpA3CCQE_central_value: 0
+    # ZExpA3CCQE_variation_descriptor: "(-3,3,1)"
 
-    ZExpA4CCQE_central_value: 0
-    ZExpA4CCQE_variation_descriptor: "(-3,3,1)"
+    # ZExpA4CCQE_central_value: 0
+    # ZExpA4CCQE_variation_descriptor: "(-3,3,1)"
 
     # ReWeight to dipole vector form factor when VecFFCCQE = 1
     VecFFCCQE_central_value: 0

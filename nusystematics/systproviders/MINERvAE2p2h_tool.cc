@@ -18,6 +18,8 @@ DEFINE_ART_CLASS_TOOL(MINERvAE2p2h)
 using namespace nusyst;
 using namespace systtools;
 
+// #define MINERVAE2p2h_DEBUG
+
 MINERvAE2p2h::MINERvAE2p2h(fhicl::ParameterSet const &params)
     : IGENIESystProvider_tool(params),
       pidx_E2p2hResponse_nu(kParamUnhandled<size_t>),
@@ -209,12 +211,21 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
     double CVResponse = Get_MINERvA2p2h2EnergyDependencyScaling(
         e2i(simb_mode_copy::kMEC), true, Enu, ACV, BCV);
 
+#ifdef MINERVAE2p2h_DEBUG
+    std::cout << "[CV Response @ " << Enu << ", " << (ISLep->Pdg()) << ", "
+              << ACV << ", " << BCV << "] = " << CVResponse << std::endl;
+#endif
+
     bool UsedADial = false;
     if (pidx_A != kParamUnhandled<size_t>) {
       resp.push_back({md[pidx_A].systParamId, {}});
       for (double av : (*A_var)) {
         double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
             e2i(simb_mode_copy::kMEC), true, Enu, av, BCV);
+            #ifdef MINERVAE2p2h_DEBUG
+                std::cout << "[weight @ " << Enu << ", " << av << ", " << BCV
+                          << "] = " << weight << std::endl;
+            #endif
         resp.back().responses.push_back(weight);
       }
       UsedADial = true;
@@ -224,6 +235,10 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
       for (double bv : (*B_var)) {
         double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
             e2i(simb_mode_copy::kMEC), true, Enu, ACV, bv);
+            #ifdef MINERVAE2p2h_DEBUG
+                std::cout << "[weight @ " << Enu << ", " << ACV << ", " << bv
+                          << "] = " << weight << std::endl;
+            #endif
         if (UsedADial) {
           weight /= CVResponse;
         }
@@ -247,7 +262,7 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
     weight = 1;
 
     for (auto const &eur : resp) {
-      weight *= eur.responses[3];
+      weight *= eur.responses[2];
     }
 
     valid_tree->Fill();
