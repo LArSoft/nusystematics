@@ -9,10 +9,9 @@
 #include "systematicstools/utility/exceptions.hh"
 
 #include "fhiclcpp/ParameterSet.h"
-#include "fhiclcpp/make_ParameterSet.h"
 
 #ifndef NO_ART
-#include "cetlib/filepath_maker.h"
+#include "cetlib/search_path.h"
 #endif
 
 #include "TH1.h"
@@ -47,7 +46,9 @@ public:
   /// Reads and loads input fhicl
   ///
   /// Expected fhicl like:
-  ///  input_file: "file.root" # Optional default root file name for this
+  ///  use_FW_SEARCH_PATH: true # If enabled, will search for files in
+  ///  stashcache. Only read for ART jobs. input_file: "file.root" # Optional
+  ///  default root file name for this
   ///                          # parameter's inputs
   ///    inputs: [
   ///      { value: 0
@@ -112,6 +113,10 @@ template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
 void TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::
     LoadInputHistograms(fhicl::ParameterSet const &ps) {
 
+#ifndef NO_ART
+  bool use_stashcache = ps.get<bool>("use_FW_SEARCH_PATH", false);
+#endif
+
   std::string const &default_root_file = ps.get<std::string>("input_file", "");
 
   for (fhicl::ParameterSet const &val_config :
@@ -120,6 +125,26 @@ void TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::
     std::string input_file =
         val_config.get<std::string>("input_file", default_root_file);
     std::string input_hist = val_config.get<std::string>("input_hist");
+
+#ifndef NO_ART
+
+    if (use_stashcache) {
+      std::string stashcache_file;
+      cet::search_path sp("FW_SEARCH_PATH");
+      if (!sp.find_file(input_file, stashcache_file)) {
+        char *fw = getenv("FW_SEARCH_PATH");
+        std::string fw_str("");
+        if (fw) {
+          fw_str = fw;
+        }
+        throw invalid_tfile()
+            << "[ERROR]: Failed to find file: " << input_file
+            << ", on stashcache. (FW_SEARCH_PATH=\"" << fw_str << "\")";
+      }
+      input_file = stashcache_file;
+    }
+
+#endif
 
     BinnedResponses[pval] = std::unique_ptr<typename THType<NDims>::type>(
         GetHistogram<typename THType<NDims>::type>(input_file, input_hist));
