@@ -1,6 +1,3 @@
-SET(SYSTTOOLS_LIBS
-  ${SYSTEMATICSTOOLS_UTILITY}
-  ${SYSTEMATICSTOOLS_INTERFACE})
 
 SET(GENIE_EV_LIBS
   ${GENIE_LIB_LIST}
@@ -22,7 +19,8 @@ art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
     GENIEReWeightParamConfig.cc
     GENIEReWeightEngineConfig.cc
   LIBRARIES
-    ${SYSTTOOLS_LIBS}
+    systematicstools_utility
+    systematicstools_interface
     nutools_EventGeneratorBase_GENIE
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_PRINCIPAL}
