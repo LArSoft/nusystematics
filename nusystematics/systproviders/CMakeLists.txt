@@ -1,3 +1,6 @@
+SET(SYSTTOOLS_LIBS
+  ${SYSTEMATICSTOOLS_UTILITY}
+  ${SYSTEMATICSTOOLS_INTERFACE})
 
 SET(GENIE_EV_LIBS
   ${GENIE_LIB_LIST}
@@ -19,8 +22,7 @@ art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
     GENIEReWeightParamConfig.cc
     GENIEReWeightEngineConfig.cc
   LIBRARIES
-    systematicstools_utility
-    systematicstools_interface
+    ${SYSTTOOLS_LIBS}
     nutools_EventGeneratorBase_GENIE
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_PRINCIPAL}
@@ -51,7 +53,7 @@ simple_plugin(GENIEReWeight tool
     ${GENIE_EV_LIBS}
  )
 
-SET(TOOLS MKSinglePiTemplate BeRPAWeight MiscInteractionSysts NOvAStyleNonResPionNorm MINERvAE2p2h EbLepMomShift)
+SET(TOOLS MKSinglePiTemplate BeRPAWeight MiscInteractionSysts NOvAStyleNonResPionNorm MINERvAE2p2h EbLepMomShift MINERvAq0q3Weighting)
 foreach(tool ${TOOLS})
   simple_plugin(${tool} tool
     systematicstools_utility
