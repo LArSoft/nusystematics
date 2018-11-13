@@ -127,6 +127,10 @@ private:
         }
         fhicl::ParameterSet estop_descriptor;
         estop_descriptor.put("inputs", value_descriptors);
+#ifndef NO_ART
+        estop_descriptor.put("use_FW_SEARCH_PATH",
+                             ps.get<bool>("use_FW_SEARCH_PATH", false));
+#endif
         EnuResponses.emplace_back();
         EnuResponses.back().LoadInputHistograms(estop_descriptor);
       }
