@@ -82,7 +82,7 @@ bool MiscInteractionSysts::SetupResponseCalculator(
 }
 
 std::vector<double> MiscInteractionSysts::GetWeights_C12ToAr40_2p2hScaling(
-    genie::EventRecord const &ev) {
+    genie::EventRecord const &ev, std::vector<double> const &vals) {
 
   std::vector<double> resp;
 
@@ -93,12 +93,7 @@ std::vector<double> MiscInteractionSysts::GetWeights_C12ToAr40_2p2hScaling(
     return resp;
   }
 
-  size_t pidx = (ev.Probe()->Pdg() > 0) ? pidx_C12ToAr40_2p2hScaling_nu
-                                        : pidx_C12ToAr40_2p2hScaling_nubar;
-
-  systtools::SystMetaData const &md = GetSystMetaData();
-
-  for (double v : md[pidx].paramVariations) {
+  for (double v : vals) {
     resp.push_back(GetC_Ar2p2hScalingWeight(v));
   }
 
@@ -198,13 +193,17 @@ MiscInteractionSysts::GetEventResponse(genie::EventRecord const &ev) {
 
   systtools::SystMetaData const &md = GetSystMetaData();
 
-  if (pidx_C12ToAr40_2p2hScaling_nu != systtools::kParamUnhandled<size_t>) {
-    resp.push_back({md[pidx_C12ToAr40_2p2hScaling_nu].systParamId,
-                    GetWeights_C12ToAr40_2p2hScaling(ev)});
-  }
-  if (pidx_C12ToAr40_2p2hScaling_nubar != systtools::kParamUnhandled<size_t>) {
-    resp.push_back({md[pidx_C12ToAr40_2p2hScaling_nubar].systParamId,
-                    GetWeights_C12ToAr40_2p2hScaling(ev)});
+  size_t pidx_C12ToAr40_2p2hScaling = (ev.Probe()->Pdg() > 0)
+                                          ? pidx_C12ToAr40_2p2hScaling_nu
+                                          : pidx_C12ToAr40_2p2hScaling_nubar;
+
+  if (pidx_C12ToAr40_2p2hScaling != systtools::kParamUnhandled<size_t>) {
+    std::vector<double> wght = GetWeights_C12ToAr40_2p2hScaling(
+        ev, md[pidx_C12ToAr40_2p2hScaling].paramVariations);
+    if (wght.size()) {
+      resp.push_back(
+          {md[pidx_C12ToAr40_2p2hScaling].systParamId, std::move(wght)});
+    }
   }
   if (pidx_nuenuebar_xsec_ratio != systtools::kParamUnhandled<size_t>) {
     resp.push_back({md[pidx_nuenuebar_xsec_ratio].systParamId,
