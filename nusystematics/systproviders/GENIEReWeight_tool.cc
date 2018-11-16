@@ -66,8 +66,7 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
       ConfigureFSIParameterHeaders(params, firstParamId, tool_options);
   firstParamId += FSImd.size();
 
-  SystMetaData Othermd =
-      ConfigureOtherParameterHeaders(params, firstParamId);
+  SystMetaData Othermd = ConfigureOtherParameterHeaders(params, firstParamId);
   firstParamId += Othermd.size();
 
   // Don't extend inline to make firstParamId incrementing more clear.
@@ -272,7 +271,14 @@ GENIEReWeight::GetEventGENIEParameterResponse(genie::EventRecord const &gev,
 #endif
       }
       GENIEResponse.Herg.front()->Reconfigure();
+      bool is_set_dir = TH1::AddDirectoryStatus();
+      if (!is_set_dir) {
+        TH1::AddDirectory(true);
+      }
       presp.responses.push_back(GENIEResponse.Herg.front()->CalcWeight(gev));
+      if (!is_set_dir) {
+        TH1::AddDirectory(false);
+      }
     } else {
 #ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
       for (GENIEResponseParameter::DependentParameter const &dep :
@@ -290,7 +296,14 @@ GENIEReWeight::GetEventGENIEParameterResponse(genie::EventRecord const &gev,
                   << std::endl;
       }
 #endif
+      bool is_set_dir = TH1::AddDirectoryStatus();
+      if (!is_set_dir) {
+        TH1::AddDirectory(true);
+      }
       presp.responses.push_back(GENIEResponse.Herg[var_it]->CalcWeight(gev));
+      if (!is_set_dir) {
+        TH1::AddDirectory(false);
+      }
     }
 #ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
     std::cout << "\t -> " << presp.responses.back() << std::endl;
