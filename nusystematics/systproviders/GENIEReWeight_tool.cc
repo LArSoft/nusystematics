@@ -201,7 +201,6 @@ double GENIEReWeight::GetEventWeightResponse(
       TH1::AddDirectory(true);
     }
     weight *= GENIEResponse.Herg.front()->CalcWeight(gev);
-    bool is_set_dir = TH1::AddDirectoryStatus();
     if (!is_set_dir) {
       TH1::AddDirectory(false);
     }
