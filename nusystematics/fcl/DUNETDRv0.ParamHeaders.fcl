@@ -1,5 +1,3 @@
-BEGIN_PROLOG
-
 generated_systematic_provider_configuration: {
     BeRPAWeight_DUNE_TDR_FakeData: {
         BeRPA_A: {
@@ -78,6 +76,7 @@ generated_systematic_provider_configuration: {
     }
     EbLepMomShift_DUNE_TDR_FakeData: {
         EbFSLepMomShift: {
+            centralParamValue: 1
             isWeightSystematicVariation: false
             paramVariations: [
                 0,
@@ -97,12 +96,10 @@ generated_systematic_provider_configuration: {
         ]
         tool_options: {
             EbLepMomShift_Template_input_manifest: {
-                # Uncomment for running with stashcache inputs
-                # use_FW_SEARCH_PATH: true
-                input_file: "nusyst_inputs/V00_02/EbLepMomShift/EbInputs.root"
+                input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/EbLepMomShift/EbInputs.root"
                 inputs: [
-                    {
-                      input_hist: "22.1MeVEnu_ctheta_p_pyx_difffromnom"
+                    { 
+                      input_hist: 22.1MeVEnu_ctheta_p_pyx_difffromnom
                       value: 1
                     }
                 ]
@@ -186,6 +183,7 @@ generated_systematic_provider_configuration: {
             systParamId: 1
         }
         MaNCRESshape: {
+            centralParamValue: 0
             isSplineable: true
             paramVariations: [
                 -3,
@@ -200,6 +198,7 @@ generated_systematic_provider_configuration: {
             systParamId: 6
         }
         MvCCRES: {
+            centralParamValue: 0
             isSplineable: true
             paramVariations: [
                 -3,
@@ -214,6 +213,7 @@ generated_systematic_provider_configuration: {
             systParamId: 4
         }
         MvNCRESshape: {
+            centralParamValue: 0
             isSplineable: true
             paramVariations: [
                 -3,
@@ -228,6 +228,7 @@ generated_systematic_provider_configuration: {
             systParamId: 7
         }
         NormNCRES: {
+            centralParamValue: 0
             isSplineable: true
             paramVariations: [
                 -3,
@@ -242,6 +243,7 @@ generated_systematic_provider_configuration: {
             systParamId: 5
         }
         RDecBR1eta: {
+            centralParamValue: 0
             isSplineable: true
             paramVariations: [
                 -3,
@@ -256,6 +258,7 @@ generated_systematic_provider_configuration: {
             systParamId: 9
         }
         RDecBR1gamma: {
+            centralParamValue: 0
             isSplineable: true
             paramVariations: [
                 -3,
@@ -270,7 +273,7 @@ generated_systematic_provider_configuration: {
             systParamId: 8
         }
         Theta_Delta2Npi: {
-            centralParamValue: 1
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -304,6 +307,7 @@ generated_systematic_provider_configuration: {
             DISBYIsShapeOnly: false
             MaCCQEIsShapeOnly: false
             NCRESIsShapeOnly: true
+            UseFullHERG: true
             fill_valid_tree: false
             ignore_parameter_dependence: true
         }
@@ -311,6 +315,7 @@ generated_systematic_provider_configuration: {
     }
     MINERvAE2p2h_DUNE_TDR_FakeData: {
         E2p2h_A_nu: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -324,6 +329,7 @@ generated_systematic_provider_configuration: {
             systParamId: 17
         }
         E2p2h_A_nubar: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -337,6 +343,7 @@ generated_systematic_provider_configuration: {
             systParamId: 19
         }
         E2p2h_B_nu: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -350,6 +357,7 @@ generated_systematic_provider_configuration: {
             systParamId: 18
         }
         E2p2h_B_nubar: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -377,6 +385,7 @@ generated_systematic_provider_configuration: {
     }
     MINERvAq0q3Weighting_DUNE_TDR_FakeData: {
         Mnv2p2hGaussEnhancement_CV: {
+            centralParamValue: 1
             paramVariations: [
                 0,
                 0,
@@ -390,6 +399,7 @@ generated_systematic_provider_configuration: {
             systParamId: 12
         }
         Mnv2p2hGaussEnhancement_NN: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -403,6 +413,7 @@ generated_systematic_provider_configuration: {
             systParamId: 13
         }
         Mnv2p2hGaussEnhancement_QE: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -416,6 +427,7 @@ generated_systematic_provider_configuration: {
             systParamId: 15
         }
         Mnv2p2hGaussEnhancement_np: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -443,6 +455,7 @@ generated_systematic_provider_configuration: {
     }
     MKSinglePiTemplate_DUNE_TDR_FakeData: {
         MKSPP_ReWeight: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -461,15 +474,13 @@ generated_systematic_provider_configuration: {
         ]
         tool_options: {
             MKSPP_Template_input_manifest: {
-              # Uncomment for running with stashcache inputs
-              # use_FW_SEARCH_PATH: true
                 NumuNPiPlus: {
                     e_uniform: [
                         3,
                         0.5,
                         3.5
                     ]
-                    input_file_pattern: "nusyst_inputs/V00_02/MKInputs/MKOverGENIERSRes_%EGeV.root"
+                    input_file_pattern: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/MKInputs/MKOverGENIERSRes_%EGeV.root"
                     input_hist_pattern: CC_1pip_1n_WQ2_Minoo_RS
                     param_values: [
                         1
@@ -481,7 +492,7 @@ generated_systematic_provider_configuration: {
                         0.5,
                         3.5
                     ]
-                    input_file_pattern: "nusyst_inputs/V00_02/MKInputs/MKOverGENIERSRes_%EGeV.root"
+                    input_file_pattern: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/MKInputs/MKOverGENIERSRes_%EGeV.root"
                     input_hist_pattern: CC_1pi0_WQ2_Minoo_RS
                     param_values: [
                         1
@@ -493,7 +504,7 @@ generated_systematic_provider_configuration: {
                         0.5,
                         3.5
                     ]
-                    input_file_pattern: "nusyst_inputs/V00_02/MKInputs/MKOverGENIERSRes_%EGeV.root"
+                    input_file_pattern: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/MKInputs/MKOverGENIERSRes_%EGeV.root"
                     input_hist_pattern: CC_1pip_1p_WQ2_Minoo_RS
                     param_values: [
                         1
@@ -508,6 +519,7 @@ generated_systematic_provider_configuration: {
     }
     MiscInteractionSysts_DUNE_TDR_FakeData: {
         C12ToAr40_2p2hScaling_nu: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -521,6 +533,7 @@ generated_systematic_provider_configuration: {
             systParamId: 49
         }
         C12ToAr40_2p2hScaling_nubar: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -534,6 +547,7 @@ generated_systematic_provider_configuration: {
             systParamId: 50
         }
         SPPLowQ2Suppression: {
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -548,6 +562,7 @@ generated_systematic_provider_configuration: {
         }
         instance_name: DUNE_TDR_FakeData
         nuenuebar_xsec_ratio: {
+            centralParamValue: 1
             paramVariations: [
                 0,
                 0,
@@ -561,6 +576,7 @@ generated_systematic_provider_configuration: {
             systParamId: 51
         }
         nuenumu_xsec_ratio: {
+            centralParamValue: 1
             paramVariations: [
                 0,
                 0,
@@ -978,5 +994,3 @@ generated_systematic_provider_configuration: {
         MiscInteractionSysts_DUNE_TDR_FakeData
     ]
 }
-
-END_PROLOG

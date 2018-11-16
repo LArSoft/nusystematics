@@ -20,9 +20,13 @@ MINERvAq0q3Tune_Tool_Config: {
     use_MINERvA_2p2h_tunes: true
     parameter_per_2p2h_universe: true
 
+    Mnv2p2hGaussEnhancement_CV_central_value: 1
     Mnv2p2hGaussEnhancement_CV_variation_descriptor: "[0,0,0,1,0,0,0]"
+    Mnv2p2hGaussEnhancement_NN_central_value: 0
     Mnv2p2hGaussEnhancement_NN_variation_descriptor: "[1,1,1,0,1,1,1]"
+    Mnv2p2hGaussEnhancement_np_central_value: 0
     Mnv2p2hGaussEnhancement_np_variation_descriptor: "[1,1,1,0,1,1,1]"
+    Mnv2p2hGaussEnhancement_QE_central_value: 0
     Mnv2p2hGaussEnhancement_QE_variation_descriptor: "[1,1,1,0,1,1,1]"
 
 }
