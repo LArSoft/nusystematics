@@ -14,6 +14,8 @@
 #include "GHEP/GHepUtils.h"
 #include "Messenger/Messenger.h"
 
+#include "TH1.h"
+
 #include <chrono>
 #include <sstream>
 
