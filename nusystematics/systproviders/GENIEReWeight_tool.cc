@@ -41,6 +41,9 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
       params.get<bool>("ignore_parameter_dependence", false);
   tool_options.put("ignore_parameter_dependence", ignore_parameter_dependence);
 
+  bool UseFullHERG = params.get<bool>("UseFullHERG", false);
+  tool_options.put("UseFullHERG", UseFullHERG);
+
   fill_valid_tree = params.get<bool>("fill_valid_tree", false);
   tool_options.put("fill_valid_tree", fill_valid_tree);
 
