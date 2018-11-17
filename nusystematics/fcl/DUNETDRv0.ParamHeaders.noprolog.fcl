@@ -1,0 +1,3 @@
+#include "DUNETDRv0.ParamHeaders.fcl"
+
+generated_systematic_provider_configuration: @local::generated_systematic_provider_configuration

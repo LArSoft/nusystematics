@@ -100,7 +100,7 @@ else()
   SET(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} ${EXTRA_LINK_FLAGS}")
 endif()
 
-set(EXTRA_CXX_FLAGS "-DNO_ART -std=c++1y -Wall -Wextra -Werror ${ROOT_CXX_FLAGS_SCRUBBED} ${GENIE_CXX_FLAGS}")
+set(EXTRA_CXX_FLAGS "-DNO_ART -std=c++1y -Wall -Wextra -Werror ${ROOT_CXX_FLAGS_SCRUBBED} ${GENIE_CXX_FLAGS} -Wno-misleading-indentation")
 if(CMAKE_CXX_FLAGS STREQUAL "")
   SET(CMAKE_CXX_FLAGS ${EXTRA_CXX_FLAGS})
 else()

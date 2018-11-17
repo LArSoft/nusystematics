@@ -32,15 +32,15 @@ inline double Get_MINERvA2p2h2EnergyDependencyScaling(int mode_simb, int is_CC,
     return 1;
   }
 
-  double A = A_CV + A_val * A_OneSig / 20;
-  double B = B_CV + B_val * B_OneSig / 2.0;
+  double A = A_CV + A_val * A_OneSig;
+  double B = B_CV + B_val * B_OneSig;
 
 #ifdef MINERVAE2p2h_DEBUG
   std::cout << "A = " << A << ", A_val = " << A_val << std::endl;
   std::cout << "B = " << B << ", B_val = " << B_val << std::endl;
 #endif
 
-  return 1.0 + ((A / pow(nu_Energy_GeV, 2)) + (B / nu_Energy_GeV));
+  return 1.0 / (1.0 + (A / pow(nu_Energy_GeV, 2)) + (B / nu_Energy_GeV));
 }
 
 } // namespace nusyst

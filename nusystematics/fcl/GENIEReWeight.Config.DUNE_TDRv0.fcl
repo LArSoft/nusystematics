@@ -42,7 +42,7 @@
     VecFFCCQE_variation_descriptor: "[1,1,1,0,1,1,1]"
 
     #Mirrored responses for CAFana
-    CCQEPauliSupViaKF_central_value: 1
+    CCQEPauliSupViaKF_central_value: 0
     CCQEPauliSupViaKF_variation_descriptor: "[1,1,1,0,1,1,1]"
 
     ################################## NCEl Parameters
@@ -79,10 +79,10 @@
 
     ################# NCRES
 
-    NCRESIsShapeOnly: true
+    NCRESIsShapeOnly: false
 
-    NormNCRES_central_value: 0
-    NormNCRES_variation_descriptor: "(-3,3,1)"
+    # NormNCRES_central_value: 0
+    # NormNCRES_variation_descriptor: "(-3,3,1)"
 
     MaNCRES_central_value: 0
     MaNCRES_variation_descriptor: "(-3,3,1)"
@@ -92,6 +92,7 @@
 
     ################# Non-RES
 
+    ## Replaced with NOvAStyleNonResPion
     # NonRESBGvpCC1pi_central_value: 0
     # NonRESBGvpCC1pi_variation_descriptor: "(-3,3,1)"
 
@@ -166,13 +167,13 @@
     ## Will try and re-enable for TDR analysis.
     # AhtBY_central_value: 0
     # AhtBY_variation_descriptor: "(-3,3,1)"
-
+    #
     # BhtBY_central_value: 0
     # BhtBY_variation_descriptor: "(-3,3,1)"
-
+    #
     # CV1uBY_central_value: 0
     # CV1uBY_variation_descriptor: "(-3,3,1)"
-
+    #
     # CV2uBY_central_value: 0
     # CV2uBY_variation_descriptor: "(-3,3,1)"
 
@@ -182,7 +183,7 @@
     ## Will try and re-enable for TDR analysis.
     # AGKYxF1pi_central_value: 0
     # AGKYxF1pi_variation_descriptor: "(-3,3,1)"
-
+    #
     # AGKYpT1pi_central_value: 0
     # AGKYpT1pi_variation_descriptor: "(-3,3,1)"
 
@@ -191,6 +192,35 @@
     # Disabled because it cannot keep itself with decorum.
     # FormZone_central_value: 0
     # FormZone_variation_descriptor: "(-3,3,1)"
+
+    ################################## FSI Parameters
+
+    MFP_pi_central_value: 0
+    MFP_pi_variation_descriptor: "(-3,3,1)"
+    FrCEx_pi_central_value: 0
+    FrCEx_pi_variation_descriptor: "(-3,3,1)"
+    FrElas_pi_central_value: 0
+    FrElas_pi_variation_descriptor: "(-3,3,1)"
+    FrInel_pi_central_value: 0
+    FrInel_pi_variation_descriptor: "(-3,3,1)"
+    FrAbs_pi_central_value: 0
+    FrAbs_pi_variation_descriptor: "(-3,3,1)"
+    FrPiProd_pi_central_value: 0
+    FrPiProd_pi_variation_descriptor: "(-3,3,1)"
+
+    MFP_N_central_value: 0
+    MFP_N_variation_descriptor: "(-3,3,1)"
+    FrCEx_N_central_value: 0
+    FrCEx_N_variation_descriptor: "(-3,3,1)"
+    FrElas_N_central_value: 0
+    FrElas_N_variation_descriptor: "(-3,3,1)"
+    FrInel_N_central_value: 0
+    FrInel_N_variation_descriptor: "(-3,3,1)"
+    FrAbs_N_central_value: 0
+    FrAbs_N_variation_descriptor: "(-3,3,1)"
+    FrPiProd_N_central_value: 0
+    FrPiProd_N_variation_descriptor: "(-3,3,1)"
+
 }
 
 syst_providers: [GENIEReWeight_Tool_Config]

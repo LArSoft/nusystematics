@@ -1,3 +1,4 @@
+BEGIN_PROLOG
 generated_systematic_provider_configuration: {
     BeRPAWeight_DUNE_TDR_FakeData: {
         BeRPA_A: {
@@ -13,7 +14,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: BeRPA_A
-            systParamId: 44
+            systParamId: 55
         }
         BeRPA_B: {
             centralParamValue: 0
@@ -28,7 +29,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: BeRPA_B
-            systParamId: 45
+            systParamId: 56
         }
         BeRPA_D: {
             centralParamValue: 0
@@ -43,7 +44,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: BeRPA_D
-            systParamId: 46
+            systParamId: 57
         }
         BeRPA_E: {
             centralParamValue: 0
@@ -58,7 +59,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: BeRPA_E
-            systParamId: 47
+            systParamId: 58
         }
         instance_name: DUNE_TDR_FakeData
         parameter_headers: [
@@ -88,7 +89,7 @@ generated_systematic_provider_configuration: {
                 0
             ]
             prettyName: EbFSLepMomShift
-            systParamId: 48
+            systParamId: 59
         }
         instance_name: DUNE_TDR_FakeData
         parameter_headers: [
@@ -98,8 +99,8 @@ generated_systematic_provider_configuration: {
             EbLepMomShift_Template_input_manifest: {
                 input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/EbLepMomShift/EbInputs.root"
                 inputs: [
-                    {
-                      input_hist: "22.1MeVEnu_ctheta_p_pyx_difffromnom"
+                    { 
+                      input_hist: 22.1MeVEnu_ctheta_p_pyx_difffromnom
                       value: 1
                     }
                 ]
@@ -110,7 +111,7 @@ generated_systematic_provider_configuration: {
     }
     GENIEReWeight_DUNE_TDR_Splines: {
         CCQEPauliSupViaKF: {
-            centralParamValue: 1
+            centralParamValue: 0
             paramVariations: [
                 1,
                 1,
@@ -121,7 +122,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: CCQEPauliSupViaKF
-            systParamId: 11
+            systParamId: 22
         }
         EtaNCEL: {
             centralParamValue: 0
@@ -137,6 +138,186 @@ generated_systematic_provider_configuration: {
             ]
             prettyName: EtaNCEL
             systParamId: 2
+        }
+        FrAbs_N: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrAbs_N
+            systParamId: 20
+        }
+        FrAbs_pi: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrAbs_pi
+            systParamId: 14
+        }
+        FrCEx_N: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrCEx_N
+            systParamId: 17
+        }
+        FrCEx_pi: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrCEx_pi
+            systParamId: 11
+        }
+        FrElas_N: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrElas_N
+            systParamId: 18
+        }
+        FrElas_pi: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrElas_pi
+            systParamId: 12
+        }
+        FrInel_N: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrInel_N
+            systParamId: 19
+        }
+        FrInel_pi: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrInel_pi
+            systParamId: 13
+        }
+        FrPiProd_N: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrPiProd_N
+            systParamId: 21
+        }
+        FrPiProd_pi: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: FrPiProd_pi
+            systParamId: 15
+        }
+        MFP_N: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: MFP_N
+            systParamId: 16
+        }
+        MFP_pi: {
+            centralParamValue: 0
+            isSplineable: true
+            paramVariations: [
+                -3,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                3
+            ]
+            prettyName: MFP_pi
+            systParamId: 10
         }
         MaCCQE: {
             centralParamValue: 0
@@ -182,7 +363,7 @@ generated_systematic_provider_configuration: {
             prettyName: MaNCEL
             systParamId: 1
         }
-        MaNCRESshape: {
+        MaNCRES: {
             centralParamValue: 0
             isSplineable: true
             paramVariations: [
@@ -194,8 +375,8 @@ generated_systematic_provider_configuration: {
                 2,
                 3
             ]
-            prettyName: MaNCRESshape
-            systParamId: 6
+            prettyName: MaNCRES
+            systParamId: 5
         }
         MvCCRES: {
             centralParamValue: 0
@@ -212,7 +393,7 @@ generated_systematic_provider_configuration: {
             prettyName: MvCCRES
             systParamId: 4
         }
-        MvNCRESshape: {
+        MvNCRES: {
             centralParamValue: 0
             isSplineable: true
             paramVariations: [
@@ -224,23 +405,8 @@ generated_systematic_provider_configuration: {
                 2,
                 3
             ]
-            prettyName: MvNCRESshape
-            systParamId: 7
-        }
-        NormNCRES: {
-            centralParamValue: 0
-            isSplineable: true
-            paramVariations: [
-                -3,
-                -2,
-                -1,
-                0,
-                1,
-                2,
-                3
-            ]
-            prettyName: NormNCRES
-            systParamId: 5
+            prettyName: MvNCRES
+            systParamId: 6
         }
         RDecBR1eta: {
             centralParamValue: 0
@@ -255,7 +421,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: RDecBR1eta
-            systParamId: 9
+            systParamId: 8
         }
         RDecBR1gamma: {
             centralParamValue: 0
@@ -270,7 +436,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: RDecBR1gamma
-            systParamId: 8
+            systParamId: 7
         }
         Theta_Delta2Npi: {
             centralParamValue: 0
@@ -284,7 +450,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: Theta_Delta2Npi
-            systParamId: 10
+            systParamId: 9
         }
         instance_name: DUNE_TDR_Splines
         parameter_headers: [
@@ -293,12 +459,23 @@ generated_systematic_provider_configuration: {
             EtaNCEL,
             MaCCRES,
             MvCCRES,
-            NormNCRES,
-            MaNCRESshape,
-            MvNCRESshape,
+            MaNCRES,
+            MvNCRES,
             RDecBR1gamma,
             RDecBR1eta,
             Theta_Delta2Npi,
+            MFP_pi,
+            FrCEx_pi,
+            FrElas_pi,
+            FrInel_pi,
+            FrAbs_pi,
+            FrPiProd_pi,
+            MFP_N,
+            FrCEx_N,
+            FrElas_N,
+            FrInel_N,
+            FrAbs_N,
+            FrPiProd_N,
             CCQEPauliSupViaKF
         ]
         tool_options: {
@@ -306,7 +483,7 @@ generated_systematic_provider_configuration: {
             CCRESIsShapeOnly: false
             DISBYIsShapeOnly: false
             MaCCQEIsShapeOnly: false
-            NCRESIsShapeOnly: true
+            NCRESIsShapeOnly: false
             UseFullHERG: true
             fill_valid_tree: false
             ignore_parameter_dependence: true
@@ -326,7 +503,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: E2p2h_A_nu
-            systParamId: 17
+            systParamId: 28
         }
         E2p2h_A_nubar: {
             centralParamValue: 0
@@ -340,7 +517,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: E2p2h_A_nubar
-            systParamId: 19
+            systParamId: 30
         }
         E2p2h_B_nu: {
             centralParamValue: 0
@@ -354,7 +531,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: E2p2h_B_nu
-            systParamId: 18
+            systParamId: 29
         }
         E2p2h_B_nubar: {
             centralParamValue: 0
@@ -368,7 +545,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: E2p2h_B_nubar
-            systParamId: 20
+            systParamId: 31
         }
         instance_name: DUNE_TDR_FakeData
         parameter_headers: [
@@ -396,7 +573,7 @@ generated_systematic_provider_configuration: {
                 0
             ]
             prettyName: Mnv2p2hGaussEnhancement_CV
-            systParamId: 12
+            systParamId: 23
         }
         Mnv2p2hGaussEnhancement_NN: {
             centralParamValue: 0
@@ -410,7 +587,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: Mnv2p2hGaussEnhancement_NN
-            systParamId: 13
+            systParamId: 24
         }
         Mnv2p2hGaussEnhancement_QE: {
             centralParamValue: 0
@@ -424,7 +601,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: Mnv2p2hGaussEnhancement_QE
-            systParamId: 15
+            systParamId: 26
         }
         Mnv2p2hGaussEnhancement_np: {
             centralParamValue: 0
@@ -438,7 +615,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: Mnv2p2hGaussEnhancement_np
-            systParamId: 14
+            systParamId: 25
         }
         instance_name: DUNE_TDR_FakeData
         parameter_headers: [
@@ -466,7 +643,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: MKSPP_ReWeight
-            systParamId: 16
+            systParamId: 27
         }
         instance_name: DUNE_TDR_FakeData
         parameter_headers: [
@@ -530,7 +707,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: C12ToAr40_2p2hScaling_nu
-            systParamId: 49
+            systParamId: 60
         }
         C12ToAr40_2p2hScaling_nubar: {
             centralParamValue: 0
@@ -544,7 +721,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: C12ToAr40_2p2hScaling_nubar
-            systParamId: 50
+            systParamId: 61
         }
         SPPLowQ2Suppression: {
             centralParamValue: 0
@@ -558,7 +735,7 @@ generated_systematic_provider_configuration: {
                 1
             ]
             prettyName: SPPLowQ2Suppression
-            systParamId: 53
+            systParamId: 64
         }
         instance_name: DUNE_TDR_FakeData
         nuenuebar_xsec_ratio: {
@@ -573,7 +750,7 @@ generated_systematic_provider_configuration: {
                 0
             ]
             prettyName: nuenuebar_xsec_ratio
-            systParamId: 51
+            systParamId: 62
         }
         nuenumu_xsec_ratio: {
             centralParamValue: 1
@@ -587,7 +764,7 @@ generated_systematic_provider_configuration: {
                 0
             ]
             prettyName: nuenumu_xsec_ratio
-            systParamId: 52
+            systParamId: 63
         }
         parameter_headers: [
             C12ToAr40_2p2hScaling_nu,
@@ -615,7 +792,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_n_CC_2Pi
-            systParamId: 21
+            systParamId: 32
         }
         NR_nu_n_CC_3Pi: {
             centralParamValue: 0
@@ -630,7 +807,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_n_CC_3Pi
-            systParamId: 22
+            systParamId: 33
         }
         NR_nu_n_NC_1Pi: {
             centralParamValue: 0
@@ -645,7 +822,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_n_NC_1Pi
-            systParamId: 26
+            systParamId: 37
         }
         NR_nu_n_NC_2Pi: {
             centralParamValue: 0
@@ -660,7 +837,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_n_NC_2Pi
-            systParamId: 27
+            systParamId: 38
         }
         NR_nu_n_NC_3Pi: {
             centralParamValue: 0
@@ -675,7 +852,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_n_NC_3Pi
-            systParamId: 28
+            systParamId: 39
         }
         NR_nu_np_CC_1Pi: {
             centralParamValue: -1.14
@@ -690,7 +867,7 @@ generated_systematic_provider_configuration: {
                 -1.08
             ]
             prettyName: NR_nu_np_CC_1Pi
-            systParamId: 25
+            systParamId: 36
         }
         NR_nu_p_CC_2Pi: {
             centralParamValue: 0
@@ -705,7 +882,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_p_CC_2Pi
-            systParamId: 23
+            systParamId: 34
         }
         NR_nu_p_CC_3Pi: {
             centralParamValue: 0
@@ -720,7 +897,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_p_CC_3Pi
-            systParamId: 24
+            systParamId: 35
         }
         NR_nu_p_NC_1Pi: {
             centralParamValue: 0
@@ -735,7 +912,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_p_NC_1Pi
-            systParamId: 29
+            systParamId: 40
         }
         NR_nu_p_NC_2Pi: {
             centralParamValue: 0
@@ -750,7 +927,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_p_NC_2Pi
-            systParamId: 30
+            systParamId: 41
         }
         NR_nu_p_NC_3Pi: {
             centralParamValue: 0
@@ -765,7 +942,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nu_p_NC_3Pi
-            systParamId: 31
+            systParamId: 42
         }
         NR_nubar_n_CC_1Pi: {
             centralParamValue: 0
@@ -780,7 +957,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_n_CC_1Pi
-            systParamId: 32
+            systParamId: 43
         }
         NR_nubar_n_CC_2Pi: {
             centralParamValue: 0
@@ -795,7 +972,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_n_CC_2Pi
-            systParamId: 33
+            systParamId: 44
         }
         NR_nubar_n_CC_3Pi: {
             centralParamValue: 0
@@ -810,7 +987,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_n_CC_3Pi
-            systParamId: 34
+            systParamId: 45
         }
         NR_nubar_n_NC_1Pi: {
             centralParamValue: 0
@@ -825,7 +1002,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_n_NC_1Pi
-            systParamId: 38
+            systParamId: 49
         }
         NR_nubar_n_NC_2Pi: {
             centralParamValue: 0
@@ -840,7 +1017,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_n_NC_2Pi
-            systParamId: 39
+            systParamId: 50
         }
         NR_nubar_n_NC_3Pi: {
             centralParamValue: 0
@@ -855,7 +1032,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_n_NC_3Pi
-            systParamId: 40
+            systParamId: 51
         }
         NR_nubar_p_CC_1Pi: {
             centralParamValue: 0
@@ -870,7 +1047,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_p_CC_1Pi
-            systParamId: 35
+            systParamId: 46
         }
         NR_nubar_p_CC_2Pi: {
             centralParamValue: 0
@@ -885,7 +1062,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_p_CC_2Pi
-            systParamId: 36
+            systParamId: 47
         }
         NR_nubar_p_CC_3Pi: {
             centralParamValue: 0
@@ -900,7 +1077,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_p_CC_3Pi
-            systParamId: 37
+            systParamId: 48
         }
         NR_nubar_p_NC_1Pi: {
             centralParamValue: 0
@@ -915,7 +1092,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_p_NC_1Pi
-            systParamId: 41
+            systParamId: 52
         }
         NR_nubar_p_NC_2Pi: {
             centralParamValue: 0
@@ -930,7 +1107,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_p_NC_2Pi
-            systParamId: 42
+            systParamId: 53
         }
         NR_nubar_p_NC_3Pi: {
             centralParamValue: 0
@@ -945,7 +1122,7 @@ generated_systematic_provider_configuration: {
                 3
             ]
             prettyName: NR_nubar_p_NC_3Pi
-            systParamId: 43
+            systParamId: 54
         }
         instance_name: DUNE_TDR_FakeData
         parameter_headers: [
@@ -994,3 +1171,4 @@ generated_systematic_provider_configuration: {
         MiscInteractionSysts_DUNE_TDR_FakeData
     ]
 }
+END_PROLOG
