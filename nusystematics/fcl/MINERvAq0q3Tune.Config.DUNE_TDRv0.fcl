@@ -18,17 +18,22 @@ MINERvAq0q3Tune_Tool_Config: {
     # }
 
     use_MINERvA_2p2h_tunes: true
-    parameter_per_2p2h_universe: true
 
-    Mnv2p2hGaussEnhancement_CV_central_value: 1
-    Mnv2p2hGaussEnhancement_CV_variation_descriptor: "[0,0,0,1,0,0,0]"
-    Mnv2p2hGaussEnhancement_NN_central_value: 0
-    Mnv2p2hGaussEnhancement_NN_variation_descriptor: "[1,1,1,0,1,1,1]"
-    Mnv2p2hGaussEnhancement_np_central_value: 0
-    Mnv2p2hGaussEnhancement_np_variation_descriptor: "[1,1,1,0,1,1,1]"
-    Mnv2p2hGaussEnhancement_QE_central_value: 0
-    Mnv2p2hGaussEnhancement_QE_variation_descriptor: "[1,1,1,0,1,1,1]"
+    ## If true, each universe is a separate parameter, controlled as below
+    parameter_per_2p2h_universe: false
+    # Mnv2p2hGaussEnhancement_CV_central_value: 1
+    # Mnv2p2hGaussEnhancement_CV_variation_descriptor: "[0,0,0,1,0,0,0]"
+    # Mnv2p2hGaussEnhancement_NN_central_value: 0
+    # Mnv2p2hGaussEnhancement_NN_variation_descriptor: "[1,1,1,0,1,1,1]"
+    # Mnv2p2hGaussEnhancement_np_central_value: 0
+    # Mnv2p2hGaussEnhancement_np_variation_descriptor: "[1,1,1,0,1,1,1]"
+    # Mnv2p2hGaussEnhancement_QE_central_value: 0
+    # Mnv2p2hGaussEnhancement_QE_variation_descriptor: "[1,1,1,0,1,1,1]"
 
+    ## If not, we put the response into a single parameter where the 'knots' correspond to the different universes. Here we want to approximate the linear response from QE -> CV -> NN where:
+    # enum class MECTweak_t { kCV = 0, kNNOnly, kNPOnly, kQEOnly };
+    Mnv2p2hGaussEnhancement_central_value: 0
+    Mnv2p2hGaussEnhancement_variation_descriptor: "[3,3,3,0,1,1,1]"
 }
 
 syst_providers: [MINERvAq0q3Tune_Tool_Config]

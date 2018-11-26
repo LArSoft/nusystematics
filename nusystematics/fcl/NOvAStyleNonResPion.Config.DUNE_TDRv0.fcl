@@ -7,59 +7,59 @@ NOvAStyleNonResPionNorm_Tool_Config: {
   NR_nu_np_CC_1Pi_variation_descriptor: "(-1.2,-1.08,0.02)"
 
   NR_nu_p_NC_1Pi_central_value: 0
-  NR_nu_p_NC_1Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_p_NC_1Pi_variation_descriptor: "(-2,2,1)"
   NR_nu_n_NC_1Pi_central_value: 0
-  NR_nu_n_NC_1Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_NC_1Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nubar_p_CC_1Pi_central_value: 0
-  NR_nubar_p_CC_1Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_p_CC_1Pi_variation_descriptor: "(-2,2,1)"
   NR_nubar_n_CC_1Pi_central_value: 0
-  NR_nubar_n_CC_1Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_CC_1Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nubar_p_NC_1Pi_central_value: 0
-  NR_nubar_p_NC_1Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_p_NC_1Pi_variation_descriptor: "(-2,2,1)"
   NR_nubar_n_NC_1Pi_central_value: 0
-  NR_nubar_n_NC_1Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_NC_1Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nu_p_CC_2Pi_central_value: 0
-  NR_nu_p_CC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_p_CC_2Pi_variation_descriptor: "(-2,2,1)"
   NR_nu_n_CC_2Pi_central_value: 0
-  NR_nu_n_CC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_CC_2Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nu_p_NC_2Pi_central_value: 0
-  NR_nu_p_NC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_p_NC_2Pi_variation_descriptor: "(-2,2,1)"
   NR_nu_n_NC_2Pi_central_value: 0
-  NR_nu_n_NC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_NC_2Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nubar_p_CC_2Pi_central_value: 0
-  NR_nubar_p_CC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_p_CC_2Pi_variation_descriptor: "(-2,2,1)"
   NR_nubar_n_CC_2Pi_central_value: 0
-  NR_nubar_n_CC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_CC_2Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nubar_p_NC_2Pi_central_value: 0
-  NR_nubar_p_NC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_p_NC_2Pi_variation_descriptor: "(-2,2,1)"
   NR_nubar_n_NC_2Pi_central_value: 0
-  NR_nubar_n_NC_2Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_NC_2Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nu_p_CC_3Pi_central_value: 0
-  NR_nu_p_CC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_p_CC_3Pi_variation_descriptor: "(-2,2,1)"
   NR_nu_n_CC_3Pi_central_value: 0
-  NR_nu_n_CC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_CC_3Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nu_p_NC_3Pi_central_value: 0
-  NR_nu_p_NC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_p_NC_3Pi_variation_descriptor: "(-2,2,1)"
   NR_nu_n_NC_3Pi_central_value: 0
-  NR_nu_n_NC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nu_n_NC_3Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nubar_p_CC_3Pi_central_value: 0
-  NR_nubar_p_CC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_p_CC_3Pi_variation_descriptor: "(-2,2,1)"
   NR_nubar_n_CC_3Pi_central_value: 0
-  NR_nubar_n_CC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_CC_3Pi_variation_descriptor: "(-2,2,1)"
 
   NR_nubar_p_NC_3Pi_central_value: 0
-  NR_nubar_p_NC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_p_NC_3Pi_variation_descriptor: "(-2,2,1)"
   NR_nubar_n_NC_3Pi_central_value: 0
-  NR_nubar_n_NC_3Pi_variation_descriptor: "(-3,3,1)"
+  NR_nubar_n_NC_3Pi_variation_descriptor: "(-2,2,1)"
 
 }
 syst_providers: [NOvAStyleNonResPionNorm_Tool_Config]

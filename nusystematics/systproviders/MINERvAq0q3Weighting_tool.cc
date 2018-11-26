@@ -90,10 +90,15 @@ SystMetaData MINERvAq0q3Weighting::BuildSystMetaData(ParameterSet const &cfg,
 
     } else {
       systtools::SystParamHeader param;
-      param.systParamId = firstId++;
-      param.centralParamValue = 1;
-      param.paramVariations = {1, 2, 3, 4};
-      param.prettyName = "MINERvATune_2p2hGaussEnhancement";
+      if (ParseFHiCLSimpleToolConfigurationParameter(
+              cfg, "Mnv2p2hGaussEnhancement", param, firstId)) {
+        param.systParamId = firstId++;
+      } else {
+        param.systParamId = firstId++;
+        param.centralParamValue = 1;
+        param.paramVariations = {1, 2, 3, 4};
+        param.prettyName = "Mnv2p2hGaussEnhancement";
+      }
       smd.push_back(param);
     }
   }
@@ -126,9 +131,9 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
             "MINERvATune_RPA_input_manifest"));
   }
 
-  if (HasParam(GetSystMetaData(), "2p2hGaussEnhancement")) {
+  if (HasParam(GetSystMetaData(), "Mnv2p2hGaussEnhancement")) {
     ConfiguredParameters[param_t::kMINERvA2p2h] =
-        GetParamIndex(GetSystMetaData(), "2p2hGaussEnhancement");
+        GetParamIndex(GetSystMetaData(), "Mnv2p2hGaussEnhancement");
 
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h]];
