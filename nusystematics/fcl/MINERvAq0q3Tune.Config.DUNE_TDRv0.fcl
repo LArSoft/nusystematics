@@ -31,9 +31,9 @@ MINERvAq0q3Tune_Tool_Config: {
     # Mnv2p2hGaussEnhancement_QE_variation_descriptor: "[1,1,1,0,1,1,1]"
 
     ## If not, we put the response into a single parameter where the 'knots' correspond to the different universes. Here we want to approximate the linear response from QE -> CV -> NN where:
-    # enum class MECTweak_t { kCV = 0, kNNOnly, kNPOnly, kQEOnly };
+    # [ 1 == CV, 2 == NN, 3 == np, 4 == 1p1h ]
     Mnv2p2hGaussEnhancement_central_value: 0
-    Mnv2p2hGaussEnhancement_variation_descriptor: "[3,3,3,0,1,1,1]"
+    Mnv2p2hGaussEnhancement_variation_descriptor: "[4,4,4,1,2,2,2]"
 }
 
 syst_providers: [MINERvAq0q3Tune_Tool_Config]
