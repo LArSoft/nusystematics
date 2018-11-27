@@ -427,7 +427,7 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
         (ev.Summary()->ProcInfo().IsQuasiElastic() ||
          ev.Summary()->ProcInfo().IsMEC())) {
       paramId_t MEC_param =
-          GetSystMetaData()[ConfiguredParameters[param_t::kMINERvARPA]]
+          GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h]]
               .systParamId;
       MEC_weights = GetParamElementFromContainer(resp, MEC_param).responses;
     }
