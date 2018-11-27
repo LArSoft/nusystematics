@@ -169,33 +169,48 @@ struct TweakSummaryTree {
     std::fill_n(paramCVResponses.begin(), ntweaks.size(), 1);
   }
   void Add(event_unit_response_t const &eu) {
-    for (ParamResponses const &resp : eu) {
-      if (!tweak_indices.count(resp.pid)) {
-        continue;
+    for (std::pair<paramId_t, size_t> idx_id : tweak_indices) {
+      size_t resp_idx = GetParamContainerIndex(eu, idx_id.first);
+      if (resp_idx != systtools::kParamUnhandled<size_t>) {
+        ParamResponses const &resp = eu[resp_idx];
+        if (tweak_branches[idx_id.second].size() != resp.responses.size()) {
+          throw unexpected_number_of_responses()
+              << "[ERROR]: Expected " << ntweaks[idx_id.second]
+              << " responses from parameter " << resp.pid << ", but found "
+              << resp.responses.size();
+        }
+        ntweaks[idx_id.second] = resp.responses.size();
+        std::copy_n(resp.responses.begin(), ntweaks[idx_id.second],
+                    tweak_branches[idx_id.second].begin());
+      } else {
+        ntweaks[idx_id.second] = 7;
+        std::fill_n(tweak_branches[idx_id.second].begin(),
+                    ntweaks[idx_id.second], 1);
       }
-      size_t idx = tweak_indices[resp.pid];
-      if (tweak_branches[idx].size() != resp.responses.size()) {
-        throw unexpected_number_of_responses()
-            << "[ERROR]: Expected " << ntweaks[idx]
-            << " responses from parameter " << resp.pid << ", but found "
-            << resp.responses.size();
-      }
-      ntweaks[idx] = resp.responses.size();
-      std::copy_n(resp.responses.begin(), ntweaks[idx],
-                  tweak_branches[idx].begin());
     }
   }
   void Add(event_unit_response_w_cv_t const &eu) {
+    for (std::pair<paramId_t, size_t> idx_id : tweak_indices) {
+      size_t resp_idx = GetParamContainerIndex(eu, idx_id.first);
+      if (resp_idx != systtools::kParamUnhandled<size_t>) {
+        VarAndCVResponse const &prcw = eu[resp_idx];
+        if (tweak_branches[idx_id.second].size() != prcw.responses.size()) {
+          throw unexpected_number_of_responses()
+              << "[ERROR]: Expected " << ntweaks[idx_id.second]
+              << " responses from parameter " << prcw.pid << ", but found "
+              << prcw.responses.size();
+        }
+        ntweaks[idx_id.second] = prcw.responses.size();
+        std::copy_n(prcw.responses.begin(), ntweaks[idx_id.second],
+                    tweak_branches[idx_id.second].begin());
+        paramCVResponses[idx_id.second] = prcw.CV_response;
 
-    for (VarAndCVResponse prcw : eu) {
-      Add({{prcw.pid, prcw.responses}});
-
-      if (!tweak_indices.count(prcw.pid)) {
-        continue;
+      } else {
+        ntweaks[idx_id.second] = 7;
+        std::fill_n(tweak_branches[idx_id.second].begin(),
+                    ntweaks[idx_id.second], 1);
+        paramCVResponses[idx_id.second] = 1;
       }
-      size_t idx = tweak_indices[prcw.pid];
-
-      paramCVResponses[idx] = prcw.CV_response;
     }
   }
 
@@ -459,9 +474,12 @@ int main(int argc, char const *argv[]) {
     }
 
     tst.Clear();
+    event_unit_response_w_cv_t resp;
     for (auto &sp : syst_providers) {
-      tst.Add(sp->GetEventVariationAndCVResponse(GenieGHep));
+      systtools::ExtendEventUnitResponse(
+          resp, sp->GetEventVariationAndCVResponse(GenieGHep));
     }
+    tst.Add(resp);
     tst.Fill();
   }
   std::cout << std::endl;

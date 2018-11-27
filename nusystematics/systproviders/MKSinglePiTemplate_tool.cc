@@ -151,6 +151,11 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
     InitValidTree();
   }
 
+  genie::Messenger::Instance()->SetPrioritiesFromXmlFile(
+      "Messenger_whisper.xml");
+  genie::Messenger::Instance()->SetPriorityLevel("GHepUtils",
+                                                 log4cpp::Priority::FATAL);
+
   return true;
 }
 

@@ -104,10 +104,6 @@ void GENIEReWeight::extend_ResponseToGENIEParameters(
 
 bool GENIEReWeight::SetupResponseCalculator(
     fhicl::ParameterSet const &tool_options) {
-  genie::Messenger::Instance()->SetPrioritiesFromXmlFile(
-      "Messenger_whisper.xml");
-
-  genie::Messenger::Instance()->SetPriorityLevel("GHepUtils", log4cpp::Priority::FATAL);
 
   std::cout << "[INFO]: Setting up GENIE ReWeight instances..." << std::endl;
   extend_ResponseToGENIEParameters(
@@ -137,6 +133,11 @@ bool GENIEReWeight::SetupResponseCalculator(
   if (fill_valid_tree) {
     InitValidTree();
   }
+
+  genie::Messenger::Instance()->SetPrioritiesFromXmlFile(
+      "Messenger_whisper.xml");
+  genie::Messenger::Instance()->SetPriorityLevel("GHepUtils",
+                                                 log4cpp::Priority::FATAL);
 
   return true;
 }
@@ -233,8 +234,6 @@ GENIEReWeight::GetEventResponse(genie::EventRecord const &gev,
 systtools::ParamResponses
 GENIEReWeight::GetEventGENIEParameterResponse(genie::EventRecord const &gev,
                                               size_t idx) {
-
-  genie::Messenger::Instance()->SetPriorityLevel("GHepUtils", log4cpp::Priority::FATAL);
 
   GENIEResponseParameter &GENIEResponse = ResponseToGENIEParameters[idx];
   systtools::SystParamHeader const &hdr = GetSystMetaData()[GENIEResponse.pidx];

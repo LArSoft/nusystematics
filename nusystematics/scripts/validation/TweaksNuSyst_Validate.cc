@@ -113,6 +113,7 @@ void TweaksNuSyst_Validate(std::string filename) {
   IntStr.push_back("is_mec");
   IntStr.push_back("is_res");
   IntStr.push_back("is_dis");
+  IntStr.push_back("1");
 
   // The CC NC flag
   std::vector<std::string> CCStr;
