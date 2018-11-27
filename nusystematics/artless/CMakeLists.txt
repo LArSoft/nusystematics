@@ -272,6 +272,19 @@ target_link_libraries(BindingEnergyFlatTreeMaker ${ROOT_LIBS})
 
 INSTALL(TARGETS BindingEnergyFlatTreeMaker DESTINATION bin)
 
+
+####### Validation app
+add_executable(TweaksNuSyst_Validate ${CMAKE_SOURCE_DIR}/nusystematics/scripts/validation/TweaksNuSyst_Validate.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(TweaksNuSyst_Validate systematicstools)
+endif()
+set_target_properties(TweaksNuSyst_Validate PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(TweaksNuSyst_Validate nusystematics_systproviders)
+target_link_libraries(TweaksNuSyst_Validate ${ROOT_LIBS})
+
+INSTALL(TARGETS TweaksNuSyst_Validate DESTINATION bin)
+
 ####### interface
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/interface/IGENIESystProvider_tool.hh DESTINATION include/nusystematics/interface)
 
