@@ -120,7 +120,7 @@ void TweaksNuSyst_Validate(std::string filename) {
   CCStr.push_back("!is_cc");
 
   TCanvas *canv = new TCanvas("canv", "canv", 1024, 1024);
-  canv->SetTopMargin(canv->GetTopMargin() * 0.8);
+  canv->SetTopMargin(0.2);
   canv->SetRightMargin(canv->GetRightMargin() * 0.7);
   canv->SetBottomMargin(canv->GetBottomMargin() * 0.8);
   canv->SetLeftMargin(canv->GetLeftMargin() * 1.2);
@@ -213,7 +213,8 @@ void TweaksNuSyst_Validate(std::string filename) {
   // The histograms containing the -3,-2,-1... variations
   TH1D **PlotList = new TH1D *[NumberOfPoints];
   // Premade legend
-  TLegend *leg = new TLegend(0.13, 0.5, 0.5, 0.92);
+  TLegend *leg = new TLegend(0.12, 0.8, 0.75, 0.9);
+  leg->SetNColumns(2);
   for (size_t z = 0; z < NumberOfPoints; ++z) {
     PlotList[z] = new TH1D(Form("List_%ld", z), Form("List_%ld", z), 1, 0, 1);
     PlotList[z]->SetLineWidth(2);

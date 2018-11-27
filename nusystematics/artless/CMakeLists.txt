@@ -280,7 +280,6 @@ if(EXTERNAL_SYSTTOOLS)
 endif()
 set_target_properties(TweaksNuSyst_Validate PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
 
-target_link_libraries(TweaksNuSyst_Validate nusystematics_systproviders)
 target_link_libraries(TweaksNuSyst_Validate ${ROOT_LIBS})
 
 INSTALL(TARGETS TweaksNuSyst_Validate DESTINATION bin)
