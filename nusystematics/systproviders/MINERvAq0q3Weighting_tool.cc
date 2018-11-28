@@ -276,7 +276,8 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
   }
 
   if (!(ev.Summary()->ProcInfo().IsQuasiElastic() ||
-        ev.Summary()->ProcInfo().IsMEC())) {
+        ev.Summary()->ProcInfo().IsMEC()) ||
+      ev.Summary()->ExclTag().IsCharmEvent()) {
     return resp;
   }
 
@@ -312,19 +313,20 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     }
   }
 
+  QELikeTarget_t qel_targ = GetQELikeTarget(ev);
+
   // Only ever applies to 2p2h/qe events
   if ((ConfiguredParameters.find(param_t::kMINERvA2p2h) !=
        ConfiguredParameters.end()) &&
-      (ev.Summary()->ProcInfo().IsQuasiElastic() ||
-       ev.Summary()->ProcInfo().IsMEC())) {
+      (qel_targ != QELikeTarget_t::kInvalidTopology)) {
 
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h]];
 
     resp.push_back({hdr.systParamId, {}});
     for (double var : vals_2p2hTotal) {
-      resp.back().responses.push_back(GetMINERvA2p2hTuneEnhancement(
-          var, q0q3[0], q0q3[1], GetQELikeTarget(ev)));
+      resp.back().responses.push_back(
+          GetMINERvA2p2hTuneEnhancement(var, q0q3[0], q0q3[1], qel_targ));
     }
   }
 
@@ -338,53 +340,53 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
 
     resp.push_back({hdr.systParamId, {}});
     for (double v : vals_2p2hCV) {
-      double cv_weight = 1 + v * GetMINERvA2p2hTuneEnhancement(
-                                     1, q0q3[0], q0q3[1], GetQELikeTarget(ev));
+      double cv_weight =
+          1 + v * GetMINERvA2p2hTuneEnhancement(1, q0q3[0], q0q3[1], qel_targ);
       resp.back().responses.push_back(cv_weight);
     }
   }
   // Only ever applies to 2p2h events
   if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_NN) !=
        ConfiguredParameters.end()) &&
-      ev.Summary()->ProcInfo().IsMEC()) {
+      qel_targ == QELikeTarget_t::kNN) {
 
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_NN]];
 
     resp.push_back({hdr.systParamId, {}});
     for (double v : vals_2p2hNN) {
-      double tune_ench = v * GetMINERvA2p2hTuneEnhancement(2, q0q3[0], q0q3[1],
-                                                           GetQELikeTarget(ev));
+      double tune_ench =
+          v * GetMINERvA2p2hTuneEnhancement(2, q0q3[0], q0q3[1], qel_targ);
       resp.back().responses.push_back(tune_ench);
     }
   }
   // Only ever applies to 2p2h events
   if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_np) !=
        ConfiguredParameters.end()) &&
-      ev.Summary()->ProcInfo().IsMEC()) {
+      qel_targ == QELikeTarget_t::knp) {
 
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_np]];
 
     resp.push_back({hdr.systParamId, {}});
     for (double v : vals_2p2hnp) {
-      double tune_ench = v * GetMINERvA2p2hTuneEnhancement(3, q0q3[0], q0q3[1],
-                                                           GetQELikeTarget(ev));
+      double tune_ench =
+          v * GetMINERvA2p2hTuneEnhancement(3, q0q3[0], q0q3[1], qel_targ);
       resp.back().responses.push_back(tune_ench);
     }
   }
   // Only ever applies to qe events
   if ((ConfiguredParameters.find(param_t::kMINERvA2p2h_QE) !=
        ConfiguredParameters.end()) &&
-      ev.Summary()->ProcInfo().IsQuasiElastic()) {
+      qel_targ == QELikeTarget_t::kQE) {
 
     SystParamHeader const &hdr =
         GetSystMetaData()[ConfiguredParameters[param_t::kMINERvA2p2h_QE]];
 
     resp.push_back({hdr.systParamId, {}});
     for (double v : vals_2p2hQE) {
-      double tune_ench = v * GetMINERvA2p2hTuneEnhancement(4, q0q3[0], q0q3[1],
-                                                           GetQELikeTarget(ev));
+      double tune_ench =
+          v * GetMINERvA2p2hTuneEnhancement(4, q0q3[0], q0q3[1], qel_targ);
       resp.back().responses.push_back(tune_ench);
     }
   }
@@ -404,7 +406,7 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
       NEUTMode = genie::utils::ghep::NeutReactionCode(&ev);
     }
 
-    QELTarget = e2i(GetQELikeTarget(ev));
+    QELTarget = e2i(qel_targ);
 
     Enu = ISLepP4.E();
     Q2 = -emTransfer.Mag2();

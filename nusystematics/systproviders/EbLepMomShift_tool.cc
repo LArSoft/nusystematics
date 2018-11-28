@@ -98,7 +98,7 @@ EbLepMomShift::GetEventResponse(genie::EventRecord const &ev) {
   SystMetaData const &md = GetSystMetaData();
 
   if (!ev.Summary()->ProcInfo().IsQuasiElastic() ||
-      !ev.Summary()->ProcInfo().IsWeakCC()) {
+      !ev.Summary()->ProcInfo().IsWeakCC() || ev.Summary()->ExclTag().IsCharmEvent()) {
     return resp;
   }
 

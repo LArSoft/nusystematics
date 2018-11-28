@@ -101,7 +101,7 @@ std::vector<double> MiscInteractionSysts::GetWeights_C12ToAr40_2p2hScaling(
 }
 
 std::vector<double> MiscInteractionSysts::GetWeights_nuenuebar_xsec_ratio(
-    genie::EventRecord const &ev) {
+    genie::EventRecord const &ev, std::vector<double> const &vals) {
 
   std::vector<double> resp;
 
@@ -117,16 +117,14 @@ std::vector<double> MiscInteractionSysts::GetWeights_nuenuebar_xsec_ratio(
   int pdgnu = ISLep->Pdg();
   double enu = ISLep->P4()->E();
 
-  systtools::SystMetaData const &md = GetSystMetaData();
-
-  for (double v : md[pidx_nuenuebar_xsec_ratio].paramVariations) {
+  for (double v : vals) {
     resp.push_back(GetNueNueBarXSecRatioWeight(pdgnu, true, enu, v));
   }
 
   return resp;
 }
 std::vector<double> MiscInteractionSysts::GetWeights_nuenumu_xsec_ratio(
-    genie::EventRecord const &ev) {
+    genie::EventRecord const &ev, std::vector<double> const &vals) {
 
   std::vector<double> resp;
 
@@ -152,20 +150,18 @@ std::vector<double> MiscInteractionSysts::GetWeights_nuenumu_xsec_ratio(
   double q0_GeV = emTransfer.E();
   double q3_GeV = emTransfer.Vect().Mag();
 
-  systtools::SystMetaData const &md = GetSystMetaData();
-
-  for (double v : md[pidx_nuenuebar_xsec_ratio].paramVariations) {
+  for (double v : vals) {
     resp.push_back(GetNueNumuRatioWeight(pdgnu, true, enu, q0_GeV, q3_GeV, v));
   }
 
   return resp;
 }
 std::vector<double> MiscInteractionSysts::GetWeights_SPPLowQ2Suppression(
-    genie::EventRecord const &ev) {
+    genie::EventRecord const &ev, std::vector<double> const &vals) {
 
   std::vector<double> resp;
 
-  if (!ev.Summary()->ProcInfo().IsResonant()) {
+  if (SPPChannelFromGHep(ev) == genie::kSppNull) {
     return resp;
   }
 
@@ -176,9 +172,7 @@ std::vector<double> MiscInteractionSysts::GetWeights_SPPLowQ2Suppression(
   TLorentzVector emTransfer = (ISLepP4 - FSLepP4);
   double Q2_GeV = -emTransfer.Mag2();
 
-  systtools::SystMetaData const &md = GetSystMetaData();
-
-  for (double v : md[pidx_nuenuebar_xsec_ratio].paramVariations) {
+  for (double v : vals) {
     resp.push_back(GetMINERvASPPLowQ2SuppressionWeight(e2i(GetSimbMode(ev)),
                                                        true, Q2_GeV, v));
   }
@@ -206,16 +200,28 @@ MiscInteractionSysts::GetEventResponse(genie::EventRecord const &ev) {
     }
   }
   if (pidx_nuenuebar_xsec_ratio != systtools::kParamUnhandled<size_t>) {
-    resp.push_back({md[pidx_nuenuebar_xsec_ratio].systParamId,
-                    GetWeights_nuenuebar_xsec_ratio(ev)});
+    std::vector<double> wght = GetWeights_nuenuebar_xsec_ratio(
+        ev, md[pidx_nuenuebar_xsec_ratio].paramVariations);
+    if (wght.size()) {
+      resp.push_back(
+          {md[pidx_nuenuebar_xsec_ratio].systParamId, std::move(wght)});
+    }
   }
   if (pidx_nuenumu_xsec_ratio != systtools::kParamUnhandled<size_t>) {
-    resp.push_back({md[pidx_nuenumu_xsec_ratio].systParamId,
-                    GetWeights_nuenumu_xsec_ratio(ev)});
+    std::vector<double> wght = GetWeights_nuenumu_xsec_ratio(
+        ev, md[pidx_nuenumu_xsec_ratio].paramVariations);
+    if (wght.size()) {
+      resp.push_back(
+          {md[pidx_nuenumu_xsec_ratio].systParamId, std::move(wght)});
+    }
   }
   if (pidx_SPPLowQ2Suppression != systtools::kParamUnhandled<size_t>) {
-    resp.push_back({md[pidx_SPPLowQ2Suppression].systParamId,
-                    GetWeights_SPPLowQ2Suppression(ev)});
+    std::vector<double> wght = GetWeights_SPPLowQ2Suppression(
+        ev, md[pidx_SPPLowQ2Suppression].paramVariations);
+    if (wght.size()) {
+      resp.push_back(
+          {md[pidx_SPPLowQ2Suppression].systParamId, std::move(wght)});
+    }
   }
 
   // Remove any empty responses

@@ -3,6 +3,7 @@
 #include "systematicstools/utility/FHiCLSystParamHeaderUtility.hh"
 #include "systematicstools/utility/ResponselessParamUtility.hh"
 
+#include "nusystematics/utility/GENIEUtils.hh"
 #include "nusystematics/utility/enumclass2int.hh"
 
 #include "nusystematics/responsecalculators/BeRPA.hh"
@@ -164,9 +165,19 @@ BeRPAWeight::GetEventResponse(genie::EventRecord const &ev) {
   SystMetaData const &md = GetSystMetaData();
 
   if (!ev.Summary()->ProcInfo().IsQuasiElastic() ||
-      !ev.Summary()->ProcInfo().IsWeakCC()) {
+      !ev.Summary()->ProcInfo().IsWeakCC() ||
+      ev.Summary()->ExclTag().IsCharmEvent()) {
     return resp;
   }
+
+#ifdef BERPAWEIGHT_DEBUG
+  if (ev.Summary()->Kine().W(true) > 1) {
+    std::cout << "[INFO]: QE event with high W (NEUT: "
+              << genie::utils::ghep::NeutReactionCode(&ev) << ") " << std::endl
+              << DumpGENIEEv(ev) << std::endl;
+    return resp;
+  }
+#endif
 
   genie::GHepParticle *FSLep = ev.FinalStatePrimaryLepton();
   genie::GHepParticle *ISLep = ev.Probe();

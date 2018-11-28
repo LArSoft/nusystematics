@@ -49,7 +49,8 @@ NEW_SYSTTOOLS_EXCEPT(indeterminable_QELikeTarget);
 
 inline QELikeTarget_t GetQELikeTarget(genie::EventRecord const &ev) {
 
-  if (ev.Summary()->ProcInfo().IsQuasiElastic()) {
+  if (ev.Summary()->ProcInfo().IsQuasiElastic() &&
+      !ev.Summary()->ExclTag().IsCharmEvent()) {
     return QELikeTarget_t::kQE;
   }
   if (ev.Summary()->ProcInfo().IsMEC()) {
@@ -209,6 +210,38 @@ inline bool ChannelsAreEquivalent(NRPiChan_t ch, NRPiChan_t event_ch,
   return true;
 }
 
+inline double GetErecoil_MINERvA_LowRecoil(genie::EventRecord const &ev) {
+  // Get total energy of hadronic system.
+  double Erecoil = 0.0;
+
+  TIter event_iter(&ev);
+  genie::GHepParticle *p = 0;
+
+  while ((p = dynamic_cast<genie::GHepParticle *>(event_iter.Next()))) {
+    if (p->Status() != genie::kIStStableFinalState) {
+      continue;
+    }
+    switch (p->Pdg()) {
+    case 2212:
+    case 211:
+    case -211: {
+      Erecoil += p->KinE();
+      break;
+    }
+    case 111:
+    case 11:
+    case -11:
+    case -22: {
+      Erecoil += p->E();
+      break;
+    }
+    default: {}
+    }
+  }
+
+  return Erecoil;
+}
+
 inline simb_mode_copy GetSimbMode(genie::EventRecord const &ev) {
 
   simb_mode_copy mode = simb_mode_copy::kUnknownInteraction;
@@ -244,6 +277,44 @@ inline simb_mode_copy GetSimbMode(genie::EventRecord const &ev) {
   }
 
   return mode;
+}
+
+inline std::string DumpGENIEEv(genie::EventRecord const &ev) {
+  std::stringstream ss("");
+  ss << ev.Summary()->AsString() << std::endl;
+
+  genie::Target const &tgt = ev.Summary()->InitState().Tgt();
+
+  bool nuclear_target = tgt.IsNucleus();
+
+  TIter event_iter(&ev);
+  genie::GHepParticle *p = 0;
+  size_t p_it = 0;
+
+  while ((p = dynamic_cast<genie::GHepParticle *>(event_iter.Next()))) {
+    genie::GHepStatus_t ghep_ist = (genie::GHepStatus_t)p->Status();
+    int ghep_pdgc = p->Pdg();
+    int ghep_fm = p->FirstMother();
+    int ghep_fmpdgc = (ghep_fm == -1) ? 0 : ev.Particle(ghep_fm)->Pdg();
+
+    bool decayed =
+        (ghep_ist == genie::kIStDecayedState &&
+         (ghep_pdgc == genie::kPdgPi0 || ghep_pdgc == genie::kPdgEta));
+    bool parent_included =
+        (ghep_fmpdgc == genie::kPdgPi0 || ghep_fmpdgc == genie::kPdgEta);
+
+    bool count_it =
+        (nuclear_target && ghep_ist == genie::kIStHadronInTheNucleus) ||
+        (!nuclear_target && decayed) ||
+        (!nuclear_target && ghep_ist == genie::kIStStableFinalState &&
+         !parent_included);
+
+    ss << "Part: " << p_it++ << ", pdg = " << ghep_pdgc << ", decayed ? "
+       << decayed << ", parent_included ? " << parent_included
+       << ", counting ? " << count_it << std::endl;
+  }
+  ss << std::endl;
+  return ss.str();
 }
 
 } // namespace nusyst

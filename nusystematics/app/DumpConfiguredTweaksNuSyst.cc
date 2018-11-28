@@ -71,7 +71,7 @@ struct TweakSummaryTree {
   bool is_res;
   int res_channel;
   bool is_dis;
-  double W_GeV2;
+  double W_GeV;
   double Q2_GeV2;
   double q0_GeV;
   double q3_GeV;
@@ -97,7 +97,7 @@ struct TweakSummaryTree {
     t->Branch("is_res", &is_res, "is_res/O");
     t->Branch("res_channel", &res_channel, "res_channel/I");
     t->Branch("is_dis", &is_dis, "is_dis/O");
-    t->Branch("W_GeV2", &W_GeV2, "W_GeV2/D");
+    t->Branch("W_GeV", &W_GeV, "W_GeV/D");
     t->Branch("Q2_GeV2", &Q2_GeV2, "Q2_GeV2/D");
     t->Branch("q0_GeV", &q0_GeV, "q0_GeV/D");
     t->Branch("q3_GeV", &q3_GeV, "q3_GeV/D");
@@ -462,7 +462,7 @@ int main(int argc, char const *argv[]) {
       tst.res_channel = SPPChannelFromGHep(GenieGHep);
     }
     tst.is_dis = GenieGHep.Summary()->ProcInfo().IsDeepInelastic();
-    tst.W_GeV2 = GenieGHep.Summary()->Kine().W(true);
+    tst.W_GeV = GenieGHep.Summary()->Kine().W(true);
     tst.Q2_GeV2 = -emTransfer.Mag2();
     tst.q0_GeV = emTransfer[0];
     tst.q3_GeV = emTransfer.Vect().Mag();

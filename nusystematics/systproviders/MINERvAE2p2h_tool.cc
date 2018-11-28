@@ -162,7 +162,7 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
   event_unit_response_t resp;
   SystMetaData const &md = GetSystMetaData();
 
-  if (!ev.Summary()->ProcInfo().IsQuasiElastic() ||
+  if (!ev.Summary()->ProcInfo().IsMEC() ||
       !ev.Summary()->ProcInfo().IsWeakCC()) {
     return resp;
   }
@@ -222,10 +222,10 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
       for (double av : (*A_var)) {
         double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
             e2i(simb_mode_copy::kMEC), true, Enu, av, BCV);
-            #ifdef MINERVAE2p2h_DEBUG
-                std::cout << "[weight @ " << Enu << ", " << av << ", " << BCV
-                          << "] = " << weight << std::endl;
-            #endif
+#ifdef MINERVAE2p2h_DEBUG
+        std::cout << "[weight @ " << Enu << ", " << av << ", " << BCV
+                  << "] = " << weight << std::endl;
+#endif
         resp.back().responses.push_back(weight);
       }
       UsedADial = true;
@@ -235,10 +235,10 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
       for (double bv : (*B_var)) {
         double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
             e2i(simb_mode_copy::kMEC), true, Enu, ACV, bv);
-            #ifdef MINERVAE2p2h_DEBUG
-                std::cout << "[weight @ " << Enu << ", " << ACV << ", " << bv
-                          << "] = " << weight << std::endl;
-            #endif
+#ifdef MINERVAE2p2h_DEBUG
+        std::cout << "[weight @ " << Enu << ", " << ACV << ", " << bv
+                  << "] = " << weight << std::endl;
+#endif
         if (UsedADial) {
           weight /= CVResponse;
         }

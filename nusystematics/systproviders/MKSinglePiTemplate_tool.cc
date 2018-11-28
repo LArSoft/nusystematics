@@ -214,6 +214,21 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
 
     if ((chan == genie::kSppNull) ||
         (ChannelParameterMapping.find(chan) == ChannelParameterMapping.end())) {
+
+#ifdef DEBUG_MKSINGLEPI
+      int neut_code = abs(genie::utils::ghep::NeutReactionCode(&ev));
+      if ((neut_code == 21)    // Multi-pi
+          || (neut_code == 22) // Eta-production
+          || (neut_code == 23) // Kaon-production
+          || (neut_code == 17) // gamma-production
+      ) {
+        return resp;
+      }
+      std::cout << "[INFO]: RES event failed to find SPP Channel  (NEUT: "
+                << genie::utils::ghep::NeutReactionCode(&ev) << ") "
+                << std::endl
+                << DumpGENIEEv(ev) << std::endl;
+#endif
       return resp;
     }
 

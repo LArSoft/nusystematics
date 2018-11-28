@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <set>
 
 // Validation script to run on output from DumpConfiguredTweaksNuSyst
 // Makes a multi-page pdf of mode contributions, variations and bad parameters
@@ -32,12 +33,18 @@ std::string GoodHistogram(TH1D *Hist) {
   return std::string("");
 }
 
+std::vector<std::string> ignore_list = {
+    "EbFSLepMomShift",
+};
+
 void TweaksNuSyst_Validate(std::string filename) {
 
   std::cout << "[INFO]: Reading file: " << filename << std::endl;
 
   TFile *file = new TFile(filename.c_str(), "OPEN");
   TTree *tree = (TTree *)file->Get("events")->Clone();
+
+  tree->SetAlias("is_inc", "(1*1)");
 
   // Read through the file
   //
@@ -62,14 +69,31 @@ void TweaksNuSyst_Validate(std::string filename) {
   for (int i = 0; i < nbr; ++i) {
     std::string name = std::string(tree->GetListOfBranches()->At(i)->GetName());
     if (name.find("tweak_responses_") != std::string::npos) {
-      TweakArray.push_back(name);
       std::string paramname =
           name.substr(std::string("tweak_responses_").size(), name.size());
+      if (std::find(ignore_list.begin(), ignore_list.end(), paramname) !=
+          ignore_list.end()) {
+        continue;
+      }
       ParamNames.push_back(paramname);
-    } else if (name.find("ntweaks_") != std::string::npos)
+      TweakArray.push_back(name);
+    } else if (name.find("ntweaks_") != std::string::npos) {
+      std::string paramname =
+          name.substr(std::string("ntweaks_").size(), name.size());
+      if (std::find(ignore_list.begin(), ignore_list.end(), paramname) !=
+          ignore_list.end()) {
+        continue;
+      }
       NumberArray.push_back(name);
-    else if (name.find("paramCVWeight_") != std::string::npos)
+    } else if (name.find("paramCVWeight_") != std::string::npos) {
+      std::string paramname =
+          name.substr(std::string("paramCVWeight_").size(), name.size());
+      if (std::find(ignore_list.begin(), ignore_list.end(), paramname) !=
+          ignore_list.end()) {
+        continue;
+      }
       CVArray.push_back(name);
+    }
   }
 
   std::cout << "Found total " << TweakArray.size() << " tweaks" << std::endl;
@@ -95,7 +119,7 @@ void TweaksNuSyst_Validate(std::string filename) {
   std::vector<std::string> DrawStr;
   DrawStr.push_back("e_nu_GeV");
   DrawStr.push_back("Q2_GeV2");
-  DrawStr.push_back("W_GeV2");
+  DrawStr.push_back("W_GeV");
   DrawStr.push_back("q0_GeV");
   DrawStr.push_back("q3_GeV");
 
@@ -113,7 +137,7 @@ void TweaksNuSyst_Validate(std::string filename) {
   IntStr.push_back("is_mec");
   IntStr.push_back("is_res");
   IntStr.push_back("is_dis");
-  IntStr.push_back("1");
+  IntStr.push_back("is_inc");
 
   // The CC NC flag
   std::vector<std::string> CCStr;
@@ -288,12 +312,12 @@ void TweaksNuSyst_Validate(std::string filename) {
           // Loop over the selections
           for (size_t j = 0; j < SelStr.size(); ++j) {
             // Get the reference distribution (no tune)
-            tree->Draw(Form("%s>>ref_%ld_%ld_%ld_%ld(%s)", DrawStr[i].c_str(), a, b,
-                            ab, i, BinningStr[i].c_str()),
+            tree->Draw(Form("%s>>ref_%ld_%ld_%ld_%ld(%s)", DrawStr[i].c_str(),
+                            a, b, ab, i, BinningStr[i].c_str()),
                        std::string(IntStr[b] + "*" + CCStr[ab]).c_str());
-            TH1D *ref =
-                (TH1D *)gDirectory->Get(Form("ref_%ld_%ld_%ld_%ld", a, b, ab, i))
-                    ->Clone();
+            TH1D *ref = (TH1D *)gDirectory
+                            ->Get(Form("ref_%ld_%ld_%ld_%ld", a, b, ab, i))
+                            ->Clone();
             ref->GetXaxis()->SetTitle(DrawStr[i].c_str());
 
             // Get the maximum
@@ -329,10 +353,10 @@ void TweaksNuSyst_Validate(std::string filename) {
                               DrawStr[i].c_str(), i, j, a, b, ab, z,
                               BinningStr[i].c_str()),
                          rawit.c_str());
-              TH1D *temp =
-                  (TH1D *)gDirectory
-                      ->Get(Form("hist_%ld_%ld_%ld_%ld_%ld_%ld", i, j, a, b, ab, z))
-                      ->Clone();
+              TH1D *temp = (TH1D *)gDirectory
+                               ->Get(Form("hist_%ld_%ld_%ld_%ld_%ld_%ld", i, j,
+                                          a, b, ab, z))
+                               ->Clone();
               temp->GetXaxis()->SetTitle(ref->GetXaxis()->GetTitle());
               temp->SetTitle(Form("%s %s*%s", ParamNames[a].c_str(),
                                   CCStr[ab].c_str(), IntStr[b].c_str()));
@@ -404,7 +428,22 @@ void TweaksNuSyst_Validate(std::string filename) {
                   PlotList[z]->SetLineStyle(kDashed);
                 PlotList[z]->GetYaxis()->SetTitle("Tune/Nominal Value");
                 PlotList[z]->SetLineColor(color);
+
+                std::set<Int_t> problem_bins;
+                for (Int_t bi_it = 0;
+                     bi_it < PlotList[z]->GetXaxis()->GetNbins(); ++bi_it) {
+                  if (!PlotList[z]->GetBinContent(bi_it + 1) ||
+                      !ref->GetBinContent(bi_it + 1)) {
+                    problem_bins.insert(bi_it);
+                  }
+                }
+
                 PlotList[z]->Divide(ref);
+
+                for (Int_t pbin : problem_bins) {
+                  PlotList[z]->SetBinContent(pbin + 1, 1);
+                }
+
                 if (maximum < PlotList[z]->GetMaximum())
                   maximum = PlotList[z]->GetMaximum() * 1.2;
                 if (minimum > PlotList[z]->GetMinimum())

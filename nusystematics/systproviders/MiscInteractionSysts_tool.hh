@@ -40,10 +40,18 @@ private:
   size_t pidx_nuenumu_xsec_ratio;
   size_t pidx_SPPLowQ2Suppression;
 
-  std::vector<double> GetWeights_C12ToAr40_2p2hScaling(genie::EventRecord const &, std::vector<double> const &);
-  std::vector<double> GetWeights_nuenuebar_xsec_ratio(genie::EventRecord const &);
-  std::vector<double> GetWeights_nuenumu_xsec_ratio(genie::EventRecord const &);
-  std::vector<double> GetWeights_SPPLowQ2Suppression(genie::EventRecord const &);
+  std::vector<double>
+  GetWeights_C12ToAr40_2p2hScaling(genie::EventRecord const &,
+                                   std::vector<double> const &);
+  std::vector<double>
+  GetWeights_nuenuebar_xsec_ratio(genie::EventRecord const &,
+                                  std::vector<double> const &);
+  std::vector<double>
+  GetWeights_nuenumu_xsec_ratio(genie::EventRecord const &,
+                                std::vector<double> const &);
+  std::vector<double>
+  GetWeights_SPPLowQ2Suppression(genie::EventRecord const &,
+                                 std::vector<double> const &);
 
   void InitValidTree();
 
