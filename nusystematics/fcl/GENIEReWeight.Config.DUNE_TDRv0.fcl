@@ -15,13 +15,14 @@
     # NormCCQE_central_value: 0
     # NormCCQE_variation_descriptor: "(-3,3,1)"
 
-    ## Will not use for TDR
+    # Not ideal, but given the 1D bin spline problem,
+    # will go with MACCQE for now.
     MaCCQE_central_value: 0
     MaCCQE_variation_descriptor: "(-3,3,1)"
 
 
     ## Ideal for TDR, but requires UserPhysicsOptions.xml changes that we
-    ## cannot reasonably do for the hack days
+    ## cannot easily do
     # ZNormCCQE_central_value: 0
     # ZNormCCQE_variation_descriptor: "(-3,3,1)"
 
@@ -37,9 +38,9 @@
     # ZExpA4CCQE_central_value: 0
     # ZExpA4CCQE_variation_descriptor: "(-3,3,1)"
 
-    # ReWeight to dipole vector form factor when VecFFCCQE = 1
-    VecFFCCQE_central_value: 0
-    VecFFCCQE_variation_descriptor: "[1,1,1,0,1,1,1]"
+    # ReWeight to dipole vector form factor when VecFFCCQEshape = 1
+    VecFFCCQEshape_central_value: 0
+    VecFFCCQEshape_variation_descriptor: "[1,1,1,0,1,1,1]"
 
     #Mirrored responses for CAFana
     CCQEPauliSupViaKF_central_value: 0
@@ -57,32 +58,32 @@
     ################# CCRES
 
     # SHAPE-ONLY + RESNORM
-    # Ideal for TDR, but throwing GSL errors at the moment
-    CCRESIsShapeOnly: false
+    # Ideal for TDR
+    CCRESIsShapeOnly: true
     #
-    # NormCCRES_central_value: 0.75
-    # NormCCRES_variation_descriptor: "[-0.7,0.05,0.4,0.75,1.1,1.45,1.8]"
-    #
-    # # Genie v2.12.10 default CV is 1.12 GeV with 10% uncert on MaCCRESShape
-    # # Want to set to 0.94+/-0.05, as in arxiv:1601.01888
-    # MaCCRES_central_value: -1.61
-    # MaCCRES_variation_descriptor: "[-2.95,-2.5,-2.05,-1.61,-1.16,-0.71,-0.27]"
+    NormCCRES_central_value: 0.75
+    NormCCRES_variation_descriptor: "[-0.7,0.05,0.4,0.75,1.1,1.45,1.8]"
+
+    # Genie v2.12.10 default CV is 1.12 GeV with 10% uncert on MaCCRESShape
+    # Want to set to 0.94+/-0.05, as in arxiv:1601.01888
+    MaCCRES_central_value: -1.61
+    MaCCRES_variation_descriptor: "[-2.95,-2.5,-2.05,-1.61,-1.16,-0.71,-0.27]"
 
     ## MARES full
-    # # Genie v2.12.10 default CV is 1.12 GeV with 20% uncert on MaCCRES
-    # # Want to set to 1.04+/-0.02, as in arxiv:1601.01888
-    MaCCRES_central_value: -0.36
-    MaCCRES_variation_descriptor: "[-0.62,-0.54,-0.45,-0.36,-0.27,-0.18,-0.09]"
+    # Genie v2.12.10 default CV is 1.12 GeV with 20% uncert on MaCCRES
+    # Want to set to 1.04+/-0.02, as in arxiv:1601.01888
+    # MaCCRES_central_value: -0.36
+    # MaCCRES_variation_descriptor: "[-0.62,-0.54,-0.45,-0.36,-0.27,-0.18,-0.09]"
 
     MvCCRES_central_value: 0
     MvCCRES_variation_descriptor: "(-3,3,1)"
 
     ################# NCRES
 
-    NCRESIsShapeOnly: false
+    NCRESIsShapeOnly: true
 
-    # NormNCRES_central_value: 0
-    # NormNCRES_variation_descriptor: "(-3,3,1)"
+    NormNCRES_central_value: 0
+    NormNCRES_variation_descriptor: "(-3,3,1)"
 
     MaNCRES_central_value: 0
     MaNCRES_variation_descriptor: "(-3,3,1)"
@@ -149,12 +150,14 @@
     RDecBR1eta_central_value: 0
     RDecBR1eta_variation_descriptor: "(-3,3,1)"
 
-    #Mirrored responses for CAFana
+    # Mirrored responses for CAFana
     Theta_Delta2Npi_central_value: 0
     Theta_Delta2Npi_variation_descriptor: "[1,1,1,0,1,1,1]"
 
     ################################## COH Parameters
 
+    # Disabled as they produce an odd response and CCCoh isn't a significant
+    # signal/background in the TDR sensitivity studies.
     # MaCOHpi_central_value: 0
     # MaCOHpi_variation_descriptor: "(-3,3,1)"
 
@@ -163,8 +166,6 @@
 
     ################################## DIS BY Parameters
 
-    ## Disabled for hackdays as they make lhapdf make too much noise.
-    ## Will try and re-enable for TDR analysis.
     AhtBY_central_value: 0
     AhtBY_variation_descriptor: "(-3,3,1)"
 
@@ -179,17 +180,15 @@
 
     ################################## AGKY Hadronization Parameters
 
-    ## Disabled for hackdays as they make lhapdf make too much noise.
-    ## Will try and re-enable for TDR analysis.
-    AGKYxF1pi_central_value: 0
-    AGKYxF1pi_variation_descriptor: "(-3,3,1)"
-
-    AGKYpT1pi_central_value: 0
-    AGKYpT1pi_variation_descriptor: "(-3,3,1)"
+    ## Disabled as they are very slow, will hopefully re-enable in the future
+    # AGKYxF1pi_central_value: 0
+    # AGKYxF1pi_variation_descriptor: "(-3,3,1)"
+    #
+    # AGKYpT1pi_central_value: 0
+    # AGKYpT1pi_variation_descriptor: "(-3,3,1)"
 
     ################################## FZone Parameters
 
-    # Disabled because it cannot keep itself with decorum.
     FormZone_central_value: 0
     FormZone_variation_descriptor: "(-3,3,1)"
 

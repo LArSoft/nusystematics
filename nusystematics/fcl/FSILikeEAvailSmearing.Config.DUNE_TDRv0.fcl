@@ -1,0 +1,22 @@
+FSILikeEAvailSmearing_Tool_Config: {
+  tool_type: "FSILikeEAvailSmearing"
+  instance_name: "DUNE_TDR_FakeData"
+
+  MKSPP_ReWeight_central_value: 0
+  MKSPP_ReWeight_variation_descriptor: "[1,1,1,0,1,1,1]"
+
+  FSILikeEAvailSmearing_input_manifest: {
+    CC: {
+      input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailSmearingInputs/FSILikeSmear.root"
+      input_hist: "CC_weight"
+      param_values: [1]
+    }
+    NC: {
+      input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailSmearingInputs/FSILikeSmear.root"
+      input_hist: "NC_weight"
+      param_values: [1]
+    }
+  }
+}
+
+syst_providers: [FSILikeEAvailSmearing_Tool_Config]

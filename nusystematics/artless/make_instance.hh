@@ -3,14 +3,15 @@
 
 #include "nusystematics/interface/IGENIESystProvider_tool.hh"
 
+#include "nusystematics/systproviders/BeRPAWeight_tool.hh"
+#include "nusystematics/systproviders/EbLepMomShift_tool.hh"
+#include "nusystematics/systproviders/FSILikeEAvailSmearing_tool.hh"
 #include "nusystematics/systproviders/GENIEReWeight_tool.hh"
+#include "nusystematics/systproviders/MINERvAE2p2h_tool.hh"
 #include "nusystematics/systproviders/MINERvAq0q3Weighting_tool.hh"
 #include "nusystematics/systproviders/MKSinglePiTemplate_tool.hh"
-#include "nusystematics/systproviders/NOvAStyleNonResPionNorm_tool.hh"
-#include "nusystematics/systproviders/BeRPAWeight_tool.hh"
-#include "nusystematics/systproviders/MINERvAE2p2h_tool.hh"
-#include "nusystematics/systproviders/EbLepMomShift_tool.hh"
 #include "nusystematics/systproviders/MiscInteractionSysts_tool.hh"
+#include "nusystematics/systproviders/NOvAStyleNonResPionNorm_tool.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 
@@ -40,6 +41,8 @@ make_instance(fhicl::ParameterSet const &paramset) {
     return std::make_unique<MINERvAE2p2h>(paramset);
   } else if (tool_type == "EbLepMomShift") {
     return std::make_unique<EbLepMomShift>(paramset);
+  } else if (tool_type == "FSILikeEAvailSmearing") {
+    return std::make_unique<FSILikeEAvailSmearing>(paramset);
   } else {
     throw unknown_nusyst_systprovider()
         << "[ERROR]: Unknown tool type: " << std::quoted(tool_type);
