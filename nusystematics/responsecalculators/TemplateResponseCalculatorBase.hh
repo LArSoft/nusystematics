@@ -42,13 +42,16 @@ protected:
 public:
   static size_t const NDimensions = NDims;
   TemplateResponseCalculatorBase();
+  TemplateResponseCalculatorBase(TemplateResponseCalculatorBase &&other)
+      : InterpolatedBinResponses(std::move(other.InterpolatedBinResponses)),
+        BinnedResponses(std::move(other.BinnedResponses)) {}
 
   /// Reads and loads input fhicl
   ///
   /// Expected fhicl like:
   ///  use_FW_SEARCH_PATH: true # If enabled, will search for files in
-  ///  stashcache. Only read for ART jobs. input_file: "file.root" # Optional
-  ///  default root file name for this
+  ///  in the search path. Only read for ART jobs.
+  ///  input_file: "file.root" # Optional default root file name for this
   ///                          # parameter's inputs
   ///    inputs: [
   ///      { value: 0
@@ -292,6 +295,7 @@ bool TemplateResponseCalculatorBase<
 }
 
 typedef TemplateResponseCalculatorBase<2, false> TemplateResponse2DDiscrete;
+typedef TemplateResponseCalculatorBase<3, false> TemplateResponse3DDiscrete;
 
 } // namespace nusyst
 

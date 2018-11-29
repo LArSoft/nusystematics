@@ -6,7 +6,6 @@
 #include "nusystematics/responsecalculators/MKSinglePiTemplate_ReWeight.hh"
 
 // GENIE
-#include "EVGCore/EventRecord.h"
 #include "Interaction/SppChannel.h"
 
 #include "TFile.h"
@@ -17,7 +16,7 @@
 
 class MKSinglePiTemplate : public nusyst::IGENIESystProvider_tool {
 
-  systtools::paramId_t ResponseParameterId;
+  size_t ResponseParameterIdx;
 
   struct TemplateHelper {
     std::unique_ptr<nusyst::MKSinglePiTemplate_ReWeight> Template;

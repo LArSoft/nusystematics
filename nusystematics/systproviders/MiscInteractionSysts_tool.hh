@@ -3,9 +3,6 @@
 
 #include "nusystematics/interface/IGENIESystProvider_tool.hh"
 
-// GENIE
-#include "EVGCore/EventRecord.h"
-
 #include "TFile.h"
 #include "TTree.h"
 

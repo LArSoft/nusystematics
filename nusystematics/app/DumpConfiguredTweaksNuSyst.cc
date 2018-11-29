@@ -370,19 +370,13 @@ int main(int argc, char const *argv[]) {
     return 1;
   }
 
+
+#ifndef NO_ART
   fhicl::ParameterSet ps = ReadParameterSet(argv);
-
   std::vector<std::unique_ptr<SystProv>> syst_providers;
-
-#ifdef NO_ART
-  syst_providers =
-      systtools::ConfigureISystProvidersFromParameterHeaders<SystProv>(
-          ps.get<fhicl::ParameterSet>(cliopts::fhicl_key), make_instance);
-#else
   syst_providers =
       systtools::ConfigureISystProvidersFromParameterHeaders<SystProv>(
           ps.get<fhicl::ParameterSet>(cliopts::fhicl_key));
-#endif
 
   if (!syst_providers.size()) {
     throw response_helper_found_no_parameters()
@@ -401,6 +395,9 @@ int main(int argc, char const *argv[]) {
   }
 
   ParamHeaderHelper phh(configuredParameterHeaders);
+#else
+  response_helper phh(cliopts::fclname);
+#endif
 
   TChain *gevs = new TChain("gtree");
   if (!gevs->Add(cliopts::genie_input.c_str())) {
@@ -474,13 +471,16 @@ int main(int argc, char const *argv[]) {
     }
 
     tst.Clear();
+#ifndef NO_ART
     event_unit_response_w_cv_t resp;
     for (auto &sp : syst_providers) {
       systtools::ExtendEventUnitResponse(
           resp, sp->GetEventVariationAndCVResponse(GenieGHep));
     }
-    tst.Add(resp);
-    tst.Fill();
+#else
+    event_unit_response_w_cv_t resp =
+        phh.GetEventVariationAndCVResponse(GenieGHep);
+#endif
   }
   std::cout << std::endl;
 }

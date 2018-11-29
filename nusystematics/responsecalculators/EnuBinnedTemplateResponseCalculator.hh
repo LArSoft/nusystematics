@@ -236,6 +236,11 @@ public:
     LoadInputHistograms(ps);
   };
 
+  EnuBinnedTemplateResponseCalculator(
+      EnuBinnedTemplateResponseCalculator &&other)
+      : EnuBinning(std::move(other.EnuBinning)),
+        EnuResponses(std::move(other.EnuResponses)) {}
+
   virtual std::pair<enu_bin_it_t, typename TRC::bin_it_t>
   GetBin(double enu_GeV,
          std::array<double, TRC::NDimensions> const &kinematics) const {

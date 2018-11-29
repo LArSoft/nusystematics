@@ -20,8 +20,9 @@ using namespace fhicl;
 // #define DEBUG_MKSINGLEPI
 
 MKSinglePiTemplate::MKSinglePiTemplate(ParameterSet const &params)
-    : IGENIESystProvider_tool(params), valid_file(nullptr),
-      valid_tree(nullptr) {}
+    : IGENIESystProvider_tool(params),
+      ResponseParameterIdx(systtools::kParamUnhandled<size_t>),
+      valid_file(nullptr), valid_tree(nullptr) {}
 
 namespace {
 struct channel_id {
@@ -120,16 +121,16 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
   fhicl::ParameterSet const &templateManifest =
       tool_options.get<fhicl::ParameterSet>("MKSPP_Template_input_manifest");
 
-  ResponseParameterId = GetParamId(GetSystMetaData(), "MKSPP_ReWeight");
+  ResponseParameterIdx = GetParamIndex(GetSystMetaData(), "MKSPP_ReWeight");
 
   for (channel_id const &ch :
-       std::vector<channel_id>{{{"NumuPPiPlus", genie::kSpp_vp_cc_10100},
-                                {"NumuPPi0", genie::kSpp_vn_cc_10010},
-                                {"NumuNPiPlus", genie::kSpp_vn_cc_01100},
+       std::vector<channel_id>{{"NumuPPiPlus", genie::kSpp_vp_cc_10100},
+                               {"NumuPPi0", genie::kSpp_vn_cc_10010},
+                               {"NumuNPiPlus", genie::kSpp_vn_cc_01100},
 
-                                {"NumuBNPiMinus", genie::kSpp_vbn_cc_01001},
-                                {"NumuBNPi0", genie::kSpp_vbp_cc_01010},
-                                {"NumuBPPiMinus", genie::kSpp_vbp_cc_10001}}}) {
+                               {"NumuBNPiMinus", genie::kSpp_vbn_cc_01001},
+                               {"NumuBNPi0", genie::kSpp_vbp_cc_01010},
+                               {"NumuBPPiMinus", genie::kSpp_vbp_cc_10001}}) {
 
     if (!templateManifest.has_key(ch.name)) {
       continue;
@@ -177,7 +178,7 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
     return resp;
   }
 
-  SystParamHeader const &hdr = GetParam(GetSystMetaData(), ResponseParameterId);
+  SystParamHeader const &hdr = GetSystMetaData()[ResponseParameterIdx];
 
   genie::SppChannel_t chan = genie::kSppNull;
 
@@ -241,7 +242,7 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
       std::swap(kinematics[0], kinematics[1]);
     }
 
-    resp.push_back({ResponseParameterId, {}});
+    resp.push_back({hdr.systParamId, {}});
     for (double val : hdr.paramVariations) {
 
       if ((val == 0) && !ChannelParameterMapping[chan].ZeroIsValid) {
@@ -254,7 +255,7 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
     }
   } else { // Non-resonant background has to die off as MK is turned on, as the
            // MK prediction includes the coupled background channels
-    resp.push_back({ResponseParameterId, {}});
+    resp.push_back({hdr.systParamId, {}});
     for (double val : hdr.paramVariations) {
       val = std::min(fabs(val), 1.0);
       resp.back().responses.push_back(1 - val);
