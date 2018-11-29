@@ -99,8 +99,8 @@ generated_systematic_provider_configuration: {
             EbLepMomShift_Template_input_manifest: {
                 input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/EbLepMomShift/EbInputs.root"
                 inputs: [
-                    { 
-                      input_hist: 22.1MeVEnu_ctheta_p_pyx_difffromnom
+                    {
+                      input_hist: "22.1MeVEnu_ctheta_p_pyx_difffromnom"
                       value: 1
                     }
                 ]
