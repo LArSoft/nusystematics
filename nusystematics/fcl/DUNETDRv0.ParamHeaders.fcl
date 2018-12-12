@@ -99,8 +99,8 @@ generated_systematic_provider_configuration: {
             EbLepMomShift_Template_input_manifest: {
                 input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/EbLepMomShift/EbInputs.root"
                 inputs: [
-                    {
-                      input_hist: "22.1MeVEnu_ctheta_p_pyx_difffromnom"
+                    { 
+                      input_hist: 22.1MeVEnu_ctheta_p_pyx_difffromnom
                       value: 1
                     }
                 ]
@@ -108,6 +108,103 @@ generated_systematic_provider_configuration: {
             fill_valid_tree: false
         }
         tool_type: EbLepMomShift
+    }
+    FSILikeEAvailSmearing_DUNE_TDR_FakeData: {
+        FSILikeEAvailSmearing: {
+            centralParamValue: 0
+            paramVariations: [
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                1
+            ]
+            prettyName: FSILikeEAvailSmearing
+            systParamId: 68
+        }
+        instance_name: DUNE_TDR_FakeData
+        parameter_headers: [
+            FSILikeEAvailSmearing
+        ]
+        tool_options: {
+            FSILikeEAvailSmearing_input_manifest: {
+                CCDIS: {
+                    input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailShift/nu_MpiDIS.root"
+                    inputs: [
+                        { 
+                          input_hist: WeightPlot
+                          value: 1
+                        }
+                    ]
+                }
+                CCDIS_bar: {
+                    input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailShift/nubar_MpiDIS.root"
+                    inputs: [
+                        { 
+                          input_hist: WeightPlot
+                          value: 1
+                        }
+                    ]
+                }
+                CCMEC: {
+                    input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailShift/nu_2p2h.root"
+                    inputs: [
+                        { 
+                          input_hist: WeightPlot
+                          value: 1
+                        }
+                    ]
+                }
+                CCMEC_bar: {
+                    input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailShift/nubar_2p2h.root"
+                    inputs: [
+                        { 
+                          input_hist: WeightPlot
+                          value: 1
+                        }
+                    ]
+                }
+                CCQE: {
+                    input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailShift/nu_CCQE.root"
+                    inputs: [
+                        { 
+                          input_hist: WeightPlot
+                          value: 1
+                        }
+                    ]
+                }
+                CCQE_bar: {
+                    input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailShift/nubar_CCQE.root"
+                    inputs: [
+                        { 
+                          input_hist: WeightPlot
+                          value: 1
+                        }
+                    ]
+                }
+                CCRes: {
+                    input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailShift/nu_1pi.root"
+                    inputs: [
+                        { 
+                          input_hist: WeightPlot
+                          value: 1
+                        }
+                    ]
+                }
+                CCRes_bar: {
+                    input_file: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/nusyst_inputs/V00_02/FSILikeEAvailShift/nubar_1pi.root"
+                    inputs: [
+                        { 
+                          input_hist: WeightPlot
+                          value: 1
+                        }
+                    ]
+                }
+            }
+        }
+        tool_type: FSILikeEAvailSmearing
     }
     GENIEReWeight_DUNE_TDR_Splines: {
         AhtBY: {
@@ -1196,7 +1293,8 @@ generated_systematic_provider_configuration: {
         NOvAStyleNonResPionNorm_DUNE_TDR_FakeData,
         BeRPAWeight_DUNE_TDR_FakeData,
         EbLepMomShift_DUNE_TDR_FakeData,
-        MiscInteractionSysts_DUNE_TDR_FakeData
+        MiscInteractionSysts_DUNE_TDR_FakeData,
+        FSILikeEAvailSmearing_DUNE_TDR_FakeData
     ]
 }
 END_PROLOG

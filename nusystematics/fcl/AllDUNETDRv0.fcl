@@ -6,5 +6,6 @@
 #include "MINERvA_E2p2h.Config.DUNE_TDRv0.fcl"
 #include "EbLepMomShift.Config.DUNE_TDRv0.fcl"
 #include "MiscInteractionSysts.Config.DUNE_TDRv0.fcl"
+#include "FSILikeEAvailSmearing.Config.DUNE_TDRv0.fcl"
 
-syst_providers: [GENIEReWeight_Tool_Config, MINERvAq0q3Tune_Tool_Config, MKSinglePi_Template_Tool_Config, MINERvA_E2p2h_Tool_Config, NOvAStyleNonResPionNorm_Tool_Config, BeRPA_Tool_Config, EbLepMomShift_Tool_Config, MiscInteractionSysts_Tool_Config]
+syst_providers: [GENIEReWeight_Tool_Config, MINERvAq0q3Tune_Tool_Config, MKSinglePi_Template_Tool_Config, MINERvA_E2p2h_Tool_Config, NOvAStyleNonResPionNorm_Tool_Config, BeRPA_Tool_Config, EbLepMomShift_Tool_Config, MiscInteractionSysts_Tool_Config, FSILikeEAvailSmearing_Tool_Config]
