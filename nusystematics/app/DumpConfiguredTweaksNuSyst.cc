@@ -75,6 +75,7 @@ struct TweakSummaryTree {
   double Q2_GeV2;
   double q0_GeV;
   double q3_GeV;
+  double EAvail_GeV;
 
   std::vector<int> ntweaks;
   std::vector<std::vector<double>> tweak_branches;
@@ -101,6 +102,7 @@ struct TweakSummaryTree {
     t->Branch("Q2_GeV2", &Q2_GeV2, "Q2_GeV2/D");
     t->Branch("q0_GeV", &q0_GeV, "q0_GeV/D");
     t->Branch("q3_GeV", &q3_GeV, "q3_GeV/D");
+    t->Branch("EAvail_GeV", &EAvail_GeV, "EAvail_GeV/D");
 
     size_t vector_idx = 0;
     for (paramId_t pid : phh.GetParameters()) { // Need to size vectors first so
@@ -370,7 +372,6 @@ int main(int argc, char const *argv[]) {
     return 1;
   }
 
-
 #ifndef NO_ART
   fhicl::ParameterSet ps = ReadParameterSet(argv);
   std::vector<std::unique_ptr<SystProv>> syst_providers;
@@ -461,8 +462,10 @@ int main(int argc, char const *argv[]) {
     tst.is_dis = GenieGHep.Summary()->ProcInfo().IsDeepInelastic();
     tst.W_GeV = GenieGHep.Summary()->Kine().W(true);
     tst.Q2_GeV2 = -emTransfer.Mag2();
-    tst.q0_GeV = emTransfer[0];
+    tst.q0_GeV = emTransfer[3];
     tst.q3_GeV = emTransfer.Vect().Mag();
+
+    tst.EAvail_GeV = GetErecoil_MINERvA_LowRecoil(GenieGHep);
 
     if (!(ev_it % NToShout)) {
       std::cout << (ev_it ? "\r" : "") << "Event #" << ev_it << "/" << NToRead
@@ -481,6 +484,8 @@ int main(int argc, char const *argv[]) {
     event_unit_response_w_cv_t resp =
         phh.GetEventVariationAndCVResponse(GenieGHep);
 #endif
+    tst.Add(resp);
+    tst.Fill();
   }
   std::cout << std::endl;
 }
