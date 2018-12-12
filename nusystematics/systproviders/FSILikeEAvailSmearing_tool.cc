@@ -54,7 +54,8 @@ SystMetaData FSILikeEAvailSmearing::BuildSystMetaData(ParameterSet const &cfg,
   }
 
   size_t NChannels = 0;
-  for (std::string const &ch : {"CC", "NC"}) {
+  for (std::string const &ch : {"CCQE", "CCRes", "CCDIS", "CCMEC", "CCQE_bar",
+                                "CCRes_bar", "CCDIS_bar", "CCMEC_bar", "NC"}) {
 
     if (!templateManifest.has_key(ch)) {
       continue;
@@ -118,7 +119,15 @@ bool FSILikeEAvailSmearing::SetupResponseCalculator(
       GetParamIndex(GetSystMetaData(), "FSILikeEAvailSmearing");
 
   for (channel_id const &ch :
-       std::vector<channel_id>{{"CC", chan::kCC}, {"NC", chan::kNC}}) {
+       std::vector<channel_id>{{"CCQE", chan::kCCQE},
+                               {"CCRes", chan::kCCRes},
+                               {"CCDIS", chan::kCCDIS},
+                               {"CCMEC", chan::kCCMEC},
+                               {"CCQE_bar", chan::kCCQE_bar},
+                               {"CCRes_bar", chan::kCCRes_bar},
+                               {"CCDIS_bar", chan::kCCDIS_bar},
+                               {"CCMEC_bar", chan::kCCMEC_bar},
+                               {"NC", chan::kNC}}) {
 
     if (!templateManifest.has_key(ch.name)) {
       continue;
@@ -141,18 +150,43 @@ bool FSILikeEAvailSmearing::SetupResponseCalculator(
   return true;
 }
 
+FSILikeEAvailSmearing::chan GetChan(simb_mode_copy mode, bool IsCC, bool IsNu) {
+
+  if (!IsCC) {
+    return FSILikeEAvailSmearing::chan::kNC;
+  }
+
+  switch (mode) {
+  case simb_mode_copy::kQE: {
+    return IsNu ? FSILikeEAvailSmearing::chan::kCCQE
+                : FSILikeEAvailSmearing::chan::kCCQE_bar;
+  }
+  case simb_mode_copy::kRes: {
+    return IsNu ? FSILikeEAvailSmearing::chan::kCCRes
+                : FSILikeEAvailSmearing::chan::kCCRes_bar;
+  }
+  case simb_mode_copy::kDIS: {
+    return IsNu ? FSILikeEAvailSmearing::chan::kCCDIS
+                : FSILikeEAvailSmearing::chan::kCCDIS_bar;
+  }
+  case simb_mode_copy::kMEC: {
+    return IsNu ? FSILikeEAvailSmearing::chan::kCCMEC
+                : FSILikeEAvailSmearing::chan::kCCMEC_bar;
+  }
+  default: { return FSILikeEAvailSmearing::chan::kBadChan; }
+  }
+}
+
 event_unit_response_t
 FSILikeEAvailSmearing::GetEventResponse(genie::EventRecord const &ev) {
 
   event_unit_response_t resp;
 
-  chan evch = ev.Summary()->ProcInfo().IsWeakCC() ? chan::kCC : chan::kNC;
-
-  if (ChannelParameterMapping.find(evch) == ChannelParameterMapping.end()) {
+  // Ignore Coherent
+  simb_mode_copy mode = GetSimbMode(ev);
+  if (mode == simb_mode_copy::kCoh) {
     return resp;
   }
-
-  SystParamHeader const &hdr = GetSystMetaData()[ResponseParameterIdx];
 
   genie::GHepParticle *FSLep = ev.FinalStatePrimaryLepton();
   genie::GHepParticle *ISLep = ev.Probe();
@@ -163,6 +197,15 @@ FSILikeEAvailSmearing::GetEventResponse(genie::EventRecord const &ev) {
         << ev.Summary()->AsString();
   }
 
+  chan evch =
+      GetChan(mode, ev.Summary()->ProcInfo().IsWeakCC(), ISLep->Pdg() > 0);
+
+  if (ChannelParameterMapping.find(evch) == ChannelParameterMapping.end()) {
+    return resp;
+  }
+
+  SystParamHeader const &hdr = GetSystMetaData()[ResponseParameterIdx];
+
   TLorentzVector FSLepP4 = *FSLep->P4();
   TLorentzVector ISLepP4 = *ISLep->P4();
 
@@ -170,8 +213,8 @@ FSILikeEAvailSmearing::GetEventResponse(genie::EventRecord const &ev) {
 
   std::array<double, 3> kinematics;
   kinematics[0] = emTransfer.Vect().Mag();
-  kinematics[1] = emTransfer[0];
-  kinematics[2] = GetErecoil_MINERvA_LowRecoil(ev) / emTransfer[0];
+  kinematics[1] = emTransfer[3];
+  kinematics[2] = GetErecoil_MINERvA_LowRecoil(ev) / kinematics[1];
 
   resp.push_back({hdr.systParamId, {}});
   for (double val : hdr.paramVariations) {

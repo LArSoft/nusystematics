@@ -17,7 +17,18 @@ class FSILikeEAvailSmearing : public nusyst::IGENIESystProvider_tool {
   size_t ResponseParameterIdx;
 
 public:
-  enum class chan { kCC, kNC };
+  enum class chan {
+    kCCQE,
+    kCCRes,
+    kCCDIS,
+    kCCMEC,
+    kCCQE_bar,
+    kCCRes_bar,
+    kCCDIS_bar,
+    kCCMEC_bar,
+    kNC,
+    kBadChan
+  };
 
 private:
   struct TemplateHelper {
