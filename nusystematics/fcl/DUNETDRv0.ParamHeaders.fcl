@@ -203,6 +203,10 @@ generated_systematic_provider_configuration: {
                     ]
                 }
             }
+            LimitWeights: [
+                0,
+                2
+            ]
         }
         tool_type: FSILikeEAvailSmearing
     }
@@ -772,6 +776,10 @@ generated_systematic_provider_configuration: {
             Mnv2p2hGaussEnhancement
         ]
         tool_options: {
+            Mnv2p2hGaussEnhancement_LimitWeights: [
+                0,
+                2
+            ]
             fill_valid_tree: false
             parameter_per_2p2h_universe: false
         }
@@ -836,6 +844,8 @@ generated_systematic_provider_configuration: {
                 }
             }
             Q2_or_q0_is_x: true
+            SuppressAntiNeutrinoBkgSPP: false
+            SuppressNeutrinoBkgSPP: true
             fill_valid_tree: false
             use_Q2W_templates: true
         }

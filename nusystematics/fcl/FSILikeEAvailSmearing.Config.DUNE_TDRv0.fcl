@@ -12,6 +12,8 @@ FSILikeEAvailSmearing_Tool_Config: {
   tool_type: "FSILikeEAvailSmearing"
   instance_name: "DUNE_TDR_FakeData"
 
+  LimitWeights: [0,2]
+
   FSILikeEAvailSmearing_central_value: 0
   FSILikeEAvailSmearing_variation_descriptor: "[1,1,1,0,1,1,1]"
 
