@@ -7,9 +7,9 @@
 #include "TTree.h"
 
 #include <iostream>
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 // Validation script to run on output from DumpConfiguredTweaksNuSyst
 // Makes a multi-page pdf of mode contributions, variations and bad parameters
@@ -45,6 +45,7 @@ void TweaksNuSyst_Validate(std::string filename) {
   TTree *tree = (TTree *)file->Get("events")->Clone();
 
   tree->SetAlias("is_inc", "(1*1)");
+  tree->SetAlias("ELep", "(e_nu_GeV - q0_GeV)");
 
   // Read through the file
   //
@@ -122,6 +123,9 @@ void TweaksNuSyst_Validate(std::string filename) {
   DrawStr.push_back("W_GeV");
   DrawStr.push_back("q0_GeV");
   DrawStr.push_back("q3_GeV");
+  DrawStr.push_back("ELep");
+  DrawStr.push_back("(EAvail_GeV/q0_GeV)");
+  DrawStr.push_back("((EAvail_GeV + ELep - e_nu_GeV)/e_nu_GeV)");
 
   // Binning for above distributions
   std::vector<std::string> BinningStr;
@@ -130,6 +134,9 @@ void TweaksNuSyst_Validate(std::string filename) {
   BinningStr.push_back("40, 0.9, 3.5");
   BinningStr.push_back("40, 0, 2");
   BinningStr.push_back("40, 0, 2");
+  BinningStr.push_back("40, 0, 5");
+  BinningStr.push_back("40, 0, 1.5");
+  BinningStr.push_back("40, -1, 1");
 
   // The interaction modes
   std::vector<std::string> IntStr;
@@ -312,6 +319,8 @@ void TweaksNuSyst_Validate(std::string filename) {
           // Loop over the selections
           for (size_t j = 0; j < SelStr.size(); ++j) {
             // Get the reference distribution (no tune)
+            std::cout << DrawStr[i] << ":" << BinningStr[i] << ":"
+                      << std::string(IntStr[b] + "*" + CCStr[ab]) << std::endl;
             tree->Draw(Form("%s>>ref_%ld_%ld_%ld_%ld(%s)", DrawStr[i].c_str(),
                             a, b, ab, i, BinningStr[i].c_str()),
                        std::string(IntStr[b] + "*" + CCStr[ab]).c_str());
