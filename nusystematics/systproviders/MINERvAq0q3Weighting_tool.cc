@@ -106,6 +106,11 @@ SystMetaData MINERvAq0q3Weighting::BuildSystMetaData(ParameterSet const &cfg,
   fill_valid_tree = cfg.get<bool>("fill_valid_tree", false);
   tool_options.put("fill_valid_tree", fill_valid_tree);
 
+  MEC_LimitWeights = cfg.get<std::pair<double, double>>(
+      "Mnv2p2hGaussEnhancement_LimitWeights",
+      {0, std::numeric_limits<double>::max()});
+  tool_options.put("Mnv2p2hGaussEnhancement_LimitWeights", MEC_LimitWeights);
+
   return smd;
 }
 
@@ -201,6 +206,11 @@ bool MINERvAq0q3Weighting::SetupResponseCalculator(
   if (fill_valid_tree) {
     InitValidTree();
   }
+
+  MEC_LimitWeights = tool_options.get<std::pair<double, double>>(
+      "Mnv2p2hGaussEnhancement_LimitWeights",
+      {0, std::numeric_limits<double>::max()});
+
   return true;
 }
 
@@ -325,8 +335,11 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
 
     resp.push_back({hdr.systParamId, {}});
     for (double var : vals_2p2hTotal) {
-      resp.back().responses.push_back(
-          GetMINERvA2p2hTuneEnhancement(var, q0q3[0], q0q3[1], qel_targ));
+      double wght =
+          GetMINERvA2p2hTuneEnhancement(var, q0q3[0], q0q3[1], qel_targ);
+      wght = (wght < MEC_LimitWeights.first) ? MEC_LimitWeights.first : wght;
+      wght = (wght > MEC_LimitWeights.second) ? MEC_LimitWeights.second : wght;
+      resp.back().responses.push_back(wght);
     }
   }
 
@@ -342,6 +355,13 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     for (double v : vals_2p2hCV) {
       double cv_weight =
           1 + v * GetMINERvA2p2hTuneEnhancement(1, q0q3[0], q0q3[1], qel_targ);
+
+      cv_weight = (cv_weight < MEC_LimitWeights.first) ? MEC_LimitWeights.first
+                                                       : cv_weight;
+      cv_weight = (cv_weight > MEC_LimitWeights.second)
+                      ? MEC_LimitWeights.second
+                      : cv_weight;
+
       resp.back().responses.push_back(cv_weight);
     }
   }
@@ -357,6 +377,13 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     for (double v : vals_2p2hNN) {
       double tune_ench =
           v * GetMINERvA2p2hTuneEnhancement(2, q0q3[0], q0q3[1], qel_targ);
+
+      tune_ench = (tune_ench < MEC_LimitWeights.first) ? MEC_LimitWeights.first
+                                                       : tune_ench;
+      tune_ench = (tune_ench > MEC_LimitWeights.second)
+                      ? MEC_LimitWeights.second
+                      : tune_ench;
+
       resp.back().responses.push_back(tune_ench);
     }
   }
@@ -372,6 +399,13 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     for (double v : vals_2p2hnp) {
       double tune_ench =
           v * GetMINERvA2p2hTuneEnhancement(3, q0q3[0], q0q3[1], qel_targ);
+
+      tune_ench = (tune_ench < MEC_LimitWeights.first) ? MEC_LimitWeights.first
+                                                       : tune_ench;
+      tune_ench = (tune_ench > MEC_LimitWeights.second)
+                      ? MEC_LimitWeights.second
+                      : tune_ench;
+
       resp.back().responses.push_back(tune_ench);
     }
   }
@@ -387,6 +421,13 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
     for (double v : vals_2p2hQE) {
       double tune_ench =
           v * GetMINERvA2p2hTuneEnhancement(4, q0q3[0], q0q3[1], qel_targ);
+
+      tune_ench = (tune_ench < MEC_LimitWeights.first) ? MEC_LimitWeights.first
+                                                       : tune_ench;
+      tune_ench = (tune_ench > MEC_LimitWeights.second)
+                      ? MEC_LimitWeights.second
+                      : tune_ench;
+
       resp.back().responses.push_back(tune_ench);
     }
   }

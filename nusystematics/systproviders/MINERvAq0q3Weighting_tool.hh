@@ -70,6 +70,7 @@ public:
 
 private:
   fhicl::ParameterSet tool_options;
+  std::pair<double, double> MEC_LimitWeights;
 
   void InitValidTree();
 

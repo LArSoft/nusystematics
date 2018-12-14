@@ -37,6 +37,7 @@ private:
   };
 
   std::map<chan, TemplateHelper> ChannelParameterMapping;
+  std::pair<double, double> LimitWeights;
 
 public:
   explicit FSILikeEAvailSmearing(fhicl::ParameterSet const &);
