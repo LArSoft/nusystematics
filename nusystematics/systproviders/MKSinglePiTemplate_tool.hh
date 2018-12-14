@@ -54,6 +54,9 @@ private:
   TFile *valid_file;
   TTree *valid_tree;
 
+  bool SuppressNeutrinoBkgSPP;
+  bool SuppressAntiNeutrinoBkgSPP;
+
   int NEUTMode, Pdgnu, pdgfslep, pdghmfspi, SppChannel, IsDIS;
   double Enu, momfslep, cthetafslep, momhmfspi, cthetahmfspi, Q2, q0, q3,
       Enu_nuc_rest_frame, q0_nuc_rest_frame, q3_nuc_rest_frame, W, weight;

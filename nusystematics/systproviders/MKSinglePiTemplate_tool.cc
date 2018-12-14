@@ -62,18 +62,28 @@ SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
       cfg.get<fhicl::ParameterSet>("MKSPP_Template_input_manifest");
   tool_options.put("MKSPP_Template_input_manifest", templateManifest);
 
-  size_t NChannels = 0;
-  for (std::string const &ch :
-       {"NumuPPiPlus", "NumuPPi0", "NumuNPiPlus", "NumuBNPiMinus", "NumuBNPi0",
-        "NumuBPPiMinus"}) {
+  size_t NNuChannels = 0;
+  for (std::string const &ch : {"NumuPPiPlus", "NumuPPi0", "NumuNPiPlus"}) {
 
     if (!templateManifest.has_key(ch)) {
       continue;
     }
 
-    NChannels++;
+    NNuChannels++;
   }
 
+  size_t NAntiNuChannels = 0;
+  for (std::string const &ch :
+       {"NumuBNPiMinus", "NumuBNPi0", "NumuBPPiMinus"}) {
+
+    if (!templateManifest.has_key(ch)) {
+      continue;
+    }
+
+    NAntiNuChannels++;
+  }
+
+  size_t NChannels = NNuChannels + NAntiNuChannels;
   if (!NChannels) {
     throw invalid_ToolConfigurationFHiCL()
         << "[ERROR]: When configuring a MKSPP_Template reweighting instance, "
@@ -83,6 +93,12 @@ SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
            "nusystematics/responsecalculators/"
            "TemplateResponseCalculatorBase.hh";
   }
+
+  SuppressNeutrinoBkgSPP = NNuChannels;
+  SuppressAntiNeutrinoBkgSPP = NAntiNuChannels;
+
+  tool_options.put("SuppressNeutrinoBkgSPP", SuppressNeutrinoBkgSPP);
+  tool_options.put("SuppressAntiNeutrinoBkgSPP", SuppressAntiNeutrinoBkgSPP);
 
   fill_valid_tree = cfg.get<bool>("fill_valid_tree", false);
   tool_options.put("fill_valid_tree", fill_valid_tree);
@@ -144,6 +160,10 @@ bool MKSinglePiTemplate::SetupResponseCalculator(
     ChannelParameterMapping.emplace(ch.channel, std::move(th));
   }
 
+  SuppressNeutrinoBkgSPP = tool_options.get("SuppressNeutrinoBkgSPP", false);
+  SuppressAntiNeutrinoBkgSPP =
+      tool_options.get("SuppressAntiNeutrinoBkgSPP", false);
+
   fill_valid_tree = tool_options.get("fill_valid_tree", false);
   use_Q2W_templates = tool_options.get("use_Q2W_templates", true);
   Q2_or_q0_is_x = tool_options.get("Q2_or_q0_is_x", true);
@@ -169,12 +189,22 @@ MKSinglePiTemplate::GetEventResponse(genie::EventRecord const &ev) {
     return resp;
   }
 
-  if (!(ev.Summary()->ProcInfo().IsResonant() ||
-        ev.Summary()->ProcInfo().IsDeepInelastic())) {
+  bool is_res = ev.Summary()->ProcInfo().IsResonant();
+
+  if (!(is_res || ev.Summary()->ProcInfo().IsDeepInelastic())) {
     return resp;
   }
 
   if (ev.Summary()->Kine().W(true) > 1.7) {
+    return resp;
+  }
+
+  bool is_nu = (ev.Probe()->Pdg() > 0);
+
+  // Only suppress non-resonant background channels when we have templates to
+  // reweight to.
+  if (!is_res && ((is_nu && !SuppressNeutrinoBkgSPP) ||
+                  (!is_nu && !SuppressAntiNeutrinoBkgSPP))) {
     return resp;
   }
 
