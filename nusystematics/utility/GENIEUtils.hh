@@ -239,6 +239,12 @@ inline double GetErecoil_MINERvA_LowRecoil(genie::EventRecord const &ev) {
     }
   }
 
+  // For nue CC scattering, we would have counted the E of the charged lepton,
+  // subtract it off here
+  if (ev.Summary()->ProcInfo().IsWeakCC() && (abs(ev.Probe()->Pdg()) == 12)) {
+    Erecoil -= ev.FinalStatePrimaryLepton()->P4()->E();
+  }
+
   return Erecoil;
 }
 
