@@ -109,7 +109,9 @@ SystMetaData MINERvAq0q3Weighting::BuildSystMetaData(ParameterSet const &cfg,
   MEC_LimitWeights = cfg.get<std::pair<double, double>>(
       "Mnv2p2hGaussEnhancement_LimitWeights",
       {0, std::numeric_limits<double>::max()});
-  tool_options.put("Mnv2p2hGaussEnhancement_LimitWeights", MEC_LimitWeights);
+  tool_options.put(
+      "Mnv2p2hGaussEnhancement_LimitWeights",
+      std::vector<double>{MEC_LimitWeights.first, MEC_LimitWeights.second});
 
   return smd;
 }
