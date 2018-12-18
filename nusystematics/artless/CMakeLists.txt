@@ -100,7 +100,7 @@ else()
   SET(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} ${EXTRA_LINK_FLAGS}")
 endif()
 
-set(EXTRA_CXX_FLAGS "-DNO_ART -std=c++1y ${ROOT_CXX_FLAGS_SCRUBBED} ${GENIE_CXX_FLAGS}")
+set(EXTRA_CXX_FLAGS "-DNO_ART -std=c++1y -Wall -Wextra -Werror ${ROOT_CXX_FLAGS_SCRUBBED} ${GENIE_CXX_FLAGS} -Wno-misleading-indentation")
 if(CMAKE_CXX_FLAGS STREQUAL "")
   SET(CMAKE_CXX_FLAGS ${EXTRA_CXX_FLAGS})
 else()
@@ -127,7 +127,7 @@ INSTALL(FILES ${UTIL_HDRFILES} DESTINATION include/nusystematics/utility)
 SET(RC_HDRFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/BeRPA.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/TemplateResponseCalculatorBase.hh
-  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MKSinglePiEnuq0q3_ReWeight.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MKSinglePiTemplate_ReWeight.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvA2p2hq0q3.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvAq0q3Weighting_data.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvARPAq0q3_ReWeight.hh)
@@ -139,15 +139,27 @@ SET(SP_IMPLFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeight_tool.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeightEngineConfig.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeightParamConfig.cc
-  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiEnuq0q3_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiTemplate_tool.cc
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAq0q3Weighting_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/NOvAStyleNonResPionNorm_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/BeRPAWeight_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MiscInteractionSysts_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAE2p2h_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/EbLepMomShift_tool.cc
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/FSILikeEAvailSmearing_tool.cc
 )
 
 SET(SP_HDRFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEReWeight_tool.hh
-  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiEnuq0q3_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MKSinglePiTemplate_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAq0q3Weighting_tool.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/GENIEResponseParameterAssociation.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/NOvAStyleNonResPionNorm_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/BeRPAWeight_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MiscInteractionSysts_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/MINERvAE2p2h_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/EbLepMomShift_tool.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/systproviders/FSILikeEAvailSmearing_tool.hh
 )
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
@@ -219,6 +231,60 @@ target_link_libraries(TestPolyResponse5 ${GENIE_LIBS})
 target_link_libraries(TestPolyResponse5 ${ROOT_LIBS})
 
 INSTALL(TARGETS TestPolyResponse5 DESTINATION bin)
+
+####### FindISystProviderNuSyst app
+add_executable(FindISystProviderNuSyst ${CMAKE_SOURCE_DIR}/nusystematics/artless/FindISystProviderNuSyst.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(FindISystProviderNuSyst systematicstools)
+endif()
+set_target_properties(FindISystProviderNuSyst PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(FindISystProviderNuSyst nusystematics_systproviders)
+target_link_libraries(FindISystProviderNuSyst ${SYSTTOOLS_LIBS})
+target_link_libraries(FindISystProviderNuSyst ${GENIE_LIBS})
+target_link_libraries(FindISystProviderNuSyst ${ROOT_LIBS})
+
+INSTALL(TARGETS FindISystProviderNuSyst DESTINATION bin)
+
+####### DumpConfiguredTweaksNuSyst app
+add_executable(DumpConfiguredTweaksNuSyst ${CMAKE_SOURCE_DIR}/nusystematics/app/DumpConfiguredTweaksNuSyst.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(DumpConfiguredTweaksNuSyst systematicstools)
+endif()
+set_target_properties(DumpConfiguredTweaksNuSyst PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(DumpConfiguredTweaksNuSyst nusystematics_systproviders)
+target_link_libraries(DumpConfiguredTweaksNuSyst ${SYSTTOOLS_LIBS})
+target_link_libraries(DumpConfiguredTweaksNuSyst ${GENIE_LIBS})
+target_link_libraries(DumpConfiguredTweaksNuSyst ${ROOT_LIBS})
+
+INSTALL(TARGETS DumpConfiguredTweaksNuSyst DESTINATION bin)
+
+####### DumpConfiguredTweaksNuSyst app
+add_executable(BindingEnergyFlatTreeMaker ${CMAKE_SOURCE_DIR}/nusystematics/inputgenerationtools/BindingEnergyFlatTreeMaker.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(BindingEnergyFlatTreeMaker systematicstools)
+endif()
+set_target_properties(BindingEnergyFlatTreeMaker PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(BindingEnergyFlatTreeMaker nusystematics_systproviders)
+target_link_libraries(BindingEnergyFlatTreeMaker ${SYSTTOOLS_LIBS})
+target_link_libraries(BindingEnergyFlatTreeMaker ${GENIE_LIBS})
+target_link_libraries(BindingEnergyFlatTreeMaker ${ROOT_LIBS})
+
+INSTALL(TARGETS BindingEnergyFlatTreeMaker DESTINATION bin)
+
+
+####### Validation app
+add_executable(TweaksNuSyst_Validate ${CMAKE_SOURCE_DIR}/nusystematics/scripts/validation/TweaksNuSyst_Validate.cc)
+if(EXTERNAL_SYSTTOOLS)
+  add_dependencies(TweaksNuSyst_Validate systematicstools)
+endif()
+set_target_properties(TweaksNuSyst_Validate PROPERTIES LINK_FLAGS ${CMAKE_LINK_FLAGS})
+
+target_link_libraries(TweaksNuSyst_Validate ${ROOT_LIBS})
+
+INSTALL(TARGETS TweaksNuSyst_Validate DESTINATION bin)
 
 ####### interface
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/interface/IGENIESystProvider_tool.hh DESTINATION include/nusystematics/interface)

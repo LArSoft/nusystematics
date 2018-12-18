@@ -3,14 +3,15 @@
 
 #include "systematicstools/interface/types.hh"
 
+#include "systematicstools/interpreters/PolyResponse.hh"
+
 #include "systematicstools/utility/ROOTUtility.hh"
 #include "systematicstools/utility/exceptions.hh"
 
 #include "fhiclcpp/ParameterSet.h"
-#include "fhiclcpp/make_ParameterSet.h"
 
 #ifndef NO_ART
-#include "cetlib/filepath_maker.h"
+#include "cetlib/search_path.h"
 #endif
 
 #include "TH1.h"
@@ -21,206 +22,213 @@
 // #define TemplateResponseCalculatorBase_DEBUG
 
 namespace nusyst {
-template <size_t N> struct THType {};
-template <> struct THType<1> {
-  typedef TH1D type;
-  static size_t GetNbins(type *H) { return H->GetNbinsX(); }
-  static size_t GetNbins(std::unique_ptr<type> &H) { return H->GetNbinsX(); }
-};
-template <> struct THType<2> {
-  typedef TH2D type;
-  static size_t GetNbins(type *H) { return H->GetNbinsX() * H->GetNbinsY(); }
-  static size_t GetNbins(std::unique_ptr<type> &H) {
-    return H->GetNbinsX() * H->GetNbinsY();
-  }
-};
-template <> struct THType<3> {
-  typedef TH3D type;
-  static size_t GetNbins(type *H) {
-    return H->GetNbinsX() * H->GetNbinsY() * H->GetNbinsZ();
-  }
-  static size_t GetNbins(std::unique_ptr<type> &H) {
-    return H->GetNbinsX() * H->GetNbinsY() * H->GetNbinsZ();
-  }
-};
 
 NEW_SYSTTOOLS_EXCEPT(no_responses_loaded);
 NEW_SYSTTOOLS_EXCEPT(incompatible_number_of_bins);
+NEW_SYSTTOOLS_EXCEPT(bad_value_ordering);
 
-template <size_t NDims, bool Continuous = true>
+template <size_t NDims, bool Continuous = true, size_t PolyResponseOrder = 5>
 class TemplateResponseCalculatorBase {
 
 protected:
-  std::map<systtools::paramId_t, std::vector<TSpline3>> SplinedBinResponses;
-  std::map<systtools::paramId_t,
-           std::map<double, std::unique_ptr<typename THType<NDims>::type>>>
+  std::vector<systtools::PolyResponse<PolyResponseOrder>>
+      InterpolatedBinResponses;
+  std::map<double, std::unique_ptr<typename THType<NDims>::type>>
       BinnedResponses;
 
   void ValidateInputHistograms();
+  void BuildInterpolatedResponses();
+
+public:
+  static size_t const NDimensions = NDims;
+  TemplateResponseCalculatorBase();
+  TemplateResponseCalculatorBase(TemplateResponseCalculatorBase &&other)
+      : InterpolatedBinResponses(std::move(other.InterpolatedBinResponses)),
+        BinnedResponses(std::move(other.BinnedResponses)) {}
+
   /// Reads and loads input fhicl
   ///
   /// Expected fhicl like:
-  /// > # Optional default root file name
-  /// > InputTemplatesFile: "file.root"
-  /// > InputTemplates: [
-  /// >   { parameter_name: a
-  /// >     # Optional default root file name for this parameters inputs
-  /// >     input_file: "file.root"
-  /// >     inputs: [
-  /// >       { value: 0
-  /// >         # Optional if either of the less-specific
-  /// >         input_file: "file.root"
-  /// >         hist_name: "histo_name"
-  /// >       }
-  /// >     ]
-  /// >   }
-  /// > ]
-  void LoadInputHistograms(
-      fhicl::ParameterSet const &ps,
-      std::map<std::string, systtools::paramId_t> const &ParamNames);
+  ///  use_FW_SEARCH_PATH: true # If enabled, will search for files in
+  ///  in the search path. Only read for ART jobs.
+  ///  input_file: "file.root" # Optional default root file name for this
+  ///                          # parameter's inputs
+  ///    inputs: [
+  ///      { value: 0
+  ///        input_file: "file.root" # Optional if the less-specific is
+  ///                                # supplied
+  ///        input_hist: "histo_name"
+  ///      }
+  ///    ]
+  ///  }
+  void LoadInputHistograms(fhicl::ParameterSet const &ps);
 
-public:
-  TemplateResponseCalculatorBase();
+  typedef Int_t bin_it_t;
 
-  typedef size_t bin_it_t;
+  virtual bin_it_t GetBin(std::array<double, NDims> const &) const;
 
-  bin_it_t kBinOutsideRange = std::numeric_limits<bin_it_t>::max();
-
-  virtual bin_it_t GetBin(systtools::paramId_t,
-                          std::array<double, NDims> const &) = 0;
-
-  virtual std::string GetCalculatorName() = 0;
+  virtual std::string GetCalculatorName() const = 0;
 
   /// Extra template parameters required for SINFAE
-  template <bool Enable = Continuous>
-  typename std::enable_if<Enable, double>::type
-  GetVariation(systtools::paramId_t, double,
-               typename std::enable_if<Enable, bin_it_t>::type);
+  template <bool IsCont = Continuous>
+  typename std::enable_if<IsCont, double>::type
+  GetVariation(double, typename std::enable_if<IsCont, bin_it_t>::type) const;
   /// Extra template parameters required for SINFAE
-  template <bool Enable = Continuous>
-  typename std::enable_if<!Enable, double>::type
-  GetVariation(systtools::paramId_t, double,
-               typename std::enable_if<!Enable, bin_it_t>::type);
+  template <bool IsCont = Continuous>
+  typename std::enable_if<!IsCont, double>::type
+  GetVariation(double, typename std::enable_if<!IsCont, bin_it_t>::type) const;
 
-  double GetVariation(systtools::paramId_t param, double val,
-                      std::array<double, NDims> const &kinematics);
+  double GetVariation(double val,
+                      std::array<double, NDims> const &kinematics) const;
 
-  /// Extra template parameters required for SINFAE
-  template <bool Enable = Continuous>
-  typename std::enable_if<Enable, std::pair<double, double>>::type
-      GetValidVariations(
-          typename std::enable_if<Enable, systtools::paramId_t>::type);
-  /// Extra template parameters required for SINFAE
-  template <bool Enable = Continuous>
-  typename std::enable_if<!Enable, std::vector<double>>::type
-      GetValidVariations(
-          typename std::enable_if<!Enable, systtools::paramId_t>::type);
+  std::vector<double> GetValidVariations() const;
+  bool IsValidVariation(double val) const;
 };
 
 //*********************** Implementations
 
-template <size_t NDims, bool Continuous>
-void TemplateResponseCalculatorBase<NDims,
-                                    Continuous>::ValidateInputHistograms() {
-  for (auto &param_resps : BinnedResponses) {
-    if (!param_resps.second.size()) {
-      throw no_responses_loaded()
-          << "[ERROR]: Expected to find some responses to parameter "
-          << param_resps.first << " but found none.";
-    }
-    size_t NBins = THType<NDims>::GetNbins(param_resps.second.begin()->second);
-    for (auto &val_resp : param_resps.second) {
-      if (THType<NDims>::GetNbins(val_resp.second) != NBins) {
-        throw incompatible_number_of_bins()
-            << "[ERROR]: The first histogram at parameter value "
-            << param_resps.second.begin()->first << " has a response in "
-            << NBins << " bins, at parameter value " << val_resp.first
-            << " found " << THType<NDims>::GetNbins(val_resp.second)
-            << " bins.";
-      }
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+void TemplateResponseCalculatorBase<
+    NDims, Continuous, PolyResponseOrder>::ValidateInputHistograms() {
+  if (!BinnedResponses.size()) {
+    throw no_responses_loaded()
+        << "[ERROR]: Expected to find some responses, but found none.";
+  }
+  if (Continuous && (BinnedResponses.size() == 1)) {
+    throw no_responses_loaded()
+        << "[ERROR]: For continuous template parameter, only a single set of "
+           "responses was loaded, require at least two parameter values for "
+           "continuous response.";
+  }
+  size_t NBins = THType<NDims>::GetNbins(BinnedResponses.begin()->second);
+  for (auto &val_resp : BinnedResponses) {
+    if (THType<NDims>::GetNbins(val_resp.second) != NBins) {
+      throw incompatible_number_of_bins()
+          << "[ERROR]: The first histogram at parameter value "
+          << BinnedResponses.begin()->first << " has a response in " << NBins
+          << " bins, at parameter value " << val_resp.first << " found "
+          << THType<NDims>::GetNbins(val_resp.second) << " bins.";
     }
   }
 }
 
-template <size_t NDims, bool Continuous>
-void TemplateResponseCalculatorBase<NDims, Continuous>::LoadInputHistograms(
-    fhicl::ParameterSet const &ps,
-    std::map<std::string, systtools::paramId_t> const &ParamNames) {
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+void TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::
+    LoadInputHistograms(fhicl::ParameterSet const &ps) {
 
-  std::string provider_default_root_file =
-      ps.get<std::string>("InputTemplatesFile", "");
+#ifndef NO_ART
+  bool use_stashcache = ps.get<bool>("use_FW_SEARCH_PATH", false);
+#endif
 
-  std::vector<fhicl::ParameterSet> const &provider_config =
-      ps.get<std::vector<fhicl::ParameterSet>>("InputTemplates");
+  std::string const &default_root_file = ps.get<std::string>("input_file", "");
 
-  for (auto const &param_config : provider_config) {
-    std::string pname = param_config.get<std::string>("parameter_name");
+  for (fhicl::ParameterSet const &val_config :
+       ps.get<std::vector<fhicl::ParameterSet>>("inputs")) {
+    double pval = val_config.get<double>("value");
+    std::string input_file =
+        val_config.get<std::string>("input_file", default_root_file);
+    std::string input_hist = val_config.get<std::string>("input_hist");
 
-    if (ParamNames.find(pname) == ParamNames.end()) {
-      std::stringstream ss("");
-      ss << "[";
-      for (auto const &p : ParamNames) {
-        ss << p.second << ", ";
+#ifndef NO_ART
+
+    if (use_stashcache) {
+      std::string stashcache_file;
+      cet::search_path sp("FW_SEARCH_PATH");
+      if (!sp.find_file(input_file, stashcache_file)) {
+        char *fw = getenv("FW_SEARCH_PATH");
+        std::string fw_str("");
+        if (fw) {
+          fw_str = fw;
+        }
+        throw invalid_tfile()
+            << "[ERROR]: Failed to find file: " << input_file
+            << ", on stashcache. (FW_SEARCH_PATH=\"" << fw_str << "\")";
       }
-      std::string valid_pnames = ss.str();
-      valid_pnames = valid_pnames.substr(0, valid_pnames.size() - 2) + " ]";
-      throw systtools::invalid_parameter_name()
-          << "[ERROR]: Template reweight requested for parameter named "
-          << std::quoted(pname) << ", but " << GetCalculatorName()
-          << " knows about parameters: " << valid_pnames;
+      input_file = stashcache_file;
     }
 
-    systtools::paramId_t pId = ParamNames.at(pname);
+#endif
 
-    std::string parameter_default_root_file =
-        param_config.get<std::string>("input_file", provider_default_root_file);
+    BinnedResponses[pval] = std::unique_ptr<typename THType<NDims>::type>(
+        GetHistogram<typename THType<NDims>::type>(input_file, input_hist));
+  }
 
-    std::vector<fhicl::ParameterSet> const &inputs_config =
-        param_config.get<std::vector<fhicl::ParameterSet>>("inputs");
-
-    for (auto const &val_config : inputs_config) {
-      double pval = val_config.get<double>("value");
-      std::string input_file = val_config.get<std::string>(
-          "input_file", parameter_default_root_file);
-      std::string hist_name = val_config.get<std::string>("hist_name");
-
-      BinnedResponses[pId][pval] =
-          std::unique_ptr<typename THType<NDims>::type>(
-              GetHistogram<typename THType<NDims>::type>(input_file,
-                                                         hist_name));
-    }
+  ValidateInputHistograms();
+  if (Continuous) {
+    BuildInterpolatedResponses();
   }
 }
-template <size_t NDims, bool Continuous>
-TemplateResponseCalculatorBase<NDims,
-                               Continuous>::TemplateResponseCalculatorBase() {}
 
-template <size_t NDims, bool Continuous>
-template <bool Enable>
-typename std::enable_if<Enable, double>::type
-TemplateResponseCalculatorBase<NDims, Continuous>::GetVariation(
-    systtools::paramId_t param, double val,
-    typename std::enable_if<Enable, bin_it_t>::type bin) {
-  return SplinedBinResponses[param][bin]->Eval(val);
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+typename TemplateResponseCalculatorBase<NDims, Continuous,
+                                        PolyResponseOrder>::bin_it_t
+TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::GetBin(
+    std::array<double, NDims> const &vals) const {
+  return THType<NDims>::GetBin(BinnedResponses.begin()->second.get(), vals);
 }
 
-template <size_t NDims, bool Continuous>
-template <bool Enable>
-typename std::enable_if<!Enable, double>::type
-TemplateResponseCalculatorBase<NDims, Continuous>::GetVariation(
-    systtools::paramId_t param, double val,
-    typename std::enable_if<!Enable, bin_it_t>::type bin) {
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+void TemplateResponseCalculatorBase<
+    NDims, Continuous, PolyResponseOrder>::BuildInterpolatedResponses() {
+  std::vector<double> xvals;
+  std::vector<double> yvals_dummy;
+  std::vector<double> yvals;
+  for (auto const &var : BinnedResponses) {
+    if (var.first < xvals.back()) {
+      throw bad_value_ordering()
+          << "[ERROR]: When precalculating response functions, found value "
+             "specification for "
+          << var.first << ", but the previous value was " << xvals.back()
+          << "; as these are stored in a std::map, this is problematic...";
+    }
+    xvals.push_back(var.first);
+    yvals_dummy.push_back(1);
+  }
+
+  size_t NBins = THType<NDims>::GetNbins(BinnedResponses.begin()->second, true);
+  for (size_t bi_it = 0; bi_it < NBins; ++bi_it) {
+    yvals.clear();
+    for (auto const &var : BinnedResponses) {
+      if (THType<NDims>::IsFlowBin(var.second, bi_it)) {
+        yvals = yvals_dummy;
+        break;
+      }
+      yvals.push_back(var.second->GetBinContent(bi_it));
+    }
+    InterpolatedBinResponses.emplace_back(xvals, yvals);
+  }
+}
+
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+TemplateResponseCalculatorBase<
+    NDims, Continuous, PolyResponseOrder>::TemplateResponseCalculatorBase() {}
+
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+template <bool IsCont>
+typename std::enable_if<IsCont, double>::type
+TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::
+    GetVariation(double val,
+                 typename std::enable_if<IsCont, bin_it_t>::type bin) const {
+  return InterpolatedBinResponses[bin]->eval(val);
+}
+
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+template <bool IsCont>
+typename std::enable_if<!IsCont, double>::type
+TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::
+    GetVariation(double val,
+                 typename std::enable_if<!IsCont, bin_it_t>::type bin) const {
 
   if (bin == kBinOutsideRange) {
     return 1;
   }
 
-  for (auto &resp : BinnedResponses[param]) {
+  for (auto const &resp : BinnedResponses) {
     if (fabs(val - resp.first) <
         (std::numeric_limits<double>::epsilon() * 1E4)) {
 #ifdef TemplateResponseCalculatorBase_DEBUG
       std::cout << "[INFO]: Getting bin content for bin: " << bin
-                << " for parameter: " << param << " at value: " << val << " = "
+                << " at value: " << val << " = "
                 << resp.second->GetBinContent(bin)
                 << " from hist: " << resp.second->GetName() << std::endl;
 #endif
@@ -230,7 +238,7 @@ TemplateResponseCalculatorBase<NDims, Continuous>::GetVariation(
 
   std::stringstream ss("");
   ss << "[";
-  for (auto const &v : GetValidVariations(param)) {
+  for (auto const &v : GetValidVariations()) {
     ss << v << ", ";
   }
   std::string valid_vals = ss.str();
@@ -241,39 +249,54 @@ TemplateResponseCalculatorBase<NDims, Continuous>::GetVariation(
       << ", configured values: " << valid_vals;
 }
 
-template <size_t NDims, bool Continuous>
-double TemplateResponseCalculatorBase<NDims, Continuous>::GetVariation(
-    systtools::paramId_t param, double val,
-    std::array<double, NDims> const &kinematics) {
-  return GetVariation(param, val, GetBin(param, kinematics));
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+double TemplateResponseCalculatorBase<NDims, Continuous, PolyResponseOrder>::
+    GetVariation(double val,
+                 std::array<double, NDims> const &kinematics) const {
+  return GetVariation(val, GetBin(kinematics));
 }
 
-template <size_t NDims, bool Continuous>
-template <bool Enable>
-typename std::enable_if<Enable, std::pair<double, double>>::type
-TemplateResponseCalculatorBase<NDims, Continuous>::GetValidVariations(
-    typename std::enable_if<Enable, systtools::paramId_t>::type param) {
-  std::pair<double, double> minmax{std::numeric_limits<double>::max(),
-                                   -std::numeric_limits<double>::max()};
-  for (auto const &var : BinnedResponses[param]) {
-    minmax.first = std::min(minmax.first, var.first);
-    minmax.second = std::max(minmax.second, var.first);
-  }
-
-  return minmax;
-}
-
-template <size_t NDims, bool Continuous>
-template <bool Enable>
-typename std::enable_if<!Enable, std::vector<double>>::type
-TemplateResponseCalculatorBase<NDims, Continuous>::GetValidVariations(
-    typename std::enable_if<!Enable, systtools::paramId_t>::type param) {
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+std::vector<double>
+TemplateResponseCalculatorBase<NDims, Continuous,
+                               PolyResponseOrder>::GetValidVariations() const {
   std::vector<double> vals;
-  for (auto const &var : BinnedResponses[param]) {
-    vals.push_back(var.first);
+  if (Continuous) {
+    std::pair<double, double> minmax{std::numeric_limits<double>::max(),
+                                     -std::numeric_limits<double>::max()};
+    for (auto const &var : BinnedResponses) {
+      minmax.first = std::min(minmax.first, var.first);
+      minmax.second = std::max(minmax.second, var.first);
+    }
+    vals.push_back(minmax.first);
+    vals.push_back(minmax.second);
+  } else {
+    for (auto const &var : BinnedResponses) {
+      vals.push_back(var.first);
+    }
   }
   return vals;
 }
+
+template <size_t NDims, bool Continuous, size_t PolyResponseOrder>
+bool TemplateResponseCalculatorBase<
+    NDims, Continuous, PolyResponseOrder>::IsValidVariation(double val) const {
+  std::vector<double> const &valvar = GetValidVariations();
+  if (Continuous) {
+    return (val > valvar[0]) && (val < valvar[1]);
+  } else {
+    for (double v : valvar) {
+      if (fabs(v - val) < (std::numeric_limits<double>::epsilon() * 1E4)) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+typedef TemplateResponseCalculatorBase<2, false> TemplateResponse2DDiscrete;
+typedef TemplateResponseCalculatorBase<3, false> TemplateResponse3DDiscrete;
+
 } // namespace nusyst
 
 #endif

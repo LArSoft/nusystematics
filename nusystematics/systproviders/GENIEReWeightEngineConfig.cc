@@ -77,7 +77,7 @@ void AddResponseAndDependentDials(
       ResponsePar.Herg.push_back(std::move(grw));
     }
     param_map.push_back(std::move(ResponsePar));
-    // We are ignoring the dependence of the zexpansion parameters.
+    // We are ignoring the inter-dependence of the parameters.
   } else if (HasAnyParams(md, DependentDialNames)) {
     for (GSyst_t const &depdial : DependentDials) {
       std::string const &pname = GSyst::AsString(depdial);
@@ -178,8 +178,7 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
   // Add MACCQE
   bool MAQEIsShapeOnly = tool_options.get<bool>("MAQEIsShapeOnly", false);
   AddIndependentParameters(
-      QEmd,
-      {MAQEIsShapeOnly ? kXSecTwkDial_MaCCQEshape : kXSecTwkDial_MaCCQE},
+      QEmd, {MAQEIsShapeOnly ? kXSecTwkDial_MaCCQEshape : kXSecTwkDial_MaCCQE},
       "xsec_ccqe_axFF",
       [=]() {
         GReWeightNuXSecCCQE *rwccqe = new GReWeightNuXSecCCQE();
@@ -192,9 +191,9 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
       UseFullHERG, param_map);
 
   // Add AxFFCCQEShape
-  AddIndependentParameters(
-      QEmd, {kXSecTwkDial_AxFFCCQEshape}, "xsec_ccqe_axFF",
-      []() { return new GReWeightNuXSecCCQEaxial(); }, UseFullHERG, param_map);
+  AddIndependentParameters(QEmd, {kXSecTwkDial_AxFFCCQEshape}, "xsec_ccqe_axFF",
+                           []() { return new GReWeightNuXSecCCQEaxial(); },
+                           UseFullHERG, param_map);
 
   // Add ZNormCCQE
   AddIndependentParameters(QEmd, {kXSecTwkDial_ZNormCCQE}, "xsec_ccqe_axFF",
@@ -221,12 +220,47 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
       },
       UseFullHERG, param_map);
 
+  if (tool_options.get<bool>("AxFFCCQEDipoleToZExp", false)) {
+
+    std::vector<std::string> dial_names;
+    dial_names.push_back("ZExpAVariationResponse");
+    for (GSyst_t gdial : {kXSecTwkDial_ZNormCCQE, kXSecTwkDial_ZExpA1CCQE,
+                          kXSecTwkDial_ZExpA2CCQE, kXSecTwkDial_ZExpA3CCQE,
+                          kXSecTwkDial_ZExpA4CCQE}) {
+      dial_names.push_back(GSyst::AsString(gdial));
+    }
+    bool attached_AxFFQEShape = false;
+    for (std::string const &dname : dial_names) {
+      for (GENIEResponseParameter &grp : param_map) {
+        if (grp.pidx != GetParamIndex(QEmd, dname)) {
+          continue;
+        }
+        attached_AxFFQEShape = true;
+
+        for (auto &grw : grp.Herg) {
+          grw->AdoptWghtCalc("xsec_ccqe_axFF", new GReWeightNuXSecCCQEaxial());
+          grw->Systematics().Init(kXSecTwkDial_AxFFCCQEshape, 1);
+        }
+      }
+      // Only want to add in dipole->z-exp reweighting once
+      if (attached_AxFFQEShape) {
+        break;
+      }
+    }
+    if (!attached_AxFFQEShape) {
+      throw incorrectly_configured()
+          << "[ERROR]: Need to add dipole -> z-expansion axial form factor "
+             "reweighting, but found no Z-expansion parameters to attach it "
+             "to.";
+    }
+  } // end AxFFQEShape special case
+
   AddIndependentParameters(
       QEmd, {kXSecTwkDial_VecFFCCQEshape}, "xsec_ccqe_vecFF",
       []() { return new GReWeightNuXSecCCQEvec; }, UseFullHERG, param_map);
 
   return param_map;
-}
+} // namespace nusyst
 
 std::vector<GENIEResponseParameter>
 ConfigureNCELWeightEngine(SystMetaData const &NCELmd,

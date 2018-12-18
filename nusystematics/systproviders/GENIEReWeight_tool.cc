@@ -14,8 +14,10 @@
 #include "GHEP/GHepUtils.h"
 #include "Messenger/Messenger.h"
 
-#include <chrono>
+#include "TH1.h"
+
 #include <sstream>
+#include <fstream>
 
 using namespace fhicl;
 using namespace systtools;
@@ -38,6 +40,9 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
   bool ignore_parameter_dependence =
       params.get<bool>("ignore_parameter_dependence", false);
   tool_options.put("ignore_parameter_dependence", ignore_parameter_dependence);
+
+  bool UseFullHERG = params.get<bool>("UseFullHERG", false);
+  tool_options.put("UseFullHERG", UseFullHERG);
 
   fill_valid_tree = params.get<bool>("fill_valid_tree", false);
   tool_options.put("fill_valid_tree", fill_valid_tree);
@@ -66,8 +71,7 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
       ConfigureFSIParameterHeaders(params, firstParamId, tool_options);
   firstParamId += FSImd.size();
 
-  SystMetaData Othermd =
-      ConfigureOtherParameterHeaders(params, firstParamId, tool_options);
+  SystMetaData Othermd = ConfigureOtherParameterHeaders(params, firstParamId);
   firstParamId += Othermd.size();
 
   // Don't extend inline to make firstParamId incrementing more clear.
@@ -100,8 +104,6 @@ void GENIEReWeight::extend_ResponseToGENIEParameters(
 
 bool GENIEReWeight::SetupResponseCalculator(
     fhicl::ParameterSet const &tool_options) {
-  genie::Messenger::Instance()->SetPrioritiesFromXmlFile(
-      "Messenger_whisper.xml");
 
   std::cout << "[INFO]: Setting up GENIE ReWeight instances..." << std::endl;
   extend_ResponseToGENIEParameters(
@@ -132,6 +134,8 @@ bool GENIEReWeight::SetupResponseCalculator(
     InitValidTree();
   }
 
+  genie::Messenger::Instance()->SetPrioritiesFromXmlFile(
+      "Messenger_whisper.xml");
   return true;
 }
 
@@ -146,10 +150,10 @@ GENIEReWeight::GetEventResponse(genie::EventRecord const &gev) {
 
   systtools::event_unit_response_t event_responses;
   size_t NResps = ResponseToGENIEParameters.size();
+
   for (size_t resp_idx = 0; resp_idx < NResps; ++resp_idx) {
     event_responses.push_back(GetEventGENIEParameterResponse(gev, resp_idx));
   }
-
   if (fill_valid_tree) {
     TLorentzVector FSLepP4 = gev.Summary()->Kine().FSLeptonP4();
     TLorentzVector ISLepP4 =
@@ -195,7 +199,14 @@ double GENIEReWeight::GetEventWeightResponse(
       GENIEResponse.Herg.front()->Systematics().Set(dep.gdial, pval);
     }
     GENIEResponse.Herg.front()->Reconfigure();
+    bool is_set_dir = TH1::AddDirectoryStatus();
+    if (!is_set_dir) {
+      TH1::AddDirectory(true);
+    }
     weight *= GENIEResponse.Herg.front()->CalcWeight(gev);
+    if (!is_set_dir) {
+      TH1::AddDirectory(false);
+    }
   }
 
   return weight;
@@ -216,6 +227,11 @@ GENIEReWeight::GetEventResponse(genie::EventRecord const &gev,
 
   return systtools::event_unit_response_t();
 }
+
+namespace {
+std::streambuf *default_cout;
+std::ofstream redirect_stream("/dev/null");
+} // namespace
 
 systtools::ParamResponses
 GENIEReWeight::GetEventGENIEParameterResponse(genie::EventRecord const &gev,
@@ -272,8 +288,15 @@ GENIEReWeight::GetEventGENIEParameterResponse(genie::EventRecord const &gev,
 #endif
       }
       GENIEResponse.Herg.front()->Reconfigure();
+      bool is_set_dir = TH1::AddDirectoryStatus();
+      if (!is_set_dir) {
+        TH1::AddDirectory(true);
+      }
       presp.responses.push_back(GENIEResponse.Herg.front()->CalcWeight(gev));
-    } else {
+      if (!is_set_dir) {
+        TH1::AddDirectory(false);
+      }
+    } else { // Is full HERG, no reconfigure needed
 #ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
       for (GENIEResponseParameter::DependentParameter const &dep :
            GENIEResponse.dependents) {
@@ -290,7 +313,36 @@ GENIEReWeight::GetEventGENIEParameterResponse(genie::EventRecord const &gev,
                   << std::endl;
       }
 #endif
-      presp.responses.push_back(GENIEResponse.Herg[var_it]->CalcWeight(gev));
+
+      // As some GENIE dials are very slow, it is worth checking if we have
+      // already calculated this variation before
+      size_t pindx = std::numeric_limits<size_t>::max();
+      for (size_t v_it = 0; v_it < var_it; ++v_it) {
+        if (fabs(hdr.paramVariations[v_it] - hdr.paramVariations[var_it]) <
+            1E-5) {
+          pindx = v_it;
+          break;
+        }
+      }
+      if (pindx !=
+          std::numeric_limits<size_t>::max()) { // Have already calculated this
+        // value, just use that
+        presp.responses.push_back(presp.responses[pindx]);
+      } else { // must calculate
+        bool is_set_dir = TH1::AddDirectoryStatus();
+        if (!is_set_dir) {
+          TH1::AddDirectory(true);
+        }
+
+        ::default_cout = std::cout.rdbuf();
+        std::cout.rdbuf(::redirect_stream.rdbuf());
+        presp.responses.push_back(GENIEResponse.Herg[var_it]->CalcWeight(gev));
+        std::cout.rdbuf(::default_cout);
+
+        if (!is_set_dir) {
+          TH1::AddDirectory(false);
+        }
+      }
     }
 #ifdef GENIEREWEIGHT_GETEVENTRESPONSE_DEBUG
     std::cout << "\t -> " << presp.responses.back() << std::endl;

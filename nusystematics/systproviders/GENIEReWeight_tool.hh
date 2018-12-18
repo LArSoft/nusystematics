@@ -6,7 +6,6 @@
 #include "nusystematics/systproviders/GENIEResponseParameterAssociation.hh"
 
 // GENIE
-#include "EVGCore/EventRecord.h"
 #include "ReWeight/GReWeight.h"
 
 #include "TFile.h"
@@ -15,7 +14,7 @@
 #include <memory>
 #include <set>
 
-// HERG: HIRD OF RAMPAGING GENIES, HIRD: HERG OF INFINITELY REPEATING DEPTHS
+// HERG: HIRD OF RAMPAGING GENIES, HIRD: HERG OF INFINITELY REPEATING DEPTH
 
 class GENIEReWeight : public nusyst::IGENIESystProvider_tool {
 public:

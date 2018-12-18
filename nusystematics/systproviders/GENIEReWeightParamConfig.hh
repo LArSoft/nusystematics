@@ -34,8 +34,7 @@ ConfigureFSIParameterHeaders(fhicl::ParameterSet const &, systtools::paramId_t,
 
 systtools::SystMetaData
 ConfigureOtherParameterHeaders(fhicl::ParameterSet const &,
-                               systtools::paramId_t,
-                               fhicl::ParameterSet &tool_options);
+                               systtools::paramId_t);
 
 } // namespace nusyst
 
