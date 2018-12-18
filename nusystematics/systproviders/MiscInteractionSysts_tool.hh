@@ -31,8 +31,8 @@ private:
 
   size_t pidx_C12ToAr40_2p2hScaling_nu;
   size_t pidx_C12ToAr40_2p2hScaling_nubar;
-  size_t pidx_MINERvA_2p2hEnergyDependenceScaling_nu;
-  size_t pidx_MINERvA_2p2hEnergyDependenceScaling_nubar;
+  // unused size_t pidx_MINERvA_2p2hEnergyDependenceScaling_nu;
+  // unused size_t pidx_MINERvA_2p2hEnergyDependenceScaling_nubar;
   size_t pidx_nuenuebar_xsec_ratio;
   size_t pidx_nuenumu_xsec_ratio;
   size_t pidx_SPPLowQ2Suppression;

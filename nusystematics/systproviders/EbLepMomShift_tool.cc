@@ -110,7 +110,7 @@ EbLepMomShift::GetEventResponse(genie::EventRecord const &ev) {
   Enu = ISLepP4.E();
   FSLep_ctheta = FSLepP4.Vect().CosTheta();
 
-  int bin = EbTemplate.GetBin({Enu, FSLep_ctheta});
+  int bin = EbTemplate.GetBin({{Enu, FSLep_ctheta}});
   if (bin != kBinOutsideRange) {
     resp.push_back({md[ResponseParameterIdx].systParamId, {}});
     for (double v : md[ResponseParameterIdx].paramVariations) {
@@ -118,7 +118,7 @@ EbLepMomShift::GetEventResponse(genie::EventRecord const &ev) {
         resp.back().responses.push_back(0);
       } else {
         resp.back().responses.push_back(
-            EbTemplate.GetVariation(v, {Enu, FSLep_ctheta}));
+            EbTemplate.GetVariation(v, {{Enu, FSLep_ctheta}}));
       }
     }
   }
