@@ -79,7 +79,7 @@ SystMetaData FSILikeEAvailSmearing::BuildSystMetaData(ParameterSet const &cfg,
 
   LimitWeights = cfg.get<std::pair<double, double>>(
       "LimitWeights", {0, std::numeric_limits<double>::max()});
-  tool_options.put("LimitWeights", LimitWeights);
+  tool_options.put<std::pair<double, double>>("LimitWeights", LimitWeights);
 
   return smd;
 }
