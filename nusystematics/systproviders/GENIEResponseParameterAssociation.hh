@@ -3,8 +3,14 @@
 
 #include "systematicstools/utility/exceptions.hh"
 
-// GENIE
-#include "RwFramework/GReWeight.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "ReWeight/GReWeight.h"
+#else
+  // Use these for GENIE v3
+  #include "RwFramework/GReWeight.h"
+#endif
 
 #include <memory>
 #include <vector>

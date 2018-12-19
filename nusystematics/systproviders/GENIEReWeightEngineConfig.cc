@@ -1,20 +1,39 @@
 #include "nusystematics/systproviders/GENIEReWeightEngineConfig.hh"
 
-// GENIE
-#include "RwCalculators/GReWeightAGKY.h"
-#include "RwCalculators/GReWeightFGM.h"
-#include "RwCalculators/GReWeightFZone.h"
-#include "RwCalculators/GReWeightINuke.h"
-#include "RwCalculators/GReWeightNonResonanceBkg.h"
-#include "RwCalculators/GReWeightNuXSecCCQE.h"
-#include "RwCalculators/GReWeightNuXSecCCQEaxial.h"
-#include "RwCalculators/GReWeightNuXSecCCQEvec.h"
-#include "RwCalculators/GReWeightNuXSecCCRES.h"
-#include "RwCalculators/GReWeightNuXSecCOH.h"
-#include "RwCalculators/GReWeightNuXSecDIS.h"
-#include "RwCalculators/GReWeightNuXSecNCEL.h"
-#include "RwCalculators/GReWeightNuXSecNCRES.h"
-#include "RwCalculators/GReWeightResonanceDecay.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "ReWeight/GReWeightAGKY.h"
+  #include "ReWeight/GReWeightFGM.h"
+  #include "ReWeight/GReWeightFZone.h"
+  #include "ReWeight/GReWeightINuke.h"
+  #include "ReWeight/GReWeightNonResonanceBkg.h"
+  #include "ReWeight/GReWeightNuXSecCCQE.h"
+  #include "ReWeight/GReWeightNuXSecCCQEaxial.h"
+  #include "ReWeight/GReWeightNuXSecCCQEvec.h"
+  #include "ReWeight/GReWeightNuXSecCCRES.h"
+  #include "ReWeight/GReWeightNuXSecCOH.h"
+  #include "ReWeight/GReWeightNuXSecDIS.h"
+  #include "ReWeight/GReWeightNuXSecNCEL.h"
+  #include "ReWeight/GReWeightNuXSecNCRES.h"
+  #include "ReWeight/GReWeightResonanceDecay.h"
+#else
+  // Use these for GENIE v3
+  #include "RwCalculators/GReWeightAGKY.h"
+  #include "RwCalculators/GReWeightFGM.h"
+  #include "RwCalculators/GReWeightFZone.h"
+  #include "RwCalculators/GReWeightINuke.h"
+  #include "RwCalculators/GReWeightNonResonanceBkg.h"
+  #include "RwCalculators/GReWeightNuXSecCCQE.h"
+  #include "RwCalculators/GReWeightNuXSecCCQEaxial.h"
+  #include "RwCalculators/GReWeightNuXSecCCQEvec.h"
+  #include "RwCalculators/GReWeightNuXSecCCRES.h"
+  #include "RwCalculators/GReWeightNuXSecCOH.h"
+  #include "RwCalculators/GReWeightNuXSecDIS.h"
+  #include "RwCalculators/GReWeightNuXSecNCEL.h"
+  #include "RwCalculators/GReWeightNuXSecNCRES.h"
+  #include "RwCalculators/GReWeightResonanceDecay.h"
+#endif
 
 #include <functional>
 
@@ -419,14 +438,28 @@ ConfigureFSIWeightEngine(systtools::SystMetaData const &FSImd,
 
   AddResponseAndDependentDials(
       FSImd, "FSI_pi_VariationResponse",
-      {kINukeTwkDial_MFP_pi, kINukeTwkDial_FrCEx_pi, kINukeTwkDial_FrElas_pi,
+      {kINukeTwkDial_MFP_pi, kINukeTwkDial_FrCEx_pi,
+
+       // Pion elastic fate was removed in hA2018 for GENIE v3
+       // -- S. Gardiner, 19 December 2018
+       #ifdef GENIE_PRE_R3
+       kINukeTwkDial_FrElas_pi,
+       #endif
+
        kINukeTwkDial_FrInel_pi, kINukeTwkDial_FrAbs_pi,
        kINukeTwkDial_FrPiProd_pi},
       "INuke_pi", []() { return new GReWeightINuke; }, UseFullHERG, param_map);
 
   AddResponseAndDependentDials(
       FSImd, "FSI_N_VariationResponse",
-      {kINukeTwkDial_MFP_N, kINukeTwkDial_FrCEx_N, kINukeTwkDial_FrElas_N,
+      {kINukeTwkDial_MFP_N, kINukeTwkDial_FrCEx_N,
+
+       // Nucleon elastic fate was removed in hA2018 for GENIE v3
+       // -- S. Gardiner, 19 December 2018
+       #ifdef GENIE_PRE_R3
+       kINukeTwkDial_FrElas_N,
+       #endif
+
        kINukeTwkDial_FrInel_N, kINukeTwkDial_FrAbs_N, kINukeTwkDial_FrPiProd_N},
       "INuke_N", []() { return new GReWeightINuke; }, UseFullHERG, param_map);
 

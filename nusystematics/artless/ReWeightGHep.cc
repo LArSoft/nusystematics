@@ -3,10 +3,20 @@
 #include "nusystematics/utility/GENIEUtils.hh"
 #include "nusystematics/utility/enumclass2int.hh"
 
-#include "Framework/EventGen/EventRecord.h"
-#include "Framework/GHEP/GHepUtils.h"
-#include "Framework/Messenger/Messenger.h"
-#include "Framework/Ntuple/NtpMCEventRecord.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "EVGCore/EventRecord.h"
+  #include "GHEP/GHepUtils.h"
+  #include "Messenger/Messenger.h"
+  #include "Ntuple/NtpMCEventRecord.h"
+#else
+  // Use these for GENIE v3
+  #include "Framework/EventGen/EventRecord.h"
+  #include "Framework/GHEP/GHepUtils.h"
+  #include "Framework/Messenger/Messenger.h"
+  #include "Framework/Ntuple/NtpMCEventRecord.h"
+#endif
 
 // Included by fhiclcpp-simple will not be available in art-ful
 #include "string_parsers/from_string.hxx"

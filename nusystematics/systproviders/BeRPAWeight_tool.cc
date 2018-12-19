@@ -8,8 +8,16 @@
 
 #include "nusystematics/responsecalculators/BeRPA.hh"
 
-#include "Framework/GHEP/GHepParticle.h"
-#include "Framework/GHEP/GHepUtils.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "GHEP/GHepParticle.h"
+  #include "GHEP/GHepUtils.h"
+#else
+  // Use these for GENIE v3
+  #include "Framework/GHEP/GHepParticle.h"
+  #include "Framework/GHEP/GHepUtils.h"
+#endif
 
 #ifndef NO_ART
 #include "art/Utilities/ToolMacros.h"

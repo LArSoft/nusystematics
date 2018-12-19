@@ -12,8 +12,14 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-// GENIE
-#include "Framework/EventGen/EventRecord.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "EVGCore/EventRecord.h"
+#else
+  // Use these for GENIE v3
+  #include "Framework/EventGen/EventRecord.h"
+#endif
 
 namespace nusyst {
 

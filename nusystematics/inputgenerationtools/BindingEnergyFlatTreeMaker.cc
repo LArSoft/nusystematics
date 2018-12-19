@@ -1,10 +1,22 @@
 #include "systematicstools/utility/string_parsers.hh"
 
-#include "Framework/EventGen/EventRecord.h"
-#include "Framework/GHEP/GHepParticle.h"
-#include "Framework/GHEP/GHepUtils.h"
-#include "Framework/Messenger/Messenger.h"
-#include "Framework/Ntuple/NtpMCEventRecord.h"
+// GENIE includes
+
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "EVGCore/EventRecord.h"
+  #include "GHEP/GHepParticle.h"
+  #include "GHEP/GHepUtils.h"
+  #include "Messenger/Messenger.h"
+  #include "Ntuple/NtpMCEventRecord.h"
+#else
+  // Use these for GENIE v3
+  #include "Framework/EventGen/EventRecord.h"
+  #include "Framework/GHEP/GHepParticle.h"
+  #include "Framework/GHEP/GHepUtils.h"
+  #include "Framework/Messenger/Messenger.h"
+  #include "Framework/Ntuple/NtpMCEventRecord.h"
+#endif
 
 #include "TChain.h"
 #include "TFile.h"
