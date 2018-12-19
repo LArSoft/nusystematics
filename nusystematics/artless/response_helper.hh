@@ -14,8 +14,16 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/make_ParameterSet.h"
 
-#include "Framework/EventGen/EventRecord.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "EVGCore/EventRecord.h"
+#else
+  // Use these for GENIE v3
+  #include "Framework/EventGen/EventRecord.h"
+#endif
 
+// ROOT includes
 #include "TFile.h"
 #include "TTree.h"
 

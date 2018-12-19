@@ -10,7 +10,14 @@
 #include "art/Utilities/ToolMacros.h"
 #endif
 
-#include "Framework/GHEP/GHepParticle.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "GHEP/GHepParticle.h"
+#else
+  // Use these for GENIE v3
+  #include "Framework/GHEP/GHepParticle.h"
+#endif
 
 #include "TLorentzVector.h"
 

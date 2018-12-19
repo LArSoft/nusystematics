@@ -10,9 +10,16 @@
 #include "art/Utilities/ToolMacros.h"
 #endif
 
-// GENIE
-#include "Framework/GHEP/GHepUtils.h"
-#include "Framework/Messenger/Messenger.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "GHEP/GHepUtils.h"
+  #include "Messenger/Messenger.h"
+#else
+  // Use these for GENIE v3
+  #include "Framework/GHEP/GHepUtils.h"
+  #include "Framework/Messenger/Messenger.h"
+#endif
 
 #include "TH1.h"
 

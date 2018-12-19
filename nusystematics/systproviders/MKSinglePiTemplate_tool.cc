@@ -9,9 +9,16 @@
 #include "art/Utilities/ToolMacros.h"
 #endif
 
-#include "Framework/GHEP/GHepParticle.h"
-
-#include "Framework/Messenger/Messenger.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "GHEP/GHepParticle.h"
+  #include "Messenger/Messenger.h"
+#else
+  // Use these for GENIE v3
+  #include "Framework/GHEP/GHepParticle.h"
+  #include "Framework/Messenger/Messenger.h"
+#endif
 
 using namespace systtools;
 using namespace nusyst;

@@ -5,8 +5,14 @@
 
 #include "nusystematics/responsecalculators/MKSinglePiTemplate_ReWeight.hh"
 
-// GENIE
-#include "Framework/Interaction/SppChannel.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "Interaction/SppChannel.h"
+#else
+  // Use these for GENIE v3
+  #include "Framework/Interaction/SppChannel.h"
+#endif
 
 #include "TFile.h"
 #include "TTree.h"

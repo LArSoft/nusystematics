@@ -7,8 +7,14 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-// GENIE
-#include "RwFramework/GReWeight.h"
+// GENIE includes
+#ifdef GENIE_PRE_R3
+  // Use these for GENIE v2
+  #include "ReWeight/GReWeight.h"
+#else
+  // Use these for GENIE v3
+  #include "RwFramework/GReWeight.h"
+#endif
 
 #include <map>
 #include <memory>
