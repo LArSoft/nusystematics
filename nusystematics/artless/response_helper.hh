@@ -14,7 +14,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/make_ParameterSet.h"
 
-#include "EVGCore/EventRecord.h"
+#include "Framework/EventGen/EventRecord.h"
 
 #include "TFile.h"
 #include "TTree.h"

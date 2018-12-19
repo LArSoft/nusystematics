@@ -6,7 +6,7 @@
 #include "systematicstools/utility/ResponselessParamUtility.hh"
 #include "systematicstools/utility/string_parsers.hh"
 
-#include "ReWeight/GSyst.h"
+#include "RwFramework/GSyst.h"
 
 #include <iomanip>
 #include <iostream>

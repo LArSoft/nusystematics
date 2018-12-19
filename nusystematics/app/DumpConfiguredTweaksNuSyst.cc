@@ -21,11 +21,11 @@
 #include "cetlib/filepath_maker.h"
 #endif
 
-#include "EVGCore/EventRecord.h"
-#include "GHEP/GHepParticle.h"
-#include "GHEP/GHepUtils.h"
-#include "Messenger/Messenger.h"
-#include "Ntuple/NtpMCEventRecord.h"
+#include "Framework/EventGen/EventRecord.h"
+#include "Framework/GHEP/GHepParticle.h"
+#include "Framework/GHEP/GHepUtils.h"
+#include "Framework/Messenger/Messenger.h"
+#include "Framework/Ntuple/NtpMCEventRecord.h"
 
 #include "TChain.h"
 #include "TFile.h"
