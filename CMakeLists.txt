@@ -64,13 +64,16 @@ cet_find_library( XML2 NAMES xml2 PATHS $ENV{LIBXML2_FQ_DIR}/lib NO_DEFAULT_PATH
 
 # BEGIN GENIE VERSION CHECK
 # Determine the major version number of GENIE based on the GENIE_VERSION
-# environment variable. Based on this, define the GENIE_PRE_R3 preprocessor
+# variable. Based on this, define the GENIE_PRE_R3 preprocessor
 # macro (needed to set the right GENIE header locations, etc.) if needed.
 #
 # The top-level nutools CMakeLists.txt does this as well, but I don't think that
 # we can access the result of that version check in the nusystematics build.
 
 parse_ups_version( ${GENIE_VERSION} )
+
+# Hide GENIE versions of "LOG" macros to avoid conflicts with art
+add_definitions(-DHIDE_GENIE_LOG_XXX)
 
 # the GENIE libraries are already defined, but we need the lib list
 if( ${VMAJ} LESS 3 )
