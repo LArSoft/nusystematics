@@ -8,6 +8,7 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 #include "nutools/EventGeneratorBase/GENIE/GENIE2ART.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #endif
 
 #include "fhiclcpp/ParameterSet.h"
@@ -19,15 +20,99 @@
 #else
   // Use these for GENIE v3
   #include "Framework/EventGen/EventRecord.h"
+  // Extra includes needed for CheckTune()
+  #include "Framework/Utils/RunOpt.h"
+  #include "Framework/Utils/XSecSplineList.h"
 #endif
 
 namespace nusyst {
 
 class IGENIESystProvider_tool : public systtools::ISystProviderTool {
+protected:
+  // Based on GENIEHelper::FindTune()
+  // TODO: reduce code duplication here
+  // -- S. Gardiner, 20 December 2018
+  void CheckTune(const std::string& tune_name) {
+// The tune configuration only needs to be checked for GENIE v3+
+#ifndef GENIE_PRE_R3
+
+    std::string fhicl_tune_name = tune_name;
+
+    // The default tune name is ${GENIE_XSEC_TUNE}, which
+    // should be converted into the value of the corresponding
+    // enviornment variable, as is done below.
+    if ( fhicl_tune_name.front() == '$' ) {
+      // need to remove ${}'s
+      std::string tuneEnvVar = fhicl_tune_name;
+      std::string rmchars("$(){} ");
+      // std::remove_if removes characters in [first,last) that are found
+      //   within the rmchars string. It returns returns a past-the-end
+      //   iterator for the new end of the range [funky!]
+      // std::string::erase actually trims the string
+      tuneEnvVar.erase( std::remove_if(tuneEnvVar.begin(), tuneEnvVar.end(),
+        [&rmchars](const char& c) -> bool { return rmchars.find(c) != std::string::npos; }),
+        tuneEnvVar.end() );
+
+      const char* tune = std::getenv( tuneEnvVar.c_str() );
+      if ( tune ) {
+        #ifndef NO_ART
+        mf::LogInfo("IGENIESystProvider") << "fhicl_tune_name started as '"
+          << fhicl_tune_name << "' " << " (env: " << tuneEnvVar << "), "
+          << " converted to " << tune;
+        #endif
+        fhicl_tune_name = std::string(tune);
+      } else {
+        #ifndef NO_ART
+        mf::LogError("IGENIESystProvider") << "fhicl_tune_name started as '"
+          << fhicl_tune_name << "', " << " (env: " << tuneEnvVar << "), "
+          << " but resolved to a empty string";
+        #endif
+        throw systtools::invalid_ToolConfigurationFHiCL()
+          << "can't resolve TuneName: " << fhicl_tune_name;
+      }
+    }
+
+    // If the XSecSplineList returns a non-empty string as the current tune name,
+    // then genie::RunOpt::BuildTune() has already been called.
+    std::string current_tune = genie::XSecSplineList::Instance()->CurrentTune();
+    if ( current_tune.empty() ) {
+      // We need to build the GENIE tune config
+      #ifndef NO_ART
+      mf::LogInfo("IGENIESystProvider") << "Configuring GENIE tune \""
+        << fhicl_tune_name << '\"';
+      #endif
+
+      // Constructor automatically calls grunopt->Init();
+      genie::RunOpt* grunopt = genie::RunOpt::Instance();
+      grunopt->SetTuneName( fhicl_tune_name );
+      grunopt->BuildTune();
+    }
+    else {
+      // It has already been built, so just check consistency
+      if ( fhicl_tune_name != current_tune) {
+        throw systtools::invalid_ToolConfigurationFHiCL()
+          << "Requested GENIE tune \"" << fhicl_tune_name
+          << "\" does not match previously built tune \""
+          << current_tune << '\"';
+      }
+    }
+
+#endif
+  }
+
 public:
   IGENIESystProvider_tool(fhicl::ParameterSet const &ps)
       : ISystProviderTool(ps), fGENIEModuleLabel(ps.get<std::string>(
-                                   "genie_module_label", "generator")) {}
+                                   "genie_module_label", "generator"))
+  {
+    // If using GENIE v3, then check to make sure the tune is initialized
+    // before using the reweight calculators
+    #ifndef GENIE_PRE_R3
+    std::string tune_name = ps.get<std::string>("TuneName",
+      "${GENIE_XSEC_TUNE}");
+    this->CheckTune( tune_name );
+    #endif
+  }
 
   NEW_SYSTTOOLS_EXCEPT(invalid_response);
 
@@ -138,6 +223,7 @@ public:
   }
 
   std::string fGENIEModuleLabel;
+
 };
 } // namespace nusyst
 
