@@ -2,7 +2,7 @@
 
 # The *parent* line must the first non-commented line and defines this product and version
 # The version should be of the form vxx_yy_zz (e.g. v01_02_03)
-parent nusystematics v00_02_02
+parent nusystematics v00_02_03
 defaultqual e17
 
 # These optional lines define the installed directories where headers,
@@ -33,8 +33,8 @@ fcldir product_dir fcl
 
 product          version
 nutools          v2_26_03
-systematicstools v00_02_00
-cetbuildtools    v7_04_00 - only_for_build
+systematicstools v00_02_01
+cetbuildtools    v7_06_03 - only_for_build
 end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the depdencies.
