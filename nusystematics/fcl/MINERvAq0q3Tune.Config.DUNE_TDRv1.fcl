@@ -32,7 +32,7 @@ MINERvAq0q3Tune_Tool_Config: {
 
     ## If not, we put the response into a single parameter where the 'knots' correspond to the different universes. Here we want to approximate the linear response from QE -> CV -> NN where:
     # [ 1 == CV, 2 == NN, 3 == np, 4 == 1p1h ]
-    Mnv2p2hGaussEnhancement_central_value: 0
+    Mnv2p2hGaussEnhancement_central_value: 1
     Mnv2p2hGaussEnhancement_variation_descriptor: "[4,4,4,1,2,2,2]"
 
     Mnv2p2hGaussEnhancement_LimitWeights: [0,2]
