@@ -44,7 +44,6 @@ class MINERvAq0q3Weighting : public nusyst::IGENIESystProvider_tool {
     param_t lid;
   };
 
-  // unused std::array<double, 6> Gauss2DParams = nusyst::Gauss2DParams_CV;
   std::unique_ptr<nusyst::MINERvARPAq0q3_ReWeight> RPATemplateReweighter;
   std::map<param_t, size_t> ConfiguredParameters;
 
