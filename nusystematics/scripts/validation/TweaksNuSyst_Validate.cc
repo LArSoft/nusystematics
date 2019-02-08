@@ -6,6 +6,7 @@
 #include "TPaveText.h"
 #include "TTree.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <set>
 #include <string>
@@ -34,18 +35,25 @@ std::string GoodHistogram(TH1D *Hist) {
 }
 
 std::vector<std::string> ignore_list = {
-    "EbFSLepMomShift",
+    // "EbFSLepMomShift",
 };
 
-void TweaksNuSyst_Validate(std::string filename) {
+void TweaksNuSyst_Validate(std::string filename, bool isCAF = false,
+                           int onlypdg = 0) {
 
   std::cout << "[INFO]: Reading file: " << filename << std::endl;
 
   TFile *file = new TFile(filename.c_str(), "OPEN");
-  TTree *tree = (TTree *)file->Get("events")->Clone();
+  TTree *tree = (TTree *)file->Get(isCAF ? "caf" : "events");
+
+  bool isFD = isCAF ? tree->GetEntries("isFD") : false;
 
   tree->SetAlias("is_inc", "(1*1)");
-  tree->SetAlias("ELep", "(e_nu_GeV - q0_GeV)");
+  if (isCAF) {
+    tree->SetAlias("ELep", "LepE");
+  } else {
+    tree->SetAlias("ELep", "(e_nu_GeV - q0_GeV)");
+  }
 
   // Read through the file
   //
@@ -66,29 +74,30 @@ void TweaksNuSyst_Validate(std::string filename) {
   // Parameter names
   std::vector<std::string> ParamNames;
 
+  std::string TweakStr = isCAF ? "wgt_" : "tweak_responses_";
+  std::string NTweakStr = isCAF ? "_nshifts" : "ntweaks_";
+  std::string CVRespStr = isCAF ? "_cvwgt" : "paramCVWeight_";
+
   // Get the names of all the branches
   for (int i = 0; i < nbr; ++i) {
     std::string name = std::string(tree->GetListOfBranches()->At(i)->GetName());
-    if (name.find("tweak_responses_") != std::string::npos) {
-      std::string paramname =
-          name.substr(std::string("tweak_responses_").size(), name.size());
+    if (name.find(TweakStr) != std::string::npos) {
+      std::string paramname = name.substr(TweakStr.size(), name.size());
       if (std::find(ignore_list.begin(), ignore_list.end(), paramname) !=
           ignore_list.end()) {
         continue;
       }
       ParamNames.push_back(paramname);
       TweakArray.push_back(name);
-    } else if (name.find("ntweaks_") != std::string::npos) {
-      std::string paramname =
-          name.substr(std::string("ntweaks_").size(), name.size());
+    } else if (name.find(NTweakStr) != std::string::npos) {
+      std::string paramname = name.substr(NTweakStr.size(), name.size());
       if (std::find(ignore_list.begin(), ignore_list.end(), paramname) !=
           ignore_list.end()) {
         continue;
       }
       NumberArray.push_back(name);
-    } else if (name.find("paramCVWeight_") != std::string::npos) {
-      std::string paramname =
-          name.substr(std::string("paramCVWeight_").size(), name.size());
+    } else if (name.find(CVRespStr) != std::string::npos) {
+      std::string paramname = name.substr(CVRespStr.size(), name.size());
       if (std::find(ignore_list.begin(), ignore_list.end(), paramname) !=
           ignore_list.end()) {
         continue;
@@ -118,28 +127,56 @@ void TweaksNuSyst_Validate(std::string filename) {
 
   // The 1D distributions to draw
   std::vector<std::string> DrawStr;
-  DrawStr.push_back("e_nu_GeV");
-  DrawStr.push_back("Q2_GeV2");
-  DrawStr.push_back("W_GeV");
-  DrawStr.push_back("q0_GeV");
-  DrawStr.push_back("q3_GeV");
-  DrawStr.push_back("ELep");
-  DrawStr.push_back("(EAvail_GeV/q0_GeV)");
-  DrawStr.push_back("((EAvail_GeV + ELep - e_nu_GeV)/e_nu_GeV)");
-
   // Binning for above distributions
   std::vector<std::string> BinningStr;
-  BinningStr.push_back("40, 0, 5");
-  BinningStr.push_back("40, 0, 2");
-  BinningStr.push_back("40, 0.9, 3.5");
-  BinningStr.push_back("40, 0, 2");
-  BinningStr.push_back("40, 0, 2");
-  BinningStr.push_back("40, 0, 5");
-  BinningStr.push_back("40, 0, 1.5");
-  BinningStr.push_back("40, -1, 1");
+
+  if (isCAF) {
+    DrawStr.push_back("Ev");
+    BinningStr.push_back("40, 0, 5");
+    DrawStr.push_back("Q2");
+    BinningStr.push_back("40, 0, 2");
+    DrawStr.push_back("W");
+    BinningStr.push_back("40, 0.9, 3.5");
+    DrawStr.push_back("ELep");
+    BinningStr.push_back("40, 0, 5");
+
+    if (isFD) {
+      DrawStr.push_back("Ev_reco_numu*(cvnnumu > 0.5)");
+      BinningStr.push_back("40, 0, 5");
+      DrawStr.push_back("Ev_reco_nue*((cvnnue < 0.5)*(cvnnue >= 0))");
+      BinningStr.push_back("40, 0, 5");
+    } else {
+      DrawStr.push_back("Ev_reco");
+      BinningStr.push_back("40, 0, 5");
+    }
+  } else {
+    DrawStr.push_back("e_nu_GeV");
+    BinningStr.push_back("40, 0, 5");
+    DrawStr.push_back("Q2_GeV2");
+    BinningStr.push_back("40, 0, 2");
+    DrawStr.push_back("W_GeV");
+    BinningStr.push_back("40, 0.9, 3.5");
+    DrawStr.push_back("q0_GeV");
+    BinningStr.push_back("40, 0, 2");
+    DrawStr.push_back("q3_GeV");
+    BinningStr.push_back("40, 0, 2");
+    DrawStr.push_back("ELep");
+    BinningStr.push_back("40, 0, 5");
+    DrawStr.push_back("(EAvail_GeV/q0_GeV)");
+    BinningStr.push_back("40, 0, 1.5");
+    DrawStr.push_back("((EAvail_GeV + ELep - e_nu_GeV)/e_nu_GeV)");
+    BinningStr.push_back("40, -1, 1");
+  }
 
   // The interaction modes
   std::vector<std::string> IntStr;
+  if (isCAF) {
+    tree->SetAlias("is_qe", "(mode==1)");
+    tree->SetAlias("is_mec", "(mode==10)");
+    tree->SetAlias("is_res", "(mode==4)");
+    tree->SetAlias("is_dis", "(mode==3)");
+  }
+
   IntStr.push_back("is_qe");
   IntStr.push_back("is_mec");
   IntStr.push_back("is_res");
@@ -148,8 +185,17 @@ void TweaksNuSyst_Validate(std::string filename) {
 
   // The CC NC flag
   std::vector<std::string> CCStr;
-  CCStr.push_back("is_cc");
-  CCStr.push_back("!is_cc");
+  if (isCAF) {
+    tree->SetAlias("is_cc", "isCC");
+  }
+  CCStr.push_back(("(is_cc)") + (onlypdg == 0
+                                     ? std::string("")
+                                     : std::string("*(nuPDG==") +
+                                           std::to_string(onlypdg) + ")"));
+  CCStr.push_back(("(!is_cc)") + (onlypdg == 0
+                                      ? std::string("")
+                                      : std::string("*(nuPDG==") +
+                                            std::to_string(onlypdg) + ")"));
 
   TCanvas *canv = new TCanvas("canv", "canv", 1024, 1024);
   canv->SetTopMargin(0.2);
@@ -609,5 +655,9 @@ void TweaksNuSyst_Validate(std::string filename) {
 }
 
 #ifndef __CINT__
-int main(int, char const *argv[]) { TweaksNuSyst_Validate(argv[1]); }
+int main(int argc, char const *argv[]) {
+  bool IsCAF = (argc > 2 ? (std::string("CAF") == argv[2]) : false);
+  int OnlyPDG = (argc > 3 ? atoi(argv[3]) : 0);
+  TweaksNuSyst_Validate(argv[1], IsCAF, OnlyPDG);
+}
 #endif
