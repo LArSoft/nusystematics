@@ -107,7 +107,13 @@ inline NRPiChan_t BuildNRPiChannel(bool IsNeutrino, bool IsCC,
 }
 
 inline NRPiChan_t GetNRPiChannel(genie::EventRecord const &ev) {
-
+// This code in this method is adapted from the GENIE source code found in GHep/GHepUtils.cxx
+// This method therefore carries the GENIE licence as copied below:
+//
+/// Copyright (c) 2003-2017, GENIE Neutrino MC Generator Collaboration
+/// For the full text of the license visit http://copyright.genie-mc.org
+/// or see $GENIE/LICENSE
+//
   if (!ev.Summary()->ProcInfo().IsDeepInelastic()) {
     return 0;
   }
