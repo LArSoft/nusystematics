@@ -690,9 +690,9 @@ generated_systematic_provider_configuration: {
         E2p2h_A_nu: {
             centralParamValue: 0
             paramVariations: [
-                1,
-                1,
-                1,
+                -1,
+                -1,
+                -1,
                 0,
                 1,
                 1,
@@ -704,9 +704,9 @@ generated_systematic_provider_configuration: {
         E2p2h_A_nubar: {
             centralParamValue: 0
             paramVariations: [
-                1,
-                1,
-                1,
+                -1,
+                -1,
+                -1,
                 0,
                 1,
                 1,
@@ -718,9 +718,9 @@ generated_systematic_provider_configuration: {
         E2p2h_B_nu: {
             centralParamValue: 0
             paramVariations: [
-                1,
-                1,
-                1,
+                -1,
+                -1,
+                -1,
                 0,
                 1,
                 1,
@@ -732,9 +732,9 @@ generated_systematic_provider_configuration: {
         E2p2h_B_nubar: {
             centralParamValue: 0
             paramVariations: [
-                1,
-                1,
-                1,
+                -1,
+                -1,
+                -1,
                 0,
                 1,
                 1,
@@ -751,6 +751,10 @@ generated_systematic_provider_configuration: {
             E2p2h_B_nubar
         ]
         tool_options: {
+            LimitWeights: [
+                0.1,
+                10
+            ]
             fill_valid_tree: false
             ignore_parameter_dependence: true
         }
@@ -758,7 +762,7 @@ generated_systematic_provider_configuration: {
     }
     MINERvAq0q3Weighting_DUNE_TDR_FakeData: {
         Mnv2p2hGaussEnhancement: {
-            centralParamValue: 0
+            centralParamValue: 1
             paramVariations: [
                 4,
                 4,
@@ -778,7 +782,7 @@ generated_systematic_provider_configuration: {
         tool_options: {
             Mnv2p2hGaussEnhancement_LimitWeights: [
                 0,
-                2
+                5
             ]
             fill_valid_tree: false
             parameter_per_2p2h_universe: false

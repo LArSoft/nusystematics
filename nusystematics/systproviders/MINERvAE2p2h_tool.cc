@@ -83,6 +83,12 @@ SystMetaData MINERvAE2p2h::BuildSystMetaData(fhicl::ParameterSet const &ps,
   tool_options.put("fill_valid_tree", ps.get<bool>("fill_valid_tree", false));
   tool_options.put("ignore_parameter_dependence", ignore_parameter_dependence);
 
+  LimitWeights = ps.get<std::pair<double, double>>(
+      "LimitWeights", {0, std::numeric_limits<double>::max()});
+
+  tool_options.put("LimitWeights", std::vector<double>{LimitWeights.first,
+                                                       LimitWeights.second});
+
   return smd;
 }
 
@@ -149,6 +155,9 @@ bool MINERvAE2p2h::SetupResponseCalculator(
 
   fill_valid_tree = tool_options.get<bool>("fill_valid_tree", false);
 
+  LimitWeights = tool_options.get<std::pair<double, double>>(
+      "LimitWeights", {0, std::numeric_limits<double>::max()});
+
   if (fill_valid_tree) {
     InitValidTree();
   }
@@ -202,14 +211,24 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
       double Aval = A_var->at(univ);
       double Bval = B_var->at(univ);
 
-      resp.back().responses.push_back(Get_MINERvA2p2h2EnergyDependencyScaling(
-          e2i(simb_mode_copy::kMEC), true, Enu, Aval, Bval));
+      double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
+          e2i(simb_mode_copy::kMEC), true, Enu, Aval, Bval);
+
+      weight = (weight < LimitWeights.first) ? LimitWeights.first : weight;
+      weight = (weight > LimitWeights.second) ? LimitWeights.second : weight;
+
+      resp.back().responses.push_back(weight);
     }
   } else {
     // Only want the CV response to be used in one of the dials, after the first
     // dial is found, all other dial responses should be /= CVResponse.
     double CVResponse = Get_MINERvA2p2h2EnergyDependencyScaling(
         e2i(simb_mode_copy::kMEC), true, Enu, ACV, BCV);
+
+    CVResponse =
+        (CVResponse < LimitWeights.first) ? LimitWeights.first : CVResponse;
+    CVResponse =
+        (CVResponse > LimitWeights.second) ? LimitWeights.second : CVResponse;
 
 #ifdef MINERVAE2p2h_DEBUG
     std::cout << "[CV Response @ " << Enu << ", " << (ISLep->Pdg()) << ", "
@@ -226,6 +245,9 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
         std::cout << "[weight @ " << Enu << ", " << av << ", " << BCV
                   << "] = " << weight << std::endl;
 #endif
+        weight = (weight < LimitWeights.first) ? LimitWeights.first : weight;
+        weight = (weight > LimitWeights.second) ? LimitWeights.second : weight;
+
         resp.back().responses.push_back(weight);
       }
       UsedADial = true;
@@ -239,6 +261,10 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
         std::cout << "[weight @ " << Enu << ", " << ACV << ", " << bv
                   << "] = " << weight << std::endl;
 #endif
+
+        weight = (weight < LimitWeights.first) ? LimitWeights.first : weight;
+        weight = (weight > LimitWeights.second) ? LimitWeights.second : weight;
+
         if (UsedADial) {
           weight /= CVResponse;
         }
