@@ -35,7 +35,7 @@ MINERvAq0q3Tune_Tool_Config: {
     Mnv2p2hGaussEnhancement_central_value: 1
     Mnv2p2hGaussEnhancement_variation_descriptor: "[4,4,4,1,2,2,2]"
 
-    Mnv2p2hGaussEnhancement_LimitWeights: [0,2]
+    Mnv2p2hGaussEnhancement_LimitWeights: [0,5]
 }
 
 syst_providers: [MINERvAq0q3Tune_Tool_Config]

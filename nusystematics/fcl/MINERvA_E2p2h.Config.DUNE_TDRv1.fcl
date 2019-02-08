@@ -16,6 +16,8 @@ MINERvA_E2p2h_Tool_Config: {
 
   ignore_parameter_dependence: true
 
+  LimitWeights: [0.1, 10]
+
 }
 
 syst_providers: [MINERvA_E2p2h_Tool_Config]
