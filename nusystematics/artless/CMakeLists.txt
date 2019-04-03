@@ -43,15 +43,7 @@ endif()
 
 #Get cflags from ROOT
 execute_process (COMMAND root-config
-  --cflags OUTPUT_VARIABLE ROOT_CXX_FLAGS_RAW OUTPUT_STRIP_TRAILING_WHITESPACE)
-string(REPLACE " " ";" ROOT_CXX_FLAGS_PREPARSE "${ROOT_CXX_FLAGS_RAW}")
-set(ROOT_CXX_FLAGS_SCRUBBED "")
-foreach(FLG ${ROOT_CXX_FLAGS_PREPARSE})
-  string(REGEX MATCH "-std=" ISSTDFLAG ${FLG})
-  if(NOT ISSTDFLAG) #ignore -std= flags from ROOT config
-    SET(ROOT_CXX_FLAGS_SCRUBBED "${ROOT_CXX_FLAGS_SCRUBBED} ${FLG}")
-  endif()
-endforeach()
+  --cflags OUTPUT_VARIABLE ROOT_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 #Get libdir from ROOT
 execute_process (COMMAND root-config
   --libdir OUTPUT_VARIABLE ROOT_LIBDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -86,7 +78,7 @@ LIST(APPEND ROOT_LIBS
   Pythia6)
 
 message (STATUS "[ROOT]: root-config --version: ${ROOT_VERSION} ")
-message (STATUS "[ROOT]: root-config --cflags : ${ROOT_CXX_FLAGS_SCRUBBED} ")
+message (STATUS "[ROOT]: root-config --cflags : ${ROOT_CXX_FLAGS} ")
 message (STATUS "[ROOT]: libs in use          : ${ROOT_LIBS} ")
 
 ###### GENIE setup
@@ -100,7 +92,7 @@ else()
   SET(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} ${EXTRA_LINK_FLAGS}")
 endif()
 
-set(EXTRA_CXX_FLAGS "-DNO_ART -std=c++1y -Wall -Wextra -Werror ${ROOT_CXX_FLAGS_SCRUBBED} ${GENIE_CXX_FLAGS} -Wno-misleading-indentation")
+set(EXTRA_CXX_FLAGS "-DNO_ART -Wall -Wextra -Werror ${ROOT_CXX_FLAGS} ${GENIE_CXX_FLAGS} -Wno-misleading-indentation")
 if(CMAKE_CXX_FLAGS STREQUAL "")
   SET(CMAKE_CXX_FLAGS ${EXTRA_CXX_FLAGS})
 else()
