@@ -21,7 +21,7 @@ art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
   LIBRARIES
     systematicstools_utility
     systematicstools_interface
-    nutools_EventGeneratorBase_GENIE
+    nugen_EventGeneratorBase_GENIE
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_PRINCIPAL}
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -38,7 +38,7 @@ simple_plugin(GENIEReWeight tool
     nusystematics_GENIEReWeight_config
     systematicstools_utility
     systematicstools_interface
-    nutools_EventGeneratorBase_GENIE
+    nugen_EventGeneratorBase_GENIE
     ${ART_FRAMEWORK_CORE}
     ${ART_FRAMEWORK_PRINCIPAL}
     ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -57,7 +57,7 @@ foreach(tool ${TOOLS})
   simple_plugin(${tool} tool
     systematicstools_utility
     systematicstools_interface
-    nutools_EventGeneratorBase_GENIE
+    nugen_EventGeneratorBase_GENIE
       ${ART_FRAMEWORK_CORE}
       ${ART_FRAMEWORK_PRINCIPAL}
       ${ART_FRAMEWORK_SERVICES_REGISTRY}
