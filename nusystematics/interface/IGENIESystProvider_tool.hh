@@ -7,7 +7,7 @@
 #include "nusimdata/SimulationBase/GTruth.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 
-#include "nutools/EventGeneratorBase/GENIE/GENIE2ART.h"
+#include "nugen/EventGeneratorBase/GENIE/GENIE2ART.h"
 #endif
 
 #include "fhiclcpp/ParameterSet.h"
