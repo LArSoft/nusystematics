@@ -46,7 +46,7 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 find_ups_product( systematicstools )
-find_ups_product( nutools )
+find_ups_product( nugen )
 find_ups_product( art )
 find_ups_product(art_root_io)
 find_ups_product( cetbuildtools )
