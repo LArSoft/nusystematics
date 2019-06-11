@@ -8,7 +8,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // GENIE
-#include "ReWeight/GReWeight.h"
+#include "RwFramework/GReWeight.h"
 
 #include <map>
 #include <memory>

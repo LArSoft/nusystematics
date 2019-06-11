@@ -9,9 +9,9 @@
 #include "art/Utilities/ToolMacros.h"
 #endif
 
-#include "GHEP/GHepParticle.h"
+#include "Framework/GHEP/GHepParticle.h"
 
-#include "Messenger/Messenger.h"
+#include "Framework/Messenger/Messenger.h"
 
 using namespace systtools;
 using namespace nusyst;

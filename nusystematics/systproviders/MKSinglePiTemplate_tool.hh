@@ -6,7 +6,7 @@
 #include "nusystematics/responsecalculators/MKSinglePiTemplate_ReWeight.hh"
 
 // GENIE
-#include "Interaction/SppChannel.h"
+#include "Framework/Interaction/SppChannel.h"
 
 #include "TFile.h"
 #include "TTree.h"
