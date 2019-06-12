@@ -4,7 +4,7 @@
 #include "systematicstools/utility/exceptions.hh"
 
 // GENIE
-#include "ReWeight/GReWeight.h"
+#include "RwFramework/GReWeight.h"
 
 #include <memory>
 #include <vector>

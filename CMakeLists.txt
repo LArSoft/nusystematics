@@ -64,47 +64,56 @@ include_directories ( $ENV{GENIE_INC}/GENIE )
 # get libxml2
 cet_find_library( XML2 NAMES xml2 PATHS $ENV{LIBXML2_FQ_DIR}/lib NO_DEFAULT_PATH )
 # the GENIE libraries are already defined, but we need the lib list
-set(GENIE_LIB_LIST  ${GALGORITHM}
-                    ${GBARYONRESONANCE}
-                    ${GBASE}
-                    ${GBODEKYANG}
-                    ${GCHARM}
-                    ${GCOH}
-                    ${GDFRC}
-                    ${GDIS}
-                    ${GCROSSSECTIONS}
-                    ${GDECAY}
-                    ${GELAS}
-                    ${GELFF}
-                    ${GHEP}
-                    ${GEVGCORE}
-                    ${GEVGMODULES}
-                    ${GEVGDRIVERS}
-                    ${GGIBUU}
-                    ${GHADRONTRANSP}
-                    ${GFRAGMENTATION}
-                    ${GINTERACTION}
-                    ${GLLEWELLYNSMITH}
-                    ${GMEC}
-                    ${GMESSENGER}
-                    ${GNUGAMMA}
-                    ${GNUE}
-                    ${GNTUPLE}
-                    ${GNUCLEAR}
-                    ${GNUMERICAL}
-                    ${GQPM}
-                    ${GPDG}
-                    ${GPDF}
-                    ${GQEL}
-                    ${GRES}
-                    ${GREGISTRY}
-                    ${GREINSEHGAL}
-                    ${GUTILS}
-                    ${GGEO}
-                    ${GFLUXDRIVERS}
-                    ${GMUELOSS}
-                    ${GREWEIGHT}
-                    ${GNUCLEONDECAY} )
+  set (GENIE_LIB_LIST ${GFWMSG}
+                      ${GFWREG}
+                      ${GFWALG}
+                      ${GFWINT}
+                      ${GFWGHEP}
+                      ${GFWNUM}
+                      ${GSL}  # FWNUM relies on GSL
+                      ${GFWUTL}
+                      ${GFWPARDAT}
+                      ${GFWEG}
+                      ${GFWNTP}
+                      ${GPHXSIG}
+                      ${GPHPDF}
+                      ${GPHNUCLST}
+                      ${GPHCMN}
+                      ${GPHDCY}
+                      ${GPHHADTRANSP}
+                      ${GPHHADNZ}
+                      ${GPHDEEX}
+                      ${GPHAMNGXS}
+                      ${GPHAMNGEG}
+                      ${GPHCHMXS}
+                      ${GPHCOHXS}
+                      ${GPHCOHEG}
+                      ${GPHDISXS}
+                      ${GPHDISEG}
+                      ${GPHDFRCXS}
+                      ${GPHDFRCEG}
+                      ${GPHGLWRESXS}
+                      ${GPHGLWRESEG}
+                      ${GPHIBDXS}
+                      ${GPHIBDEG}
+                      ${GPHMNUCXS}
+                      ${GPHMNUCEG}
+                      ${GPHMEL}
+                      ${GPHNUELXS}
+                      ${GPHNUELEG}
+                      ${GPHQELXS}
+                      ${GPHQELEG}
+                      ${GPHRESXS}
+                      ${GPHRESEG}
+                      ${GPHSTRXS}
+                      ${GPHSTREG}
+                      ${GPHNDCY}
+                      ${GTLGEO}
+                      ${GTLFLX}
+                      ${GRWFWK}
+                      ${GRWIO}
+                      ${GRWCLC}
+                      )
 
 # ADD SOURCE CODE SUBDIRECTORIES HERE
 add_subdirectory(nusystematics)
