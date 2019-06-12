@@ -4,12 +4,12 @@
 #include "nusystematics/utility/exceptions.hh"
 #include "nusystematics/utility/simbUtility.hh"
 
-#include "EVGCore/EventRecord.h"
+#include "Framework/EventGen/EventRecord.h"
 
-#include "GHEP/GHepParticle.h"
-#include "GHEP/GHepUtils.h"
+#include "Framework/GHEP/GHepParticle.h"
+#include "Framework/GHEP/GHepUtils.h"
 
-#include "Interaction/SppChannel.h"
+#include "Framework/Interaction/SppChannel.h"
 
 #include <sstream>
 

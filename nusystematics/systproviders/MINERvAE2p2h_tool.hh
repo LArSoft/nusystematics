@@ -6,8 +6,8 @@
 #include "nusystematics/utility/GENIEUtils.hh"
 
 // GENIE
-#include "EVGCore/EventRecord.h"
-#include "Interaction/SppChannel.h"
+#include "Framework/EventGen/EventRecord.h"
+#include "Framework/Interaction/SppChannel.h"
 
 #include "TFile.h"
 #include "TTree.h"

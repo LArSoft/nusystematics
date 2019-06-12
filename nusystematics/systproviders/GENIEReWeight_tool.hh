@@ -6,7 +6,7 @@
 #include "nusystematics/systproviders/GENIEResponseParameterAssociation.hh"
 
 // GENIE
-#include "ReWeight/GReWeight.h"
+#include "RwFramework/GReWeight.h"
 
 #include "TFile.h"
 #include "TTree.h"

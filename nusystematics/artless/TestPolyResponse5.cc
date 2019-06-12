@@ -3,9 +3,9 @@
 #include "nusystematics/utility/GENIEUtils.hh"
 #include "nusystematics/utility/enumclass2int.hh"
 
-#include "EVGCore/EventRecord.h"
-#include "GHEP/GHepUtils.h"
-#include "Messenger/Messenger.h"
+#include "Framework/EventGen/EventRecord.h"
+#include "Framework/GHEP/GHepUtils.h"
+#include "Framework/Messenger/Messenger.h"
 #include "Ntuple/NtpMCEventRecord.h"
 
 // Included by fhiclcpp-simple will not be available in art-ful

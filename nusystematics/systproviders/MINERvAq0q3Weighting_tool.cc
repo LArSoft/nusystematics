@@ -10,7 +10,7 @@
 #include "art/Utilities/ToolMacros.h"
 #endif
 
-#include "GHEP/GHepParticle.h"
+#include "Framework/GHEP/GHepParticle.h"
 
 #include "TLorentzVector.h"
 

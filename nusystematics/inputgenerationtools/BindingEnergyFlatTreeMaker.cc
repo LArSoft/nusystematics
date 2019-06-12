@@ -1,9 +1,9 @@
 #include "systematicstools/utility/string_parsers.hh"
 
-#include "EVGCore/EventRecord.h"
-#include "GHEP/GHepParticle.h"
-#include "GHEP/GHepUtils.h"
-#include "Messenger/Messenger.h"
+#include "Framework/EventGen/EventRecord.h"
+#include "Framework/GHEP/GHepParticle.h"
+#include "Framework/GHEP/GHepUtils.h"
+#include "Framework/Messenger/Messenger.h"
 #include "Ntuple/NtpMCEventRecord.h"
 
 #include "TChain.h"
