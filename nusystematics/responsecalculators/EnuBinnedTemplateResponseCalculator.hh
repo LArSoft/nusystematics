@@ -251,6 +251,9 @@ public:
     }
     return {ebi_it, EnuResponses[ebi_it].GetBin(kinematics)};
   }
+  
+  // virtual destructor required
+  virtual ~EnuBinnedTemplateResponseCalculator() = default;
 
   double
   GetVariation(double val,
