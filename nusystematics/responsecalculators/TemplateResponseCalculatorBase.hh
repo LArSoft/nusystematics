@@ -68,6 +68,9 @@ public:
   virtual bin_it_t GetBin(std::array<double, NDims> const &) const;
 
   virtual std::string GetCalculatorName() const = 0;
+  
+  // virtual destructor required
+  virtual ~TemplateResponseCalculatorBase() = default;
 
   /// Extra template parameters required for SINFAE
   template <bool IsCont = Continuous>
