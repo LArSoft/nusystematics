@@ -2,8 +2,8 @@
 
 # The *parent* line must the first non-commented line and defines this product and version
 # The version should be of the form vxx_yy_zz (e.g. v01_02_03)
-parent nusystematics v00_08_00
-defaultqual e17
+parent nusystematics v00_09_00
+defaultqual e19
 
 # These optional lines define the installed directories where headers,
 # libraries, and executables will be found.
@@ -32,28 +32,20 @@ fcldir product_dir fcl
 # Add the dependent product and version
 
 product          version
-nugen            v1_08_00
-systematicstools v00_05_00
+nugen            v1_10_00
+systematicstools v00_06_00
 cetbuildtools    v7_14_00 - only_for_build
 end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the depdencies.
 # Make a table by adding columns before "notes".
 qualifier      nugen        systematicstools
-e19:py3:debug  e19:py3:debug  e19:py3:debug
-e19:py3:prof   e19:py3:prof   e19:py3:prof
-e17:py3:debug  e17:py3:debug  e17:py3:debug
-e17:py3:prof   e17:py3:prof   e17:py3:prof
-c7:py3:debug   c7:py3:debug   c7:py3:debug
-c7:py3:prof    c7:py3:prof    c7:py3:prof
-c2:py3:debug   c2:py3:debug   c2:py3:debug
-c2:py3:prof    c2:py3:prof    c2:py3:prof
+e19:py2:debug  e19:py2:debug  e19:py2:debug
+e19:py2:prof   e19:py2:prof   e19:py2:prof
+c7:py2:debug   c7:py2:debug   c7:py2:debug
+c7:py2:prof    c7:py2:prof    c7:py2:prof
 e19:debug      e19:debug      e19:debug
 e19:prof       e19:prof       e19:prof
-e17:debug      e17:debug      e17:debug
-e17:prof       e17:prof       e17:prof
 c7:debug       c7:debug       c7:debug
 c7:prof        c7:prof        c7:prof
-c2:debug       c2:debug       c2:debug
-c2:prof        c2:prof        c2:prof
 end_qualifier_list
