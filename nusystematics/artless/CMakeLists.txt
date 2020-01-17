@@ -43,7 +43,14 @@ endif()
 
 #Get cflags from ROOT
 execute_process (COMMAND root-config
-  --cflags OUTPUT_VARIABLE ROOT_CXX_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+  --cflags OUTPUT_VARIABLE ROOT_CXX_FLAGS_RAW OUTPUT_STRIP_TRAILING_WHITESPACE)
+string(REPLACE " " ";" ROOT_CXX_FLAGS_PREPARSE "${ROOT_CXX_FLAGS_RAW}")
+set(ROOT_CXX_FLAGS "")
+foreach(FLG ${ROOT_CXX_FLAGS_PREPARSE})
+    if(NOT "-std=c++11" STREQUAL ${FLG}) #ignore -std=c++11 flags from ROOT config
+    SET(ROOT_CXX_FLAGS "${ROOT_CXX_FLAGS} ${FLG}")
+  endif()
+endforeach()
 #Get libdir from ROOT
 execute_process (COMMAND root-config
   --libdir OUTPUT_VARIABLE ROOT_LIBDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -92,7 +99,7 @@ else()
   SET(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} ${EXTRA_LINK_FLAGS}")
 endif()
 
-set(EXTRA_CXX_FLAGS "-DNO_ART -Wall -Wextra -Werror ${ROOT_CXX_FLAGS} ${GENIE_CXX_FLAGS} -Wno-misleading-indentation")
+set(EXTRA_CXX_FLAGS "-DNO_ART -Wall -Wextra -Werror -std=c++1y ${ROOT_CXX_FLAGS} ${GENIE_CXX_FLAGS} -Wno-misleading-indentation")
 if(CMAKE_CXX_FLAGS STREQUAL "")
   SET(CMAKE_CXX_FLAGS ${EXTRA_CXX_FLAGS})
 else()
