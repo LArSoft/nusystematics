@@ -125,11 +125,18 @@ INSTALL(FILES ${UTIL_HDRFILES} DESTINATION include/nusystematics/utility)
 ####### responsecalculators library
 SET(RC_HDRFILES
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/BeRPA.hh
-  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/TemplateResponseCalculatorBase.hh
-  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MKSinglePiTemplate_ReWeight.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvA2p2hq0q3.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/nuenumu_xsec_ratio.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/C12ToAr40_2p2hScaling.hh
   ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvAq0q3Weighting_data.hh
-  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvARPAq0q3_ReWeight.hh)
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/SPPLowQ2Suppression.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/EnuBinnedTemplateResponseCalculator.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvARPAq0q3_ReWeight.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/TemplateResponseCalculatorBase.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/FSILikeEAvailSmearing.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MKSinglePiTemplate_ReWeight.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/MINERvA2p2hEnergyDependenceScale.hh
+  ${CMAKE_SOURCE_DIR}/nusystematics/responsecalculators/nuenuebar_xsec_ratio.hh)
 
 INSTALL(FILES ${RC_HDRFILES} DESTINATION include/nusystematics/responsecalculators)
 
