@@ -23,6 +23,7 @@ std::string outputfile = "";
 std::string envvar = "FHICL_FILE_PATH";
 std::string fhicl_key = "syst_providers";
 bool WrapWithPROLOG = true;
+bool CVOnly = false;
 } // namespace cliopts
 
 void SayUsage(char const *argv[]) {
@@ -32,6 +33,8 @@ void SayUsage(char const *argv[]) {
                "\t-o <output.fcl>  : fhicl file to write, stdout by default.\n"
                "\t-k <list key>    : fhicl key to look for list of providers,\n"
                "\t                   \"syst_providers\" by default.\n"
+               "\t--CV             : Produce config file that only calculates\n"
+               "\t                   CV weights."
             << std::endl;
 }
 
@@ -48,6 +51,8 @@ void HandleOpts(int argc, char const *argv[]) {
       cliopts::outputfile = argv[++opt];
     } else if (std::string(argv[opt]) == "-k") {
       cliopts::fhicl_key = argv[++opt];
+    } else if (std::string(argv[opt]) == "--CV") {
+      cliopts::CVOnly = true;
     } else {
       std::cout << "[ERROR]: Unknown option: " << argv[opt] << std::endl;
       SayUsage(argv);
@@ -82,6 +87,35 @@ int main(int argc, char const *argv[]) {
           << " failed validation.";
     }
     fhicl::ParameterSet tool_ps = prov->GetParameterHeadersDocument();
+
+    if (cliopts::CVOnly) {
+
+      auto phnames =
+          tool_ps.get<std::vector<std::string>>("parameter_headers", {});
+      std::vector<std::string> nphnames;
+      for (auto phn : phnames) {
+        fhicl::ParameterSet hdr_ps = tool_ps.get<fhicl::ParameterSet>(phn);
+
+        if (!hdr_ps.get<bool>("isCorrection",
+                              false)) { // don't need to modify corrections.
+
+          if (!hdr_ps.has_key(
+                  "centralParamValue")) { // we don't care about parameters that
+                                          // don't know their central value
+
+            continue;
+          }
+          tool_ps.put_or_replace(phn + ".isCorrection", true);
+          tool_ps.put_or_replace(phn + ".isSplineable", false);
+          tool_ps.put_or_replace(
+              phn + ".paramVariations",
+              std::vector<double>{hdr_ps.get<double>("centralParamValue")});
+        }
+        // Keep the header in.
+        nphnames.push_back(phn);
+      }
+    }
+
     out_ps.put(prov->GetFullyQualifiedName(), tool_ps);
     providerNames.push_back(prov->GetFullyQualifiedName());
   }
