@@ -289,7 +289,9 @@ INSTALL(TARGETS TweaksNuSyst_Validate DESTINATION bin)
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/interface/IGENIESystProvider_tool.hh DESTINATION include/nusystematics/interface)
 
 ####### response_helper
-INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/artless/response_helper.hh DESTINATION include/nusystematics/artless)
+INSTALL(FILES ${CMAKE_SOURCE_DIR}/nusystematics/artless/response_helper.hh
+              ${CMAKE_SOURCE_DIR}/nusystematics/artless/make_instance.hh
+              DESTINATION include/nusystematics/artless)
 
 ####### fhicl files
 file(GLOB FCL ${CMAKE_SOURCE_DIR}/nusystematics/fcl/*.fcl)
