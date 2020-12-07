@@ -2,7 +2,7 @@
 
 # The *parent* line must the first non-commented line and defines this product and version
 # The version should be of the form vxx_yy_zz (e.g. v01_02_03)
-parent nusystematics v00_10_06
+parent nusystematics v00_11_00
 defaultqual e19
 
 # These optional lines define the installed directories where headers,
@@ -32,18 +32,16 @@ fcldir product_dir fcl
 # Add the dependent product and version
 
 product          version
-nugen            v1_10_10
-systematicstools v00_07_01
-cetbuildtools    v7_15_01 - only_for_build
+nugen            v1_11_00
+systematicstools v00_08_00
+cetbuildtools    v7_17_01 - only_for_build
 end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the depdencies.
 # Make a table by adding columns before "notes".
 qualifier      nugen        systematicstools
-e19:py2:debug  e19:py2:debug  e19:py2:debug
-e19:py2:prof   e19:py2:prof   e19:py2:prof
-c7:py2:debug   c7:py2:debug   c7:py2:debug
-c7:py2:prof    c7:py2:prof    c7:py2:prof
+e20:debug      e20:debug      e20:debug
+e20:prof       e20:prof       e20:prof
 e19:debug      e19:debug      e19:debug
 e19:prof       e19:prof       e19:prof
 c7:debug       c7:debug       c7:debug
