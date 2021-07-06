@@ -7,8 +7,6 @@
 #include "nusystematics/utility/enumclass2int.hh"
 #include "nusystematics/utility/exceptions.hh"
 
-#include "fhiclcpp/make_ParameterSet.h"
-
 #include <ostream>
 
 // #define MINERvARPAq0q3_ReWeight_DEBUG

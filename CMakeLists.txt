@@ -26,14 +26,9 @@ if(USEART) # This is the standard, CET-empowered build for building the art modu
 
 
 # cetbuildtools contains our cmake modules
-SET ( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
-IF (NOT CETBUILDTOOLS_VERSION)
-    MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
-ENDIF()
+find_package(cetbuildtools REQUIRED)
 
-set(CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules
-                      $ENV{CETBUILDTOOLS_DIR}/Modules
-                      ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules $ENV{ART_DIR}/Modules)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -45,13 +40,16 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 
 cet_report_compiler_flags()
 
+unset(GSL_FOUND CACHE) # Workaround infelicity in CMake's FindPkgConfig.cmake.
+find_ups_product(gsl)
 find_ups_product( systematicstools )
 find_ups_product( nugen )
 find_ups_product( art )
 find_ups_product(art_root_io)
-find_ups_product( cetbuildtools )
 find_ups_product( genie )
 find_ups_product( log4cpp )
+find_ups_product( ifdh_art )
+find_ups_product( lhapdf )
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)
@@ -61,58 +59,61 @@ include(BuildPlugins)
 # include search path
 include_directories ( $ENV{GENIE_INC}/GENIE )
 
-# get libxml2
+cet_find_library( PYTHIA6 NAMES Pythia6 PATHS ENV PYLIB NO_DEFAULT_PATH )
 cet_find_library( XML2 NAMES xml2 PATHS $ENV{LIBXML2_FQ_DIR}/lib NO_DEFAULT_PATH )
+cet_find_library( LHAPDF NAMES LHAPDF PATHS ENV LHAPDF_LIB NO_DEFAULT_PATH )
+cet_find_library( LOG4CPP NAMES log4cpp PATHS ENV LOG4CPP_LIB NO_DEFAULT_PATH )
+
 # the GENIE libraries are already defined, but we need the lib list
-  set (GENIE_LIB_LIST ${GFWMSG}
-                      ${GFWREG}
-                      ${GFWALG}
-                      ${GFWINT}
-                      ${GFWGHEP}
-                      ${GFWNUM}
-                      ${GSL}  # FWNUM relies on GSL
-                      ${GFWUTL}
-                      ${GFWPARDAT}
-                      ${GFWEG}
-                      ${GFWNTP}
-                      ${GPHXSIG}
-                      ${GPHPDF}
-                      ${GPHNUCLST}
-                      ${GPHCMN}
-                      ${GPHDCY}
-                      ${GPHHADTRANSP}
-                      ${GPHHADNZ}
-                      ${GPHDEEX}
-                      ${GPHAMNGXS}
-                      ${GPHAMNGEG}
-                      ${GPHCHMXS}
-                      ${GPHCOHXS}
-                      ${GPHCOHEG}
-                      ${GPHDISXS}
-                      ${GPHDISEG}
-                      ${GPHDFRCXS}
-                      ${GPHDFRCEG}
-                      ${GPHGLWRESXS}
-                      ${GPHGLWRESEG}
-                      ${GPHIBDXS}
-                      ${GPHIBDEG}
-                      ${GPHMNUCXS}
-                      ${GPHMNUCEG}
-                      ${GPHMEL}
-                      ${GPHNUELXS}
-                      ${GPHNUELEG}
-                      ${GPHQELXS}
-                      ${GPHQELEG}
-                      ${GPHRESXS}
-                      ${GPHRESEG}
-                      ${GPHSTRXS}
-                      ${GPHSTREG}
-                      ${GPHNDCY}
-                      ${GTLGEO}
-                      ${GTLFLX}
-                      ${GRWFWK}
-                      ${GRWIO}
-                      ${GRWCLC}
+  set (GENIE_LIB_LIST GFWMSG
+                      GFWREG
+                      GFWALG
+                      GFWINT
+                      GFWGHEP
+                      GFWNUM
+                      GSL  # FWNUM relies on GSL
+                      GFWUTL
+                      GFWPARDAT
+                      GFWEG
+                      GFWNTP
+                      GPHXSIG
+                      GPHPDF
+                      GPHNUCLST
+                      GPHCMN
+                      GPHDCY
+                      GPHHADTRANSP
+                      GPHHADNZ
+                      GPHDEEX
+                      GPHAMNGXS
+                      GPHAMNGEG
+                      GPHCHMXS
+                      GPHCOHXS
+                      GPHCOHEG
+                      GPHDISXS
+                      GPHDISEG
+                      GPHDFRCXS
+                      GPHDFRCEG
+                      GPHGLWRESXS
+                      GPHGLWRESEG
+                      GPHIBDXS
+                      GPHIBDEG
+                      GPHMNUCXS
+                      GPHMNUCEG
+                      GPHMEL
+                      GPHNUELXS
+                      GPHNUELEG
+                      GPHQELXS
+                      GPHQELEG
+                      GPHRESXS
+                      GPHRESEG
+                      GPHSTRXS
+                      GPHSTREG
+                      GPHNDCY
+                      GTLGEO
+                      GTLFLX
+                      GRWFWK
+                      GRWIO
+                      GRWCLC
                       )
 
 # ADD SOURCE CODE SUBDIRECTORIES HERE
