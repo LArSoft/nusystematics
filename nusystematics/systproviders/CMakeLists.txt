@@ -1,17 +1,18 @@
 
+cet_find_library( IFDH_SERVICE NAMES IFDH_service PATHS ENV IFDH_ART_LIB NO_DEFAULT_PATH )
 SET(GENIE_EV_LIBS
   ${GENIE_LIB_LIST}
-  ${LOG4CPP}
-  ${XML2}
-  ${LHAPDF}
+  LOG4CPP
+  XML2
+  LHAPDF
   ${ROOT_BASIC_LIB_LIST}
   ${ROOT_EG}
   ${ROOT_TREEPLAYER}
   ${ROOT_FFTW}
   ${ROOT_REFLEX}
-  ${ROOTSYS}/lib/libEGPythia6.so
+  ROOT::EGPythia6
   ${ROOT_GUI}
-  ${PYTHIA6}
+  PYTHIA6
 )
 
 art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
@@ -32,6 +33,7 @@ art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
     cetlib cetlib_except
     ${CLHEP}
     ${GENIE_EV_LIBS}
+    IFDH_SERVICE
   )
 
 simple_plugin(GENIEReWeight tool
