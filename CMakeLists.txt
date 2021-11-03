@@ -43,6 +43,7 @@ cet_report_compiler_flags()
 unset(GSL_FOUND CACHE) # Workaround infelicity in CMake's FindPkgConfig.cmake.
 find_ups_product(gsl)
 find_ups_product( systematicstools )
+find_ups_product( nusimdata )
 find_ups_product( nugen )
 find_ups_product( art )
 find_ups_product(art_root_io)
