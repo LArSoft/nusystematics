@@ -16,7 +16,7 @@
 # use cmake 3.3 or later
 cmake_minimum_required (VERSION 3.12...3.18 FATAL_ERROR)
 
-project(nusystematics VERSION 01.00.03)
+project(nusystematics VERSION 01.00.03.01)
 
 if(NOT DEFINED USEART) #by default build in ART mode
   SET(USEART TRUE)
