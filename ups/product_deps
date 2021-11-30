@@ -2,7 +2,7 @@
 
 # The *parent* line must the first non-commented line and defines this product and version
 # The version should be of the form vxx_yy_zz (e.g. v01_02_03)
-parent nusystematics v01_00_04
+parent nusystematics v01_00_05
 defaultqual e20
 
 # These optional lines define the installed directories where headers,
@@ -32,7 +32,7 @@ fcldir product_dir fcl
 # Add the dependent product and version
 
 product          version
-nugen            v1_15_00
+nugen            v1_15_01
 systematicstools v01_00_03
 cetbuildtools    v8_18_06 - only_for_build
 end_product_list
