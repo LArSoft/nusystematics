@@ -14,9 +14,9 @@
 
 
 # use cmake 3.3 or later
-cmake_minimum_required (VERSION 3.12...3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-project(nusystematics VERSION 01.00.07)
+project(nusystematics VERSION 01.00.08 LANGUAGES CXX)
 
 if(NOT DEFINED USEART) #by default build in ART mode
   SET(USEART TRUE)
@@ -27,8 +27,6 @@ if(USEART) # This is the standard, CET-empowered build for building the art modu
 
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)
-
-list(APPEND CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules $ENV{ART_DIR}/Modules)
 
 include(CetCMakeEnv)
 cet_cmake_env()
