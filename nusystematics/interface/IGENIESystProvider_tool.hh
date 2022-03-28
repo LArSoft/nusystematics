@@ -47,7 +47,7 @@ public:
                                             gTruthHandle->at(eu_it)));
     }
 
-    er->resize(NEventUnits);
+    //er->resize(NEventUnits);
     for (size_t eu_it = 0; eu_it < NEventUnits; ++eu_it) {
       er->push_back(GetEventResponse(*gheps[eu_it]));
     }

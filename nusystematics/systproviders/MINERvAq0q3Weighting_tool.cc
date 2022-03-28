@@ -284,13 +284,13 @@ MINERvAq0q3Weighting::GetEventResponse(genie::EventRecord const &ev) {
   event_unit_response_t resp;
 
   if (!ev.Summary()->ProcInfo().IsWeakCC()) {
-    return resp;
+    return this->GetDefaultEventResponse();
   }
 
   if (!(ev.Summary()->ProcInfo().IsQuasiElastic() ||
         ev.Summary()->ProcInfo().IsMEC()) ||
       ev.Summary()->ExclTag().IsCharmEvent()) {
-    return resp;
+    return this->GetDefaultEventResponse();
   }
 
   genie::GHepParticle *FSLep = ev.FinalStatePrimaryLepton();
