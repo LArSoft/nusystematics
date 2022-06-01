@@ -97,7 +97,7 @@ bool NOvAStyleNonResPionNorm::SetupResponseCalculator(
 systtools::event_unit_response_t
 NOvAStyleNonResPionNorm::GetEventResponse(genie::EventRecord const &ev) {
 
-  systtools::event_unit_response_t resp;
+  systtools::event_unit_response_t resp = this->GetDefaultEventResponse();
 
   if (!ev.Summary()->ProcInfo().IsDeepInelastic()) {
     return resp;
@@ -124,10 +124,12 @@ NOvAStyleNonResPionNorm::GetEventResponse(genie::EventRecord const &ev) {
 
   NRPiChan_t param_channel;
   systtools::SystParamHeader const *hdr = nullptr;
+  size_t smdInx(-1);
   for (channel_param const &chpar : ChannelParameterMapping) {
     if (ChannelsAreEquivalent(chpar.channel, chan, 3)) {
       hdr = &GetSystMetaData()[chpar.paramidx];
       param_channel = chpar.channel;
+      smdInx = chpar.paramidx;
       break;
     }
   }
@@ -136,10 +138,9 @@ NOvAStyleNonResPionNorm::GetEventResponse(genie::EventRecord const &ev) {
     return resp;
   }
 
-  resp.push_back({hdr->systParamId, {}});
-
+  resp[smdInx].responses.clear();
   for (double vals : hdr->paramVariations) {
-    resp.back().responses.push_back(1 + vals * OneSigResp);
+    resp[smdInx].responses.push_back( std::max(0., 1 + vals * OneSigResp) );
   }
 
   if (fill_valid_tree) {

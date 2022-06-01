@@ -90,7 +90,7 @@ std::vector<double> MiscInteractionSysts::GetWeights_C12ToAr40_2p2hScaling(
 
   if ((mec_topology == nusyst::QELikeTarget_t::kQE) ||
       (mec_topology == nusyst::QELikeTarget_t::kInvalidTopology)) {
-    return resp;
+    return std::vector<double>(vals.size(), 1.);
   }
 
   for (double v : vals) {
@@ -107,11 +107,11 @@ std::vector<double> MiscInteractionSysts::GetWeights_nuenuebar_xsec_ratio(
 
   genie::GHepParticle *ISLep = ev.Probe();
   if (abs(ISLep->Pdg()) != 12) {
-    return resp;
+    return std::vector<double>(vals.size(), 1.);
   }
 
   if (!ev.Summary()->ProcInfo().IsWeakCC()) {
-    return resp;
+    return std::vector<double>(vals.size(), 1.);
   }
 
   int pdgnu = ISLep->Pdg();
@@ -130,11 +130,11 @@ std::vector<double> MiscInteractionSysts::GetWeights_nuenumu_xsec_ratio(
 
   genie::GHepParticle *ISLep = ev.Probe();
   if (abs(ISLep->Pdg()) != 12) {
-    return resp;
+    return std::vector<double>(vals.size(), 1.);
   }
 
   if (!ev.Summary()->ProcInfo().IsWeakCC()) {
-    return resp;
+    return std::vector<double>(vals.size(), 1.);
   }
 
   int pdgnu = ISLep->Pdg();
@@ -162,7 +162,7 @@ std::vector<double> MiscInteractionSysts::GetWeights_SPPLowQ2Suppression(
   std::vector<double> resp;
 
   if (SPPChannelFromGHep(ev) == genie::kSppNull) {
-    return resp;
+    return std::vector<double>(vals.size(), 1.);
   }
 
   TLorentzVector ISLepP4 = *ev.Probe()->P4();
@@ -187,16 +187,20 @@ MiscInteractionSysts::GetEventResponse(genie::EventRecord const &ev) {
 
   systtools::SystMetaData const &md = GetSystMetaData();
 
-  size_t pidx_C12ToAr40_2p2hScaling = (ev.Probe()->Pdg() > 0)
-                                          ? pidx_C12ToAr40_2p2hScaling_nu
-                                          : pidx_C12ToAr40_2p2hScaling_nubar;
-
-  if (pidx_C12ToAr40_2p2hScaling != systtools::kParamUnhandled<size_t>) {
-    std::vector<double> wght = GetWeights_C12ToAr40_2p2hScaling(
-        ev, md[pidx_C12ToAr40_2p2hScaling].paramVariations);
+  if (pidx_C12ToAr40_2p2hScaling_nu != systtools::kParamUnhandled<size_t>) {
+    std::vector<double> wght = (ev.Probe()->Pdg() > 0) ? GetWeights_C12ToAr40_2p2hScaling(ev, md[pidx_C12ToAr40_2p2hScaling_nu].paramVariations)
+                                                       : std::vector<double>(md[pidx_C12ToAr40_2p2hScaling_nu].paramVariations.size(), 1.);
     if (wght.size()) {
       resp.push_back(
-          {md[pidx_C12ToAr40_2p2hScaling].systParamId, std::move(wght)});
+          {md[pidx_C12ToAr40_2p2hScaling_nu].systParamId, std::move(wght)});
+    }
+  }
+  if (pidx_C12ToAr40_2p2hScaling_nubar != systtools::kParamUnhandled<size_t>) {
+    std::vector<double> wght = (ev.Probe()->Pdg() < 0) ? GetWeights_C12ToAr40_2p2hScaling(ev, md[pidx_C12ToAr40_2p2hScaling_nubar].paramVariations)
+                                                       : std::vector<double>(md[pidx_C12ToAr40_2p2hScaling_nubar].paramVariations.size(), 1.);
+    if (wght.size()) {
+      resp.push_back(
+          {md[pidx_C12ToAr40_2p2hScaling_nubar].systParamId, std::move(wght)});
     }
   }
   if (pidx_nuenuebar_xsec_ratio != systtools::kParamUnhandled<size_t>) {

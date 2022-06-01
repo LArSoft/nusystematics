@@ -173,7 +173,7 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
 
   if (!ev.Summary()->ProcInfo().IsMEC() ||
       !ev.Summary()->ProcInfo().IsWeakCC()) {
-    return resp;
+    return this->GetDefaultEventResponse();
   }
 
   genie::GHepParticle *ISLep = ev.Probe();
@@ -182,95 +182,111 @@ MINERvAE2p2h::GetEventResponse(genie::EventRecord const &ev) {
   size_t pidx_Response, pidx_A, pidx_B;
   std::vector<double> *A_var, *B_var;
   double ACV, BCV;
-  if (ISLep->Pdg() > 0) {
-    pidx_Response = pidx_E2p2hResponse_nu;
-    pidx_A = pidx_E2p2hA_nu;
-    pidx_B = pidx_E2p2hB_nu;
-    A_var = &A_nu_Variations;
-    B_var = &B_nu_Variations;
-    ACV = A_nu_CV;
-    BCV = B_nu_CV;
-  } else {
-    pidx_Response = pidx_E2p2hResponse_nubar;
-    pidx_A = pidx_E2p2hA_nubar;
-    pidx_B = pidx_E2p2hB_nubar;
-    A_var = &A_nubar_Variations;
-    B_var = &B_nubar_Variations;
-    ACV = A_nubar_CV;
-    BCV = B_nubar_CV;
-  }
-
   Enu = ISLepP4.E();
 
-  if (!ignore_parameter_dependence) {
-    resp.push_back({md[pidx_Response].systParamId, {}});
+  for (int const &nu_pdgsign : {+1, -1}) {
 
-    for (size_t univ = 0; univ < md[pidx_Response].paramVariations.size();
-         ++univ) {
+    pidx_Response = nu_pdgsign>0 ? pidx_E2p2hResponse_nu : pidx_E2p2hResponse_nubar;
+    pidx_A        = nu_pdgsign>0 ? pidx_E2p2hA_nu        : pidx_E2p2hA_nubar;
+    pidx_B        = nu_pdgsign>0 ? pidx_E2p2hB_nu        : pidx_E2p2hB_nubar;
+    A_var         = nu_pdgsign>0 ? &A_nu_Variations      : &A_nubar_Variations;
+    B_var         = nu_pdgsign>0 ? &B_nu_Variations      : &B_nubar_Variations;
+    ACV           = nu_pdgsign>0 ? A_nu_CV               : A_nubar_CV;
+    BCV           = nu_pdgsign>0 ? B_nu_CV               : B_nubar_CV;
 
-      double Aval = A_var->at(univ);
-      double Bval = B_var->at(univ);
+    bool nuMatched = (ISLep->Pdg() * nu_pdgsign > 0);
 
-      double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
-          e2i(simb_mode_copy::kMEC), true, Enu, Aval, Bval);
+    if (!ignore_parameter_dependence) {
 
-      weight = (weight < LimitWeights.first) ? LimitWeights.first : weight;
-      weight = (weight > LimitWeights.second) ? LimitWeights.second : weight;
+      resp.push_back({md[pidx_Response].systParamId, {}});
 
-      resp.back().responses.push_back(weight);
-    }
-  } else {
-    // Only want the CV response to be used in one of the dials, after the first
-    // dial is found, all other dial responses should be /= CVResponse.
-    double CVResponse = Get_MINERvA2p2h2EnergyDependencyScaling(
-        e2i(simb_mode_copy::kMEC), true, Enu, ACV, BCV);
+      for (size_t univ = 0; univ < md[pidx_Response].paramVariations.size();
+           ++univ) {
 
-    CVResponse =
-        (CVResponse < LimitWeights.first) ? LimitWeights.first : CVResponse;
-    CVResponse =
-        (CVResponse > LimitWeights.second) ? LimitWeights.second : CVResponse;
-
-#ifdef MINERVAE2p2h_DEBUG
-    std::cout << "[CV Response @ " << Enu << ", " << (ISLep->Pdg()) << ", "
-              << ACV << ", " << BCV << "] = " << CVResponse << std::endl;
-#endif
-
-    bool UsedADial = false;
-    if (pidx_A != kParamUnhandled<size_t>) {
-      resp.push_back({md[pidx_A].systParamId, {}});
-      for (double av : (*A_var)) {
-        double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
-            e2i(simb_mode_copy::kMEC), true, Enu, av, BCV);
-#ifdef MINERVAE2p2h_DEBUG
-        std::cout << "[weight @ " << Enu << ", " << av << ", " << BCV
-                  << "] = " << weight << std::endl;
-#endif
-        weight = (weight < LimitWeights.first) ? LimitWeights.first : weight;
-        weight = (weight > LimitWeights.second) ? LimitWeights.second : weight;
-
-        resp.back().responses.push_back(weight);
-      }
-      UsedADial = true;
-    }
-    if (pidx_B != kParamUnhandled<size_t>) {
-      resp.push_back({md[pidx_B].systParamId, {}});
-      for (double bv : (*B_var)) {
-        double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
-            e2i(simb_mode_copy::kMEC), true, Enu, ACV, bv);
-#ifdef MINERVAE2p2h_DEBUG
-        std::cout << "[weight @ " << Enu << ", " << ACV << ", " << bv
-                  << "] = " << weight << std::endl;
-#endif
-
-        weight = (weight < LimitWeights.first) ? LimitWeights.first : weight;
-        weight = (weight > LimitWeights.second) ? LimitWeights.second : weight;
-
-        if (UsedADial) {
-          weight /= CVResponse;
+        if(!nuMatched){
+          resp.back().responses.push_back(1.);
+          continue;
         }
+
+        double Aval = A_var->at(univ);
+        double Bval = B_var->at(univ);
+
+        double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
+            e2i(simb_mode_copy::kMEC), true, Enu, Aval, Bval);
+
+        weight = (weight < LimitWeights.first) ? LimitWeights.first : weight;
+        weight = (weight > LimitWeights.second) ? LimitWeights.second : weight;
+
         resp.back().responses.push_back(weight);
       }
+
+    } else {
+
+      // Only want the CV response to be used in one of the dials, after the first
+      // dial is found, all other dial responses should be /= CVResponse.
+      double CVResponse = Get_MINERvA2p2h2EnergyDependencyScaling(
+          e2i(simb_mode_copy::kMEC), true, Enu, ACV, BCV);
+
+      CVResponse =
+          (CVResponse < LimitWeights.first) ? LimitWeights.first : CVResponse;
+      CVResponse =
+          (CVResponse > LimitWeights.second) ? LimitWeights.second : CVResponse;
+
+#ifdef MINERVAE2p2h_DEBUG
+      std::cout << "[CV Response @ " << Enu << ", " << (ISLep->Pdg()) << ", "
+                << ACV << ", " << BCV << "] = " << CVResponse << std::endl;
+#endif
+
+      bool UsedADial = false;
+      if (pidx_A != kParamUnhandled<size_t>) {
+        resp.push_back({md[pidx_A].systParamId, {}});
+        for (double av : (*A_var)) {
+
+          if(!nuMatched){
+            resp.back().responses.push_back(1.);
+            continue;
+          }
+
+          double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
+              e2i(simb_mode_copy::kMEC), true, Enu, av, BCV);
+#ifdef MINERVAE2p2h_DEBUG
+          std::cout << "[weight @ " << Enu << ", " << av << ", " << BCV
+                    << "] = " << weight << std::endl;
+#endif
+          weight = (weight < LimitWeights.first) ? LimitWeights.first : weight;
+          weight = (weight > LimitWeights.second) ? LimitWeights.second : weight;
+
+          resp.back().responses.push_back(weight);
+        }
+        UsedADial = true;
+      }
+      if (pidx_B != kParamUnhandled<size_t>) {
+        resp.push_back({md[pidx_B].systParamId, {}});
+        for (double bv : (*B_var)) {
+
+          if(!nuMatched){
+            resp.back().responses.push_back(1.);
+            continue;
+          }
+
+          double weight = Get_MINERvA2p2h2EnergyDependencyScaling(
+              e2i(simb_mode_copy::kMEC), true, Enu, ACV, bv);
+#ifdef MINERVAE2p2h_DEBUG
+          std::cout << "[weight @ " << Enu << ", " << ACV << ", " << bv
+                    << "] = " << weight << std::endl;
+#endif
+
+          weight = (weight < LimitWeights.first) ? LimitWeights.first : weight;
+          weight = (weight > LimitWeights.second) ? LimitWeights.second : weight;
+
+          if (UsedADial) {
+            weight /= CVResponse;
+          }
+          resp.back().responses.push_back(weight);
+        }
+      }
     }
+
   }
 
   if (fill_valid_tree) {
