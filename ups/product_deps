@@ -32,7 +32,7 @@ fcldir product_dir fcl
 # Add the dependent product and version
 
 product          version
-nugen            v1_15_09
+nugen            v1_15_10
 systematicstools v01_00_03
 cetbuildtools    v8_19_02 - only_for_build
 end_product_list
