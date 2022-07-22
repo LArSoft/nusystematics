@@ -10,6 +10,7 @@
 #include "Framework/GHEP/GHepUtils.h"
 
 #include "Framework/Interaction/SppChannel.h"
+#include "Framework/Interaction/ProcessInfo.h"
 
 #include <sstream>
 
@@ -266,9 +267,9 @@ inline simb_mode_copy GetSimbMode(genie::EventRecord const &ev) {
     mode = simb_mode_copy::kRes;
   } else if (ev.Summary()->ProcInfo().IsDeepInelastic()) {
     mode = simb_mode_copy::kDIS;
-  } else if (ev.Summary()->ProcInfo().IsCoherent()) {
+  } else if (ev.Summary()->ProcInfo().IsCoherentProduction()) {
     mode = simb_mode_copy::kCoh;
-  } else if (ev.Summary()->ProcInfo().IsCoherentElas()) {
+  } else if (ev.Summary()->ProcInfo().IsCoherentElastic()) {
     mode = simb_mode_copy::kCohElastic;
   } else if (ev.Summary()->ProcInfo().IsElectronScattering()) {
     mode = simb_mode_copy::kElectronScattering;
