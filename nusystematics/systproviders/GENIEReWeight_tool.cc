@@ -44,6 +44,13 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
   bool UseFullHERG = params.get<bool>("UseFullHERG", false);
   tool_options.put("UseFullHERG", UseFullHERG);
 
+  std::string genie_tune_name = params.get<std::string>("genie_tune_name",
+                                                   "${GENIE_XSEC_TUNE}");
+  tool_options.put("genie_tune_name",genie_tune_name);
+
+  std::string evgen_list_name = params.get<std::string>("EventGeneratorList", "");
+  tool_options.put("evgen_list_name",evgen_list_name);
+
   fill_valid_tree = params.get<bool>("fill_valid_tree", false);
   tool_options.put("fill_valid_tree", fill_valid_tree);
 
@@ -106,6 +113,15 @@ bool GENIEReWeight::SetupResponseCalculator(
     fhicl::ParameterSet const &tool_options) {
 
   std::cout << "[INFO]: Setting up GENIE ReWeight instances..." << std::endl;
+
+  //==== taken from https://github.com/LArSoft/larsim/blob/5b8ddeef9a556aa8a6bfa61915a16af25fa33a74/larsim/EventWeight/App/EventWeight_module.cc#L63-L78
+  std::string genie_tune_name = tool_options.get<std::string>("genie_tune_name");
+  std::string evgen_list_name = tool_options.get<std::string>("EventGeneratorList", "");
+  std::cout << "[INFO]: genie_tune_name = " << genie_tune_name << std::endl;
+  std::cout << "[INFO]: evgen_list_name = " << evgen_list_name << std::endl;
+  // Tell GENIE about the event generator list and tune
+  evgb::SetEventGeneratorListAndTune( evgen_list_name, genie_tune_name );
+
   extend_ResponseToGENIEParameters(
       ConfigureQEWeightEngine(GetSystMetaData(), tool_options));
 
