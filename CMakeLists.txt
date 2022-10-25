@@ -14,8 +14,9 @@
 
 
 # use cmake 3.3 or later
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
+find_package(cetmodules REQUIRED)
 project(nusystematics VERSION 01.00.15 LANGUAGES CXX)
 
 if(NOT DEFINED USEART) #by default build in ART mode
@@ -25,9 +26,6 @@ endif()
 if(USEART) # This is the standard, CET-empowered build for building the art module and associated tools
 
 
-# cetbuildtools contains our cmake modules
-find_package(cetbuildtools REQUIRED)
-
 include(CetCMakeEnv)
 cet_cmake_env()
 
@@ -36,32 +34,25 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
   NO_UNDEFINED
   EXTRA_FLAGS -pedantic )
 
-cet_report_compiler_flags()
+cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 
-unset(GSL_FOUND CACHE) # Workaround infelicity in CMake's FindPkgConfig.cmake.
-find_ups_product(gsl)
-find_ups_product( systematicstools )
-find_ups_product( nusimdata )
-find_ups_product( nugen )
-find_ups_product( art )
-find_ups_product(art_root_io)
-#find_ups_product( genie )
+find_package(GSL REQUIRED)
+find_package(art REQUIRED EXPORT)
+find_package(art_root_io REQUIRED EXPORT)
+find_package(systematicstools REQUIRED EXPORT)
+find_package(nusimdata REQUIRED EXPORT)
+find_package(nugen REQUIRED EXPORT)
 find_package(log4cpp REQUIRED EXPORT)
-find_ups_product( ifdh_art )
-find_ups_product( lhapdf )
-find_package(GENIE REQUIRED)
+find_package(ifdh_art REQUIRED EXPORT)
+find_package(LHAPDF REQUIRED)
+find_package(LibXml2 REQUIRED)
+find_package(Pythia6 REQUIRED)
+find_package(GENIE REQUIRED EXPORT)
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)
 include(ArtMake)
 include(BuildPlugins)
-
-# include search path
-include_directories ( $ENV{GENIE_INC}/GENIE )
-
-cet_find_library( PYTHIA6 NAMES Pythia6 PATHS ENV PYLIB NO_DEFAULT_PATH )
-cet_find_library( XML2 NAMES xml2 PATHS $ENV{LIBXML2_FQ_DIR}/lib NO_DEFAULT_PATH )
-cet_find_library( LHAPDF NAMES LHAPDF PATHS ENV LHAPDF_LIB NO_DEFAULT_PATH )
 
 
 # ADD SOURCE CODE SUBDIRECTORIES HERE
@@ -71,12 +62,10 @@ add_subdirectory(nusystematics)
 add_subdirectory(test)
 
 # ups - table and config files
-add_subdirectory(ups)
-
 # packaging utility
-include(UseCPack)
+cet_cmake_config()
 
-else() #
+else() # building without cetmodules
 
   #Changes default install path to be a subdirectory of the build dir.
   #Can set build dir at configure time with -DCMAKE_INSTALL_PREFIX=/install/path

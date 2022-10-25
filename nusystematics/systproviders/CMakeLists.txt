@@ -1,17 +1,16 @@
 
-cet_find_library( IFDH_SERVICE NAMES IFDH_service PATHS ENV IFDH_ART_LIB NO_DEFAULT_PATH )
 SET(GENIE_EV_LIBS
   ${GENIE_LIB_LIST}
   log4cpp::log4cpp
-  XML2
-  LHAPDF
+  LibXml2::LibXml2
+  LHAPDF::LHAPDF
   ROOT::Core
   ROOT::EG
   ROOT::TreePlayer
   ROOT::FFTW
   ROOT::EGPythia6
   ROOT::Gui
-  PYTHIA6
+  Pythia6::Pythia6
 )
 
 art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
@@ -19,8 +18,8 @@ art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
     GENIEReWeightParamConfig.cc
     GENIEReWeightEngineConfig.cc
   LIBRARIES
-    systematicstools_utility
-    systematicstools_interface
+    systematicstools::utility
+    systematicstools::interface
     nugen::EventGeneratorBase_GENIE
     art::Framework_Core
     art::Framework_Principal
@@ -36,10 +35,11 @@ art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
     ifdh_art::IFDH_service
   )
 
-simple_plugin(GENIEReWeight tool
+cet_build_plugin(GENIEReWeight art::tool
+  LIBRARIES PRIVATE
     nusystematics_GENIEReWeight_config
-    systematicstools_utility
-    systematicstools_interface
+    systematicstools::utility
+    systematicstools::interface
     nugen::EventGeneratorBase_GENIE
     nusimdata::SimulationBase
     art::Framework_Core
@@ -58,11 +58,12 @@ simple_plugin(GENIEReWeight tool
 
 SET(TOOLS MKSinglePiTemplate BeRPAWeight MiscInteractionSysts NOvAStyleNonResPionNorm MINERvAE2p2h EbLepMomShift MINERvAq0q3Weighting FSILikeEAvailSmearing)
 foreach(tool ${TOOLS})
-  simple_plugin(${tool} tool
-    systematicstools_utility
-    systematicstools_interface
-    nugen::EventGeneratorBase_GENIE
-    nusimdata::SimulationBase
+  cet_build_plugin(${tool} art::tool
+    LIBRARIES PRIVATE
+      systematicstools::utility
+      systematicstools::interface
+      nugen::EventGeneratorBase_GENIE
+      nusimdata::SimulationBase
       art::Framework_Core
       art::Framework_Principal
       art::Framework_Services_Registry
