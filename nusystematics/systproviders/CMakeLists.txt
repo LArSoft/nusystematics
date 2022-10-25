@@ -2,16 +2,15 @@
 cet_find_library( IFDH_SERVICE NAMES IFDH_service PATHS ENV IFDH_ART_LIB NO_DEFAULT_PATH )
 SET(GENIE_EV_LIBS
   ${GENIE_LIB_LIST}
-  LOG4CPP
+  log4cpp::log4cpp
   XML2
   LHAPDF
-  ${ROOT_BASIC_LIB_LIST}
-  ${ROOT_EG}
-  ${ROOT_TREEPLAYER}
-  ${ROOT_FFTW}
-  ${ROOT_REFLEX}
+  ROOT::Core
+  ROOT::EG
+  ROOT::TreePlayer
+  ROOT::FFTW
   ROOT::EGPythia6
-  ${ROOT_GUI}
+  ROOT::Gui
   PYTHIA6
 )
 
@@ -23,17 +22,18 @@ art_make_library(LIBRARY_NAME nusystematics_GENIEReWeight_config
     systematicstools_utility
     systematicstools_interface
     nugen::EventGeneratorBase_GENIE
-    ${ART_FRAMEWORK_CORE}
-    ${ART_FRAMEWORK_PRINCIPAL}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
-    ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-    canvas
-    ${MF_MESSAGELOGGER}
-    ${FHICLCPP}
-    cetlib cetlib_except
-    ${CLHEP}
+    art::Framework_Core
+    art::Framework_Principal
+    art::Framework_Services_Registry
+    art::Framework_Services_Optional_RandomNumberGenerator_service
+    canvas::canvas
+    messagefacility::MF_MessageLogger
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
+    cetlib_except::cetlib_except
+    CLHEP::CLHEP
     ${GENIE_EV_LIBS}
-    IFDH_SERVICE
+    ifdh_art::IFDH_service
   )
 
 simple_plugin(GENIEReWeight tool
@@ -42,16 +42,17 @@ simple_plugin(GENIEReWeight tool
     systematicstools_interface
     nugen::EventGeneratorBase_GENIE
     nusimdata::SimulationBase
-    ${ART_FRAMEWORK_CORE}
-    ${ART_FRAMEWORK_PRINCIPAL}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
-    ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-    art_Persistency_Provenance
-    canvas
-    ${MF_MESSAGELOGGER}
-    ${FHICLCPP}
-    cetlib cetlib_except
-    ${CLHEP}
+    art::Framework_Core
+    art::Framework_Principal
+    art::Framework_Services_Registry
+    art::Framework_Services_Optional_RandomNumberGenerator_service
+    art::Persistency_Provenance
+    canvas::canvas
+    messagefacility::MF_MessageLogger
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
+    cetlib_except::cetlib_except
+    CLHEP::CLHEP
     ${GENIE_EV_LIBS}
  )
 
@@ -62,16 +63,17 @@ foreach(tool ${TOOLS})
     systematicstools_interface
     nugen::EventGeneratorBase_GENIE
     nusimdata::SimulationBase
-      ${ART_FRAMEWORK_CORE}
-      ${ART_FRAMEWORK_PRINCIPAL}
-      ${ART_FRAMEWORK_SERVICES_REGISTRY}
-      ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-      art_Persistency_Provenance
-      canvas
-      ${MF_MESSAGELOGGER}
-      ${FHICLCPP}
-      cetlib cetlib_except
-      ${CLHEP}
+      art::Framework_Core
+      art::Framework_Principal
+      art::Framework_Services_Registry
+      art::Framework_Services_Optional_RandomNumberGenerator_service
+      art::Persistency_Provenance
+      canvas::canvas
+      messagefacility::MF_MessageLogger
+      fhiclcpp::fhiclcpp
+      cetlib::cetlib
+      cetlib_except::cetlib_except
+      CLHEP::CLHEP
       ${GENIE_EV_LIBS}
    )
 endforeach()

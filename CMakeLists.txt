@@ -46,7 +46,7 @@ find_ups_product( nugen )
 find_ups_product( art )
 find_ups_product(art_root_io)
 #find_ups_product( genie )
-find_ups_product( log4cpp )
+find_package(log4cpp REQUIRED EXPORT)
 find_ups_product( ifdh_art )
 find_ups_product( lhapdf )
 find_package(GENIE REQUIRED)
@@ -62,7 +62,6 @@ include_directories ( $ENV{GENIE_INC}/GENIE )
 cet_find_library( PYTHIA6 NAMES Pythia6 PATHS ENV PYLIB NO_DEFAULT_PATH )
 cet_find_library( XML2 NAMES xml2 PATHS $ENV{LIBXML2_FQ_DIR}/lib NO_DEFAULT_PATH )
 cet_find_library( LHAPDF NAMES LHAPDF PATHS ENV LHAPDF_LIB NO_DEFAULT_PATH )
-cet_find_library( LOG4CPP NAMES log4cpp PATHS ENV LOG4CPP_LIB NO_DEFAULT_PATH )
 
 
 # ADD SOURCE CODE SUBDIRECTORIES HERE
