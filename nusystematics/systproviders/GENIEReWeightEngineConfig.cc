@@ -1,6 +1,7 @@
 #include "nusystematics/systproviders/GENIEReWeightEngineConfig.hh"
 
 // GENIE
+#include "Framework/GHEP/GHepParticle.h"
 #include "RwCalculators/GReWeightAGKY.h"
 #include "RwCalculators/GReWeightFGM.h"
 #include "RwCalculators/GReWeightFZone.h"
