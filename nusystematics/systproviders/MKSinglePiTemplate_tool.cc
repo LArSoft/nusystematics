@@ -63,7 +63,7 @@ SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
   tool_options.put("MKSPP_Template_input_manifest", templateManifest);
 
   size_t NNuChannels = 0;
-  for (std::string const &ch : {"NumuPPiPlus", "NumuPPi0", "NumuNPiPlus"}) {
+  for (std::string const ch : {"NumuPPiPlus", "NumuPPi0", "NumuNPiPlus"}) {
 
     if (!templateManifest.has_key(ch)) {
       continue;
@@ -73,7 +73,7 @@ SystMetaData MKSinglePiTemplate::BuildSystMetaData(ParameterSet const &cfg,
   }
 
   size_t NAntiNuChannels = 0;
-  for (std::string const &ch :
+  for (std::string const ch :
        {"NumuBNPiMinus", "NumuBNPi0", "NumuBPPiMinus"}) {
 
     if (!templateManifest.has_key(ch)) {
