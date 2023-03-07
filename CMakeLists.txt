@@ -17,7 +17,7 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 find_package(cetmodules REQUIRED)
-project(nusystematics VERSION 01.02.06 LANGUAGES CXX)
+project(nusystematics VERSION 01.02.07 LANGUAGES CXX)
 
 if(NOT DEFINED USEART) #by default build in ART mode
   SET(USEART TRUE)
