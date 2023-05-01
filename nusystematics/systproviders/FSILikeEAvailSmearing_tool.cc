@@ -54,7 +54,7 @@ SystMetaData FSILikeEAvailSmearing::BuildSystMetaData(ParameterSet const &cfg,
   }
 
   size_t NChannels = 0;
-  for (std::string const &ch : {"CCQE", "CCRes", "CCDIS", "CCMEC", "CCQE_bar",
+  for (std::string const ch : {"CCQE", "CCRes", "CCDIS", "CCMEC", "CCQE_bar",
                                 "CCRes_bar", "CCDIS_bar", "CCMEC_bar", "NC"}) {
 
     if (!templateManifest.has_key(ch)) {
