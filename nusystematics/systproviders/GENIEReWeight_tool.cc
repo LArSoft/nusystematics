@@ -131,6 +131,9 @@ bool GENIEReWeight::SetupResponseCalculator(
       ConfigureQEWeightEngine(GetSystMetaData(), tool_options));
 
   extend_ResponseToGENIEParameters(
+      ConfigureMECWeightEngine(GetSystMetaData(), tool_options));
+
+  extend_ResponseToGENIEParameters(
       ConfigureNCELWeightEngine(GetSystMetaData(), tool_options));
 
   extend_ResponseToGENIEParameters(
