@@ -10,6 +10,7 @@
 #include "RwCalculators/GReWeightNuXSecCCQE.h"
 #include "RwCalculators/GReWeightNuXSecCCQEaxial.h"
 #include "RwCalculators/GReWeightNuXSecCCQEvec.h"
+#include "RwCalculators/GReWeightXSecMEC.h"
 #include "RwCalculators/GReWeightNuXSecCCRES.h"
 #include "RwCalculators/GReWeightNuXSecCOH.h"
 #include "RwCalculators/GReWeightNuXSecDIS.h"
@@ -261,7 +262,31 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
       []() { return new GReWeightNuXSecCCQEvec; }, UseFullHERG, param_map);
 
   return param_map;
-} // namespace nusyst
+}
+
+std::vector<GENIEResponseParameter>
+ConfigureMECWeightEngine(SystMetaData const &MECmd,
+                        fhicl::ParameterSet const &tool_options) {
+
+  std::vector<GENIEResponseParameter> param_map;
+
+  bool UseFullHERG = tool_options.get<bool>("UseFullHERG", false);
+
+  AddIndependentParameters(
+      MECmd, {
+        kXSecTwkDial_NormCCMEC,
+        kXSecTwkDial_NormNCMEC,
+        kXSecTwkDial_NormEMMEC,
+        kXSecTwkDial_DecayAngMEC,
+        kXSecTwkDial_FracPN_CCMEC,
+        kXSecTwkDial_FracDelta_CCMEC,
+        kXSecTwkDial_XSecShape_CCMEC
+      },
+      "xsec_mec", []() { return new GReWeightXSecMEC; }, UseFullHERG, param_map);
+
+  return param_map;
+
+}
 
 std::vector<GENIEResponseParameter>
 ConfigureNCELWeightEngine(SystMetaData const &NCELmd,

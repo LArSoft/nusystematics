@@ -249,7 +249,24 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
 
 
   return QEmd;
-} // namespace nusyst
+}
+
+SystMetaData ConfigureMECParameterHeaders(fhicl::ParameterSet const &cfg,
+                                          paramId_t firstParamId,
+                                          fhicl::ParameterSet &tool_options) {
+
+  return ConfigureSetOfIndependentParameters(
+      cfg, firstParamId,
+      {kXSecTwkDial_NormCCMEC,
+       kXSecTwkDial_NormNCMEC,
+       kXSecTwkDial_NormEMMEC,
+       kXSecTwkDial_DecayAngMEC,
+       kXSecTwkDial_FracPN_CCMEC,
+       kXSecTwkDial_FracDelta_CCMEC,
+       kXSecTwkDial_XSecShape_CCMEC}
+  );
+
+}
 
 SystMetaData ConfigureNCELParameterHeaders(fhicl::ParameterSet const &cfg,
                                            paramId_t firstParamId,
