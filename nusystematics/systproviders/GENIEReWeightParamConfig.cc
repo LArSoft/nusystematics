@@ -303,7 +303,7 @@ SystMetaData ConfigureRESParameterHeaders(fhicl::ParameterSet const &cfg,
   }
 
   SystMetaData CCRESmd = ConfigureSetOfDependentShapeableParameters(
-      cfg, firstParamId, tool_options, "CCResVariationResponse",
+      cfg, firstParamId, tool_options, "CCRESVariationResponse",
       {{kXSecTwkDial_MaCCRES, kXSecTwkDial_MaCCRESshape},
        {kXSecTwkDial_MvCCRES, kXSecTwkDial_MvCCRESshape}},
       CCRESIsShapeOnly);
@@ -332,7 +332,7 @@ SystMetaData ConfigureRESParameterHeaders(fhicl::ParameterSet const &cfg,
   }
 
   SystMetaData NCRESmd = ConfigureSetOfDependentShapeableParameters(
-      cfg, firstParamId, tool_options, "NCResVariationResponse",
+      cfg, firstParamId, tool_options, "NCRESVariationResponse",
       {{kXSecTwkDial_MaNCRES, kXSecTwkDial_MaNCRESshape},
        {kXSecTwkDial_MvNCRES, kXSecTwkDial_MvNCRESshape}},
       NCRESIsShapeOnly);
