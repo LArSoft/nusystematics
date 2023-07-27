@@ -364,7 +364,8 @@ SystMetaData ConfigureRESParameterHeaders(fhicl::ParameterSet const &cfg,
        kXSecTwkDial_RvbarnNC2pi,
 
        kRDcyTwkDial_BR1gamma, kRDcyTwkDial_BR1eta,
-       kRDcyTwkDial_Theta_Delta2Npi});
+       kRDcyTwkDial_Theta_Delta2Npi,
+       kRDcyTwkDial_Theta_Delta2NRad});
   ExtendSystMetaData(RESmd, std::move(RESOther));
 
   return RESmd;

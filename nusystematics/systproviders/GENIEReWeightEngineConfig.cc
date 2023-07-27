@@ -17,6 +17,7 @@
 #include "RwCalculators/GReWeightNuXSecNCEL.h"
 #include "RwCalculators/GReWeightNuXSecNCRES.h"
 #include "RwCalculators/GReWeightResonanceDecay.h"
+#include "RwCalculators/GReWeightDeltaradAngle.h"
 
 #include <functional>
 
@@ -389,6 +390,13 @@ ConfigureRESWeightEngine(SystMetaData const &RESmd,
                            "xsec_ResDecay",
                            []() { return new GReWeightResonanceDecay(); },
                            UseFullHERG, param_map);
+
+  AddIndependentParameters(RESmd,
+                           {{kRDcyTwkDial_Theta_Delta2NRad}},
+                           "xsec_DeltaRad",
+                           []() { return new GReWeightDeltaradAngle(); },
+                           UseFullHERG, param_map);
+
 
   return param_map;
 }
