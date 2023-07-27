@@ -411,7 +411,7 @@ ConfigureCOHWeightEngine(SystMetaData const &COHmd,
 
   AddResponseAndDependentDials(
       COHmd, "COHVariationResponse",
-      {kXSecTwkDial_MaCOHpi, kXSecTwkDial_R0COHpi}, "xsec_COH",
+      {kXSecTwkDial_MaCOHpi, kXSecTwkDial_R0COHpi, kXSecTwkDial_NormCCCOHpi, kXSecTwkDial_NormNCCOHpi}, "xsec_COH",
       []() { return new GReWeightNuXSecCOH; }, UseFullHERG, param_map);
 
   return param_map;

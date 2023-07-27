@@ -376,7 +376,7 @@ SystMetaData ConfigureCOHParameterHeaders(fhicl::ParameterSet const &cfg,
                                           fhicl::ParameterSet &tool_options) {
   return ConfigureSetOfDependentParameters(
       cfg, firstParamId, tool_options, "COHVariationResponse",
-      {kXSecTwkDial_MaCOHpi, kXSecTwkDial_R0COHpi});
+      {kXSecTwkDial_MaCOHpi, kXSecTwkDial_R0COHpi, kXSecTwkDial_NormCCCOHpi, kXSecTwkDial_NormNCCOHpi});
 }
 
 SystMetaData ConfigureDISParameterHeaders(fhicl::ParameterSet const &cfg,
