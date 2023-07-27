@@ -38,7 +38,7 @@ SystMetaData MINERvAE2p2h::BuildSystMetaData(fhicl::ParameterSet const &ps,
   ignore_parameter_dependence =
       ps.get<bool>("ignore_parameter_dependence", false);
 
-  for (std::string const &nu : {"nu", "nubar"}) {
+  for (std::string const nu : {"nu", "nubar"}) {
     SystParamHeader responseParam;
     std::vector<std::string> dependentParamNames;
     if (!ignore_parameter_dependence) {
@@ -46,7 +46,7 @@ SystMetaData MINERvAE2p2h::BuildSystMetaData(fhicl::ParameterSet const &ps,
       responseParam.systParamId = firstId++;
     }
 
-    for (std::string const &p : {"E2p2h_A", "E2p2h_B"}) {
+    for (std::string const p : {"E2p2h_A", "E2p2h_B"}) {
       std::string pname = p + "_" + nu;
       SystParamHeader phdr;
       if (ParseFHiCLSimpleToolConfigurationParameter(ps, pname, phdr,

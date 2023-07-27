@@ -49,7 +49,7 @@ SystMetaData BeRPAWeight::BuildSystMetaData(fhicl::ParameterSet const &ps,
     responseParam.systParamId = firstId++;
   }
 
-  for (std::string const &pname :
+  for (std::string const pname :
        {"BeRPA_A", "BeRPA_B", "BeRPA_D", "BeRPA_E"}) {
     SystParamHeader phdr;
     if (ParseFHiCLSimpleToolConfigurationParameter(ps, pname, phdr, firstId)) {

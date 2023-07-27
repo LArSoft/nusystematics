@@ -34,7 +34,7 @@ MiscInteractionSysts::BuildSystMetaData(fhicl::ParameterSet const &ps,
 
   systtools::SystMetaData smd;
 
-  for (std::string const &pname :
+  for (std::string const pname :
        {"C12ToAr40_2p2hScaling_nu", "C12ToAr40_2p2hScaling_nubar",
         "nuenuebar_xsec_ratio", "nuenumu_xsec_ratio", "SPPLowQ2Suppression"}) {
     systtools::SystParamHeader phdr;
