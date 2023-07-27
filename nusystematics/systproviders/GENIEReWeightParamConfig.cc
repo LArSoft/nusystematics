@@ -240,7 +240,20 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
   SystMetaData VecFFCCQEmd = ConfigureSetOfIndependentParameters(
       cfg, firstParamId,
       {kXSecTwkDial_VecFFCCQEshape});
+  firstParamId += VecFFCCQEmd.size();
   ExtendSystMetaData(QEmd, std::move(VecFFCCQEmd));
+
+  SystMetaData RPA_CCQEmd = ConfigureSetOfIndependentParameters(
+      cfg, firstParamId,
+      {kXSecTwkDial_RPA_CCQE});
+  firstParamId += RPA_CCQEmd.size();
+  ExtendSystMetaData(QEmd, std::move(RPA_CCQEmd));
+
+  SystMetaData CoulombCCQEmd = ConfigureSetOfIndependentParameters(
+      cfg, firstParamId,
+      {kXSecTwkDial_CoulombCCQE});
+  firstParamId += CoulombCCQEmd.size();
+  ExtendSystMetaData(QEmd, std::move(CoulombCCQEmd));
 
   bool AxFFCCQEDipoleToZExp =
       cfg.get<bool>("AxFFCCQEDipoleToZExp", false) || IsZExpReWeight;

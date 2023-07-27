@@ -261,6 +261,14 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
       QEmd, {kXSecTwkDial_VecFFCCQEshape}, "xsec_ccqe_vecFF",
       []() { return new GReWeightNuXSecCCQEvec; }, UseFullHERG, param_map);
 
+  AddIndependentParameters(
+      QEmd, {kXSecTwkDial_RPA_CCQE}, "xsec_ccqe_rpa",
+      []() { return new GReWeightNuXSecCCQE; }, UseFullHERG, param_map);
+
+  AddIndependentParameters(
+      QEmd, {kXSecTwkDial_CoulombCCQE}, "xsec_ccqe_coulomb",
+      []() { return new GReWeightNuXSecCCQE; }, UseFullHERG, param_map);
+
   return param_map;
 }
 
