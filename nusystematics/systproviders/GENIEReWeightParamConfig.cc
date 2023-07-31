@@ -240,7 +240,20 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
   SystMetaData VecFFCCQEmd = ConfigureSetOfIndependentParameters(
       cfg, firstParamId,
       {kXSecTwkDial_VecFFCCQEshape});
+  firstParamId += VecFFCCQEmd.size();
   ExtendSystMetaData(QEmd, std::move(VecFFCCQEmd));
+
+  SystMetaData RPA_CCQEmd = ConfigureSetOfIndependentParameters(
+      cfg, firstParamId,
+      {kXSecTwkDial_RPA_CCQE});
+  firstParamId += RPA_CCQEmd.size();
+  ExtendSystMetaData(QEmd, std::move(RPA_CCQEmd));
+
+  SystMetaData CoulombCCQEmd = ConfigureSetOfIndependentParameters(
+      cfg, firstParamId,
+      {kXSecTwkDial_CoulombCCQE});
+  firstParamId += CoulombCCQEmd.size();
+  ExtendSystMetaData(QEmd, std::move(CoulombCCQEmd));
 
   bool AxFFCCQEDipoleToZExp =
       cfg.get<bool>("AxFFCCQEDipoleToZExp", false) || IsZExpReWeight;
@@ -249,7 +262,24 @@ SystMetaData ConfigureQEParameterHeaders(fhicl::ParameterSet const &cfg,
 
 
   return QEmd;
-} // namespace nusyst
+}
+
+SystMetaData ConfigureMECParameterHeaders(fhicl::ParameterSet const &cfg,
+                                          paramId_t firstParamId,
+                                          fhicl::ParameterSet &tool_options) {
+
+  return ConfigureSetOfIndependentParameters(
+      cfg, firstParamId,
+      {kXSecTwkDial_NormCCMEC,
+       kXSecTwkDial_NormNCMEC,
+       kXSecTwkDial_NormEMMEC,
+       kXSecTwkDial_DecayAngMEC,
+       kXSecTwkDial_FracPN_CCMEC,
+       kXSecTwkDial_FracDelta_CCMEC,
+       kXSecTwkDial_XSecShape_CCMEC}
+  );
+
+}
 
 SystMetaData ConfigureNCELParameterHeaders(fhicl::ParameterSet const &cfg,
                                            paramId_t firstParamId,
@@ -334,7 +364,8 @@ SystMetaData ConfigureRESParameterHeaders(fhicl::ParameterSet const &cfg,
        kXSecTwkDial_RvbarnNC2pi,
 
        kRDcyTwkDial_BR1gamma, kRDcyTwkDial_BR1eta,
-       kRDcyTwkDial_Theta_Delta2Npi});
+       kRDcyTwkDial_Theta_Delta2Npi,
+       kRDcyTwkDial_Theta_Delta2NRad});
   ExtendSystMetaData(RESmd, std::move(RESOther));
 
   return RESmd;
@@ -345,7 +376,7 @@ SystMetaData ConfigureCOHParameterHeaders(fhicl::ParameterSet const &cfg,
                                           fhicl::ParameterSet &tool_options) {
   return ConfigureSetOfDependentParameters(
       cfg, firstParamId, tool_options, "COHVariationResponse",
-      {kXSecTwkDial_MaCOHpi, kXSecTwkDial_R0COHpi});
+      {kXSecTwkDial_MaCOHpi, kXSecTwkDial_R0COHpi, kXSecTwkDial_NormCCCOHpi, kXSecTwkDial_NormNCCOHpi});
 }
 
 SystMetaData ConfigureDISParameterHeaders(fhicl::ParameterSet const &cfg,
