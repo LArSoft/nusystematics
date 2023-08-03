@@ -374,25 +374,25 @@ ConfigureRESWeightEngine(SystMetaData const &RESmd,
 
   AddIndependentParameters(
       RESmd,
-      {{kXSecTwkDial_RvpCC1pi, kXSecTwkDial_RvpCC2pi, kXSecTwkDial_RvpNC1pi,
-        kXSecTwkDial_RvpNC2pi, kXSecTwkDial_RvnCC1pi, kXSecTwkDial_RvnCC2pi,
-        kXSecTwkDial_RvnNC1pi, kXSecTwkDial_RvnNC2pi, kXSecTwkDial_RvbarpCC1pi,
-        kXSecTwkDial_RvbarpCC2pi, kXSecTwkDial_RvbarpNC1pi,
-        kXSecTwkDial_RvbarpNC2pi, kXSecTwkDial_RvbarnCC1pi,
-        kXSecTwkDial_RvbarnCC2pi, kXSecTwkDial_RvbarnNC1pi,
-        kXSecTwkDial_RvbarnNC2pi}},
+      {kXSecTwkDial_RvpCC1pi, kXSecTwkDial_RvpCC2pi, kXSecTwkDial_RvpNC1pi,
+       kXSecTwkDial_RvpNC2pi, kXSecTwkDial_RvnCC1pi, kXSecTwkDial_RvnCC2pi,
+       kXSecTwkDial_RvnNC1pi, kXSecTwkDial_RvnNC2pi, kXSecTwkDial_RvbarpCC1pi,
+       kXSecTwkDial_RvbarpCC2pi, kXSecTwkDial_RvbarpNC1pi,
+       kXSecTwkDial_RvbarpNC2pi, kXSecTwkDial_RvbarnCC1pi,
+       kXSecTwkDial_RvbarnCC2pi, kXSecTwkDial_RvbarnNC1pi,
+       kXSecTwkDial_RvbarnNC2pi},
       "xsec_NonResBkg", []() { return new GReWeightNonResonanceBkg(); },
       UseFullHERG, param_map);
 
   AddIndependentParameters(RESmd,
-                           {{kRDcyTwkDial_BR1gamma, kRDcyTwkDial_BR1eta,
-                             kRDcyTwkDial_Theta_Delta2Npi}},
+                           {kRDcyTwkDial_BR1gamma, kRDcyTwkDial_BR1eta,
+                            kRDcyTwkDial_Theta_Delta2Npi},
                            "xsec_ResDecay",
                            []() { return new GReWeightResonanceDecay(); },
                            UseFullHERG, param_map);
 
   AddIndependentParameters(RESmd,
-                           {{kRDcyTwkDial_Theta_Delta2NRad}},
+                           {kRDcyTwkDial_Theta_Delta2NRad},
                            "xsec_DeltaRad",
                            []() { return new GReWeightDeltaradAngle(); },
                            UseFullHERG, param_map);
@@ -461,7 +461,7 @@ ConfigureFSIWeightEngine(systtools::SystMetaData const &FSImd,
 
   AddResponseAndDependentDials(
       FSImd, "FSI_pi_VariationResponse",
-      {kINukeTwkDial_MFP_pi, kINukeTwkDial_FrCEx_pi, 
+      {kINukeTwkDial_MFP_pi, kINukeTwkDial_FrCEx_pi,
        // kINukeTwkDial_FrElas_pi,
        // Pion elastic fate was removed in hA2018 for GENIE v3
        // -- S. Gardiner, 19 December 2018
