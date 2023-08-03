@@ -20,6 +20,10 @@ ConfigureQEWeightEngine(systtools::SystMetaData const &,
                         fhicl::ParameterSet const &tool_options);
 
 std::vector<GENIEResponseParameter>
+ConfigureMECWeightEngine(systtools::SystMetaData const &,
+                        fhicl::ParameterSet const &tool_options);
+
+std::vector<GENIEResponseParameter>
 ConfigureNCELWeightEngine(systtools::SystMetaData const &,
                           fhicl::ParameterSet const &tool_options);
 

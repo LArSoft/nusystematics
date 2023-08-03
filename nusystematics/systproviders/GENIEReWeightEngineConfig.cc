@@ -10,12 +10,14 @@
 #include "RwCalculators/GReWeightNuXSecCCQE.h"
 #include "RwCalculators/GReWeightNuXSecCCQEaxial.h"
 #include "RwCalculators/GReWeightNuXSecCCQEvec.h"
+#include "RwCalculators/GReWeightXSecMEC.h"
 #include "RwCalculators/GReWeightNuXSecCCRES.h"
 #include "RwCalculators/GReWeightNuXSecCOH.h"
 #include "RwCalculators/GReWeightNuXSecDIS.h"
 #include "RwCalculators/GReWeightNuXSecNCEL.h"
 #include "RwCalculators/GReWeightNuXSecNCRES.h"
 #include "RwCalculators/GReWeightResonanceDecay.h"
+#include "RwCalculators/GReWeightDeltaradAngle.h"
 
 #include <functional>
 
@@ -260,8 +262,40 @@ ConfigureQEWeightEngine(SystMetaData const &QEmd,
       QEmd, {kXSecTwkDial_VecFFCCQEshape}, "xsec_ccqe_vecFF",
       []() { return new GReWeightNuXSecCCQEvec; }, UseFullHERG, param_map);
 
+  AddIndependentParameters(
+      QEmd, {kXSecTwkDial_RPA_CCQE}, "xsec_ccqe_rpa",
+      []() { return new GReWeightNuXSecCCQE; }, UseFullHERG, param_map);
+
+  AddIndependentParameters(
+      QEmd, {kXSecTwkDial_CoulombCCQE}, "xsec_ccqe_coulomb",
+      []() { return new GReWeightNuXSecCCQE; }, UseFullHERG, param_map);
+
   return param_map;
-} // namespace nusyst
+}
+
+std::vector<GENIEResponseParameter>
+ConfigureMECWeightEngine(SystMetaData const &MECmd,
+                        fhicl::ParameterSet const &tool_options) {
+
+  std::vector<GENIEResponseParameter> param_map;
+
+  bool UseFullHERG = tool_options.get<bool>("UseFullHERG", false);
+
+  AddIndependentParameters(
+      MECmd, {
+        kXSecTwkDial_NormCCMEC,
+        kXSecTwkDial_NormNCMEC,
+        kXSecTwkDial_NormEMMEC,
+        kXSecTwkDial_DecayAngMEC,
+        kXSecTwkDial_FracPN_CCMEC,
+        kXSecTwkDial_FracDelta_CCMEC,
+        kXSecTwkDial_XSecShape_CCMEC
+      },
+      "xsec_mec", []() { return new GReWeightXSecMEC; }, UseFullHERG, param_map);
+
+  return param_map;
+
+}
 
 std::vector<GENIEResponseParameter>
 ConfigureNCELWeightEngine(SystMetaData const &NCELmd,
@@ -357,6 +391,13 @@ ConfigureRESWeightEngine(SystMetaData const &RESmd,
                            []() { return new GReWeightResonanceDecay(); },
                            UseFullHERG, param_map);
 
+  AddIndependentParameters(RESmd,
+                           {{kRDcyTwkDial_Theta_Delta2NRad}},
+                           "xsec_DeltaRad",
+                           []() { return new GReWeightDeltaradAngle(); },
+                           UseFullHERG, param_map);
+
+
   return param_map;
 }
 
@@ -370,7 +411,7 @@ ConfigureCOHWeightEngine(SystMetaData const &COHmd,
 
   AddResponseAndDependentDials(
       COHmd, "COHVariationResponse",
-      {kXSecTwkDial_MaCOHpi, kXSecTwkDial_R0COHpi}, "xsec_COH",
+      {kXSecTwkDial_MaCOHpi, kXSecTwkDial_R0COHpi, kXSecTwkDial_NormCCCOHpi, kXSecTwkDial_NormNCCOHpi}, "xsec_COH",
       []() { return new GReWeightNuXSecCOH; }, UseFullHERG, param_map);
 
   return param_map;

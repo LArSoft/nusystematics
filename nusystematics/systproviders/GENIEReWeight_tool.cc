@@ -58,6 +58,10 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
       ConfigureQEParameterHeaders(params, firstParamId, tool_options);
   firstParamId += QEmd.size();
 
+  SystMetaData MECmd =
+      ConfigureMECParameterHeaders(params, firstParamId, tool_options);
+  firstParamId += MECmd.size();
+
   SystMetaData NCELmd =
       ConfigureNCELParameterHeaders(params, firstParamId, tool_options);
   firstParamId += NCELmd.size();
@@ -83,6 +87,7 @@ SystMetaData GENIEReWeight::BuildSystMetaData(ParameterSet const &params,
 
   // Don't extend inline to make firstParamId incrementing more clear.
   ExtendSystMetaData(QEmd, DISmd);
+  ExtendSystMetaData(QEmd, MECmd);
   ExtendSystMetaData(QEmd, NCELmd);
   ExtendSystMetaData(QEmd, RESmd);
   ExtendSystMetaData(QEmd, COHmd);
@@ -124,6 +129,9 @@ bool GENIEReWeight::SetupResponseCalculator(
 
   extend_ResponseToGENIEParameters(
       ConfigureQEWeightEngine(GetSystMetaData(), tool_options));
+
+  extend_ResponseToGENIEParameters(
+      ConfigureMECWeightEngine(GetSystMetaData(), tool_options));
 
   extend_ResponseToGENIEParameters(
       ConfigureNCELWeightEngine(GetSystMetaData(), tool_options));
