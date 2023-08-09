@@ -392,7 +392,7 @@ ConfigureRESWeightEngine(SystMetaData const &RESmd,
                            UseFullHERG, param_map);
 
   AddIndependentParameters(RESmd,
-                           {{kRDcyTwkDial_Theta_Delta2NRad}},
+                           {kRDcyTwkDial_Theta_Delta2NRad},
                            "xsec_DeltaRad",
                            []() { return new GReWeightDeltaradAngle(); },
                            UseFullHERG, param_map);
