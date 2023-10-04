@@ -87,7 +87,7 @@
 #>  define_pythonpath
 ####################################
 parent		nusystematics
-defaultqual	e20
+defaultqual	e26
 ####################################
 
 ####################################
@@ -250,8 +250,8 @@ libdir	fq_dir		lib
 #
 ####################################
 product			version		qual	flags		<table_format=2>
-nugen			v1_19_05	-
-systematicstools	v01_03_02	-
+nugen			v1_19_06	-
+systematicstools	v01_03_03	-
 cetmodules		v3_20_00	-	only_for_build
 end_product_list
 ####################################
@@ -310,12 +310,8 @@ end_product_list
 qualifier	nugen		systematicstools
 c14:debug	c14:debug	c14:debug
 c14:prof	c14:prof	c14:prof
-c7:debug	c7:debug	c7:debug
-c7:prof		c7:prof		c7:prof
 e26:debug	e26:debug	e26:debug
 e26:prof	e26:prof	e26:prof
-e20:debug	e20:debug	e20:debug
-e20:prof	e20:prof	e20:prof
 end_qualifier_list
 ####################################
 
