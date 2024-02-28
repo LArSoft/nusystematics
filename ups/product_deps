@@ -250,9 +250,9 @@ libdir	fq_dir		lib
 #
 ####################################
 product			version		qual	flags		<table_format=2>
-nugen			v1_20_02	-
-systematicstools	v01_04_02	-
-cetmodules		v3_22_02	-	only_for_build
+nugen			v1_20_03	-
+systematicstools	v01_04_03	-
+cetmodules		v3_24_01	-	only_for_build
 end_product_list
 ####################################
 
