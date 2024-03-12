@@ -36,7 +36,7 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 
 cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 
-find_package(nufinder REQUIRED EXPORT)
+##find_package(nufinder REQUIRED EXPORT)
 
 find_package(GSL REQUIRED)
 find_package(art REQUIRED EXPORT)

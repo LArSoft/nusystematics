@@ -252,10 +252,10 @@ libdir	fq_dir		lib
 product			version		qual	flags		<table_format=2>
 nugen			v1_20_04	-
 systematicstools	v01_04_03	-
-nufinder	        v1_02_01       -	only_for_build
 cetmodules		v3_24_01	-	only_for_build
 end_product_list
 ####################################
+#nufinder	        v1_02_01       -	only_for_build
 
 ####################################
 # Qualifier table.
