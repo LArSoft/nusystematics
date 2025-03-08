@@ -308,11 +308,15 @@ end_product_list
 #   case it is optional.
 #
 ####################################
-qualifier	nugen		systematicstools
-c14:debug	c14:debug	c14:debug
-c14:prof	c14:prof	c14:prof
-e26:debug	e26:debug	e26:debug
-e26:prof	e26:prof	e26:prof
+qualifier        nugen            systematicstools
+c14:debug        c14:debug        c14:debug
+c14:prof         c14:prof         c14:prof
+e26:debug        e26:debug        e26:debug
+e26:prof         e26:prof         e26:prof
+e26:geant4:debug e26:geant4:debug e26:debug
+e26:geant4:prof  e26:geant4:prof  e26:prof
+e26:inclxx:debug e26:inclxx:debug e26:debug
+e26:inclxx:prof  e26:inclxx:prof  e26:prof
 end_qualifier_list
 ####################################
 
