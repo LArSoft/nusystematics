@@ -27,7 +27,7 @@ if(USEART) # This is the standard, CET-empowered build for building the art modu
 
 
 include(CetCMakeEnv)
-set(${PROJECT_NAME}_CMAKE_PROJECT_VERSION_STRING 1.05.10-sbn01)
+set(${PROJECT_NAME}_CMAKE_PROJECT_VERSION_STRING 1.05.10-sbn02)
 cet_cmake_env()
 
 cet_set_compiler_flags(DIAGS CAUTIOUS
