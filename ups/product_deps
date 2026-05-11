@@ -250,8 +250,8 @@ libdir	fq_dir		lib
 #
 ####################################
 product			version		qual	flags		<table_format=2>
-nugen			v1_23_04	-
-systematicstools	v01_04_05	-
+nugen			v1_24_00	-
+systematicstools	v01_05_00	-
 cetmodules		v3_27_04	-	only_for_build
 end_product_list
 ####################################
@@ -317,6 +317,12 @@ e26:geant4:debug e26:geant4:debug e26:debug
 e26:geant4:prof  e26:geant4:prof  e26:prof
 e26:inclxx:debug e26:inclxx:debug e26:debug
 e26:inclxx:prof  e26:inclxx:prof  e26:prof
+e28:debug        e28:debug        e28:debug
+e28:prof         e28:prof         e28:prof
+e28:geant4:debug e28:geant4:debug e28:debug
+e28:geant4:prof  e28:geant4:prof  e28:prof
+e28:inclxx:debug e28:inclxx:debug e28:debug
+e28:inclxx:prof  e28:inclxx:prof  e28:prof
 end_qualifier_list
 ####################################
 
