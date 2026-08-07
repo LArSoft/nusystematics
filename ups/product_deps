@@ -317,6 +317,12 @@ e26:geant4:debug e26:geant4:debug e26:debug
 e26:geant4:prof  e26:geant4:prof  e26:prof
 e26:inclxx:debug e26:inclxx:debug e26:debug
 e26:inclxx:prof  e26:inclxx:prof  e26:prof
+e28:debug        e28:debug        e28:debug
+e28:prof         e28:prof         e28:prof
+e28:geant4:debug e28:geant4:debug e28:debug
+e28:geant4:prof  e28:geant4:prof  e28:prof
+e28:inclxx:debug e28:inclxx:debug e28:debug
+e28:inclxx:prof  e28:inclxx:prof  e28:prof
 end_qualifier_list
 ####################################
 
